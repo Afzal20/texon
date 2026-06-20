@@ -1,0 +1,55 @@
+# OS Files
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*~
+.project
+.pydevproject
+.settings/
+
+# Environment and Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+
+# Python / Django (Root level fallback ignores)
+__pycache__/
+*.py[cod]
+*$py.class
+banckend/.venv/
+banckend/venv/
+banckend/db.sqlite3
+banckend/db.sqlite3-journal
+banckend/media/*
+!banckend/media/.gitkeep
+banckend/staticfiles/*
+!banckend/staticfiles/.gitkeep
+banckend/logs/*
+!banckend/logs/.gitkeep
+
+# Node / Next.js (Root level fallback ignores)
+frontend/texon-ui/node_modules/
+frontend/texon-ui/.next/
+frontend/texon-ui/out/
+frontend/texon-ui/build/
+frontend/texon-ui/*.tsbuildinfo
+frontend/texon-ui/next-env.d.ts
+frontend/texon-ui/.vercel/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
