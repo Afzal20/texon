@@ -4,65 +4,227 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    /* Brand: Indigo-based ERP palette */
+    --background: 210 40% 98%;       /* #f8fafc cool light gray/blue tint */
+    --foreground: 222 47% 11%;       /* #0f172a near-black */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Indigo brand primary */
+    --primary: 245 67% 59%;          /* #5c4bdf indigo */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 93%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 220 13% 91%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 245 67% 95%;           /* light indigo tint */
+    --accent-foreground: 245 67% 40%;
+
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-  }
-  .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+
+    --border: 214 32% 91%;           /* softer border */
+    --input: 214 32% 91%;
+    --ring: 245 67% 59%;
+
+    /* Chart colors */
+    --chart-1: 245 67% 59%;   /* indigo */
+    --chart-2: 160 60% 45%;   /* emerald */
+    --chart-3: 30 80% 55%;    /* amber */
+    --chart-4: 0 84% 60%;     /* red */
+    --chart-5: 220 70% 50%;   /* blue */
+
+    --radius: 0.75rem;             /* 12px softer rounded corners */
+
+    /* Sidebar tokens */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 245 67% 59%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 245 67% 95%;
+    --sidebar-accent-foreground: 245 67% 40%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 245 67% 59%;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight;
+  }
+}
+
+/* Sidebar active item – blue left border accent */
+@layer components {
+  .sidebar-item-active {
+    @apply relative font-semibold text-primary bg-accent;
+  }
+  .sidebar-item-active::before {
+    content: '';
+    @apply absolute left-0 top-0 bottom-0 w-[3px] bg-primary rounded-r-full;
+  }
+}
+
+/* =========================================================================
+   Texon design system – global spacing / typography / color tokens
+   Fixes padding, margin, font-size, and color drift across all 17 pages.
+   ========================================================================= */
+@layer base {
+  /* Reset to a consistent page rhythm */
+  html, body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  /* All headings share the same scale and weight */
+  h1, .h1 {
+    @apply text-[1.875rem] leading-tight font-semibold tracking-tight text-foreground;
+  }
+  h2, .h2 {
+    @apply text-[1.25rem] leading-snug font-semibold tracking-tight text-foreground;
+  }
+  h3, .h3 {
+    @apply text-[1rem] leading-snug font-semibold tracking-tight text-foreground;
+  }
+  h4, .h4 {
+    @apply text-[0.875rem] leading-snug font-medium tracking-tight text-foreground;
+  }
+  p, li, span, div, label, input, button, td, th {
+    @apply text-foreground;
+  }
+
+  /* Tables look consistent everywhere */
+  table {
+    @apply w-full text-sm border-separate border-spacing-0;
+  }
+  thead th {
+    @apply text-[0.75rem] font-semibold uppercase tracking-wide text-muted-foreground text-left px-4 py-3 border-b border-border bg-muted/40;
+  }
+  tbody td {
+    @apply text-sm px-4 py-3 border-b border-border align-middle;
+  }
+  tbody tr:hover td {
+    @apply bg-muted/30;
+  }
+}
+
+@layer components {
+  /* ---------- Page shell ---------- */
+  .page-shell {
+    @apply w-full max-w-[1400px] mx-auto px-6 lg:px-8 py-6 lg:py-8;
+  }
+
+  .page-header {
+    @apply flex flex-col gap-1 mb-6 lg:mb-8;
+  }
+  .page-header-row {
+    @apply flex flex-wrap items-start justify-between gap-4;
+  }
+  .page-title {
+    @apply text-[1.875rem] leading-tight font-semibold tracking-tight text-foreground;
+  }
+  .page-subtitle {
+    @apply text-sm text-muted-foreground;
+  }
+  .page-actions {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  /* ---------- Cards (KPIs, panels, sections) ---------- */
+  .card,
+  [class*="rounded-xl"][class*="border"] {
+    @apply rounded-xl border border-border bg-card text-card-foreground shadow-sm;
+  }
+
+  .kpi-card {
+    @apply rounded-xl border border-border bg-card p-5 shadow-sm flex flex-col gap-2;
+  }
+  .kpi-label {
+    @apply text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground;
+  }
+  .kpi-value {
+    @apply text-[1.875rem] leading-none font-semibold text-foreground;
+  }
+  .kpi-delta {
+    @apply text-xs font-medium text-muted-foreground;
+  }
+  .kpi-delta-up   { @apply text-emerald-600; }
+  .kpi-delta-down { @apply text-destructive; }
+
+  .panel {
+    @apply rounded-xl border border-border bg-card p-5 shadow-sm;
+  }
+  .panel-header {
+    @apply flex items-start justify-between gap-3 mb-4;
+  }
+  .panel-title {
+    @apply text-base font-semibold text-foreground;
+  }
+  .panel-subtitle {
+    @apply text-xs text-muted-foreground mt-0.5;
+  }
+
+  /* ---------- Buttons normalize to shadcn sizes ---------- */
+  button:not([data-slot]),
+  .btn {
+    @apply text-sm font-medium;
+  }
+
+  /* ---------- Badges ---------- */
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  .badge-neutral    { @apply bg-muted text-muted-foreground; }
+  .badge-primary    { @apply bg-primary/10 text-primary; }
+  .badge-success    { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
+  .badge-warning    { @apply bg-amber-50 text-amber-700 border border-amber-200; }
+  .badge-danger     { @apply bg-rose-50 text-rose-700 border border-rose-200; }
+  .badge-info       { @apply bg-sky-50 text-sky-700 border border-sky-200; }
+
+  /* ---------- Status colors (used in tables / KPIs) ---------- */
+  .status-running { @apply text-emerald-600; }
+  .status-idle    { @apply text-muted-foreground; }
+  .status-error   { @apply text-destructive; }
+  .status-risk    { @apply text-rose-600; }
+
+  /* ---------- Grids ---------- */
+  .grid-kpi {
+    @apply grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
+  }
+  .grid-2 {
+    @apply grid gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-2;
+  }
+  .grid-3 {
+    @apply grid gap-4 lg:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3;
+  }
+  .grid-aside {
+    @apply grid gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-[1fr_360px];
+  }
+
+  /* ---------- Form controls ---------- */
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  select,
+  textarea {
+    @apply h-9 px-3 rounded-md border border-input bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40;
+  }
+
+  /* ---------- Sidebar nav item normalization ---------- */
+  nav a, nav button {
+    @apply text-sm;
   }
 }
