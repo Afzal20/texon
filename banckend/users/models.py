@@ -37,14 +37,22 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
+class Organization(models.Model):
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=50, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
 class CustomUser(AbstractUser):
     email = models.EmailField(_('email address'), unique=True, validators=[EmailValidator()], error_messages={
         'unique': _('A user with that email already exists.'),
         'required': _('The Email field must be set.'),
         'invalid': _('Enter a valid email address.'),
     })  
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True, blank=True, related_name="users")
 
-    
     username = None
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -73,5 +81,6 @@ class UserSession(models.Model):
         return f"{self.user.email} - {self.device} ({self.ip_address})"
 
 
+auditlog.register(Organization)
 auditlog.register(CustomUser)
 auditlog.register(UserSession)
