@@ -15,11 +15,13 @@ from .models import CustomUser
 class UserRegisterView(CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
+    throttle_scope = 'auth'
 
 
 class ChangePasswordView(GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ChangePasswordSerializer
+    throttle_scope = 'auth'
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -50,6 +52,8 @@ def get_client_ip(request):
     return ip
 
 class CustomTokenObtainPairView(TokenObtainPairView):
+    throttle_scope = 'auth'
+
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         
@@ -103,6 +107,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class ForgotPasswordView(GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = ForgotPasswordSerializer
+    throttle_scope = 'auth'
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -133,6 +138,7 @@ class ForgotPasswordView(GenericAPIView):
 class ResetPasswordOTPView(GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = ResetPasswordOTPSerializer
+    throttle_scope = 'auth'
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -159,3 +165,31 @@ class ResetPasswordOTPView(GenericAPIView):
                 return Response({"error": "User not found."}, status=404)
         
         return Response({"error": "Invalid or expired OTP."}, status=400)
+
+
+from rest_framework.exceptions import PermissionDenied
+from django.contrib.auth.models import Group
+from .serializers import UserProfileSerializer, GroupSerializer
+
+class UserProfileView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserProfileSerializer
+
+    def get(self, request):
+        if request.user.is_staff or request.user.is_superuser:
+            raise PermissionDenied("Admin information is not shared via the API. Please use the Admin panel.")
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data, status=200)
+
+
+class GroupAccessView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = GroupSerializer
+
+    def get(self, request):
+        if request.user.is_staff or request.user.is_superuser:
+            raise PermissionDenied("Admin information is not shared via the API. Please use the Admin panel.")
+        # Return only the groups the current user belongs to
+        groups = request.user.groups.all()
+        serializer = self.get_serializer(groups, many=True)
+        return Response(serializer.data, status=200)

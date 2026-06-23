@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import EmailValidator
 from django.contrib.auth.base_user import BaseUserManager
+from auditlog.registry import auditlog
+
 
 #base user manager
 class CustomUserManager(BaseUserManager):
@@ -69,3 +71,7 @@ class UserSession(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.device} ({self.ip_address})"
+
+
+auditlog.register(CustomUser)
+auditlog.register(UserSession)

@@ -10,6 +10,10 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ["email", "password"]
 
+    def validate_password(self, value):
+        validate_password(value)
+        return value
+
     def create(self, validated_data):
         return CustomUser.objects.create_user(
             email=validated_data["email"],
@@ -50,3 +54,25 @@ class ResetPasswordOTPSerializer(serializers.Serializer):
     def validate_new_password(self, value):
         validate_password(value)
         return value
+
+
+from django.contrib.auth.models import Group, Permission
+
+class PermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = ['id', 'name', 'codename']
+
+class GroupSerializer(serializers.ModelSerializer):
+    permissions = PermissionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Group
+        fields = ['id', 'name', 'permissions']
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    groups = GroupSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'email', 'groups']
