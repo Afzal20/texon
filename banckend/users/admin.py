@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser
+from .models import CustomUser, UserSession
 
 # Custom user admin
 @admin.register(CustomUser)
@@ -22,3 +22,16 @@ class CustomUserAdmin(admin.ModelAdmin):
             'fields': ('email', 'password1', 'password2', 'first_name', 'last_name'),
         }),
     )
+
+@admin.register(UserSession)
+class UserSessionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'ip_address', 'device', 'location', 'created_at')
+    search_fields = ('user__email', 'ip_address', 'device', 'location')
+    list_filter = ('created_at',)
+    readonly_fields = ('user', 'ip_address', 'device', 'location', 'created_at')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

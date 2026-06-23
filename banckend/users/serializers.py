@@ -23,8 +23,15 @@ class RegisterSerializer(serializers.ModelSerializer):
         return get_user_model().objects.create_user(**validated_data)
 
 
+# class ChangePasswordSerializer(serializers.Serializer):
+#     old_password = serializers.CharField(required=True)
+#     new_password = serializers.CharField(required=True)
+# 
+#     def validate_new_password(self, value):
+#         validate_password(value)
+#         return value
+
 class ChangePasswordSerializer(serializers.Serializer):
-    old_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
 
     def validate_new_password(self, value):
