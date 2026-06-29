@@ -34,6 +34,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -65,6 +66,8 @@ INSTALLED_APPS += [
     'drf_spectacular_sidecar', # for swagger ui
     
     'auditlog',
+    'channels',
+    'graphene_django',
 ]
 
 MIDDLEWARE = [
@@ -98,6 +101,20 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = 'config.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
+
+GRAPHENE = {
+    "SCHEMA": "config.schema.schema",
+}
 
 
 # Database
