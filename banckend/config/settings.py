@@ -252,6 +252,14 @@ REST_FRAMEWORK = {
     }
 }
 
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Texon Production API',
+    'DESCRIPTION': 'REST API for Texon garment production management — units, lines, OEE, downtime, defects, and alerts.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+}
+
 # CORS Configuration
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True

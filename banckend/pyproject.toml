@@ -20,3 +20,8 @@ dependencies = [
     "requests>=2.34.2",
     "user-agents>=2.2.0",
 ]
+
+[dependency-groups]
+dev = [
+    "factory-boy>=3.3.3",
+]
