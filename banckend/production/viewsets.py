@@ -36,8 +36,8 @@ from .models import (
     ProductionShift,
     ProductionUnit,
 )
-from .pagination import ProductionPagination
-from .permissions import (
+from skeleton.pagination import ProductionPagination
+from skeleton.permissions import (
     IsOrganizationMember,
     IsProductionLineAccessible,
     IsProductionManager,

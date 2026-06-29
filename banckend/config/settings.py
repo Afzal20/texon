@@ -26,7 +26,7 @@ load_dotenv(BASE_DIR / '.env')
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-$&awa!hoh5jdc#zn97uqxg%2y!m_5-%)$0=q_kq(#rfpoa$*yy'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-$&awa!hoh5jdc#zn97uqxg%2y!m_5-%)$0=q_kq(#rfpoa$*yy')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -48,9 +48,7 @@ INSTALLED_APPS += [
     'users',
     'orders',
     'production',
-    'planning',
     'inventory',
-    'cutting',
     'costing',
     'hr',
     'compliance',
@@ -114,6 +112,7 @@ CHANNEL_LAYERS = {
 
 GRAPHENE = {
     "SCHEMA": "config.schema.schema",
+    "MIDDLEWARE": ["utils.graphql_middleware.JWTAuthMiddleware"],
 }
 
 
