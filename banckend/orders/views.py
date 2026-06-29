@@ -10,9 +10,15 @@ from .serializers import (
     BuyerSerializer, PurchaseOrderSerializer, OrderStageLogSerializer
 )
 
+from .permissions import IsOrganizationMember
+
 class BuyerViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsOrganizationMember]
     queryset = Buyer.objects.all()
     serializer_class = BuyerSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(organization=self.request.user.organization)
 
     @action(detail=True, methods=['get'])
     def portfolio(self, request, pk=None):
@@ -31,6 +37,7 @@ class BuyerViewSet(viewsets.ModelViewSet):
         return Response(data)
 
 class PurchaseOrderViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsOrganizationMember]
     queryset = PurchaseOrder.objects.all()
     serializer_class = PurchaseOrderSerializer
     lookup_field = 'po_number'
@@ -94,3 +101,6 @@ class PurchaseOrderViewSet(viewsets.ModelViewSet):
         logs = po.stage_logs.all().order_by('changed_at')
         serializer = OrderStageLogSerializer(logs, many=True)
         return Response(serializer.data)
+
+    def get_queryset(self):
+        return self.queryset.filter(organization=self.request.user.organization)
