@@ -8,9 +8,11 @@ https://docs.djangoproject.com/en/4.2/howto/deployment/asgi/
 """
 
 import os
+from importlib import import_module
 
 from django.core.asgi import get_asgi_application
 from django.urls import path, include
+from django.conf import settings
 from channels.routing import ProtocolTypeRouter, URLRouter
 from users.middleware import JWTAuthMiddlewareStack
 
@@ -25,6 +27,7 @@ application = ProtocolTypeRouter({
     "websocket": JWTAuthMiddlewareStack(
         URLRouter(
             notifications.routing.websocket_urlpatterns
+            + (import_module('ai.routing').websocket_urlpatterns if settings.FEATURES.get('AI', False) else [])
         )
     ),
 })

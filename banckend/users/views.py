@@ -10,6 +10,8 @@ from django.core.cache import caches
 from django.core.mail import send_mail
 from user_agents import parse
 from .models import CustomUser
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 
 
 class UserRegisterView(CreateAPIView):
@@ -35,7 +37,32 @@ class ChangePasswordView(GenericAPIView):
         user.set_password(serializer.validated_data["new_password"])
         user.save()
 
+        # Invalidate all existing tokens on password change
+        tokens = OutstandingToken.objects.filter(user_id=user.id)
+        for token in tokens:
+            BlacklistedToken.objects.get_or_create(token=token)
+
         return Response({"success": True})
+
+
+class LogoutView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data.get("refresh")
+            if refresh_token:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            
+            # Optionally invalidate all other tokens for the user
+            # tokens = OutstandingToken.objects.filter(user_id=request.user.id)
+            # for t in tokens:
+            #     BlacklistedToken.objects.get_or_create(token=t)
+                
+            return Response({"success": "Logged out successfully."}, status=200)
+        except Exception as e:
+            return Response({"error": "Invalid token."}, status=400)
 
 
 import requests
@@ -68,6 +95,11 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 pass
             
             if user:
+                # Invalidate all existing tokens for the user when a new token is created (login)
+                tokens = OutstandingToken.objects.filter(user_id=user.id)
+                for token in tokens:
+                    BlacklistedToken.objects.get_or_create(token=token)
+
                 ip_address = get_client_ip(request)
                 user_agent_string = request.META.get('HTTP_USER_AGENT', '')
                 user_agent = parse(user_agent_string)

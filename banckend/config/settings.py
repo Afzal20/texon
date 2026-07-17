@@ -11,8 +11,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-
-from pathlib import Path
 import os
 from dotenv import load_dotenv
 
@@ -22,6 +20,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
 
+def env_bool(name, default=False):
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {'1', 'true', 'yes', 'on'}
+
+
+def env_list(name, default=''):
+    value = os.environ.get(name, default)
+    if not value:
+        return []
+    return [item.strip() for item in value.split(',') if item.strip()]
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -29,9 +41,9 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-$&awa!hoh5jdc#zn97uqxg%2y!m_5-%)$0=q_kq(#rfpoa$*yy')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env_bool('DJANGO_DEBUG', True)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS')
 
 INSTALLED_APPS = [
     'daphne',
@@ -52,10 +64,10 @@ INSTALLED_APPS += [
     'costing',
     'hr',
     'compliance',
-    'ai_insights',
     'notifications',
     'reports',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'rest_framework',
     'django_filters',
     'corsheaders',
@@ -67,6 +79,19 @@ INSTALLED_APPS += [
     'channels',
     'graphene_django',
 ]
+
+FEATURES = {
+    'AI': True,
+    'RAG': False,
+}
+
+LM_STUDIO_URL = os.environ.get('LM_STUDIO_URL', 'http://localhost:1234/v1/chat/completions')
+LM_STUDIO_MODEL = os.environ.get('LM_STUDIO_MODEL', 'octans-qwen3-ui-code-4b')
+
+if FEATURES.get('AI', False):
+    INSTALLED_APPS += [
+        'ai.apps.AiConfig',
+    ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -215,6 +240,16 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+        'ai': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'ai.audit': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
     },
 }
 
@@ -248,6 +283,7 @@ REST_FRAMEWORK = {
         'anon': '100/day',
         'user': '1000/day',
         'auth': '5/minute',
+        'ai_chat': '30/minute',
     }
 }
 
