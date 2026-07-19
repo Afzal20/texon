@@ -1,0 +1,59 @@
+from django.db import models
+from core.models import Organization
+
+
+class Buyer(models.Model):
+    organization = models.ForeignKey(
+        Organization, on_delete=models.CASCADE, related_name="buyers"
+    )
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=50)
+    country = models.CharField(max_length=100)
+    address = models.TextField(blank=True)
+    contact_person = models.CharField(max_length=255, blank=True)
+    email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=50, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Buyer"
+        verbose_name_plural = "Buyers"
+        unique_together = ("organization", "code")
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
+
+class BuyerRating(models.Model):
+    buyer = models.OneToOneField(
+        Buyer, on_delete=models.CASCADE, related_name="rating"
+    )
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
+    reviews_count = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Buyer Rating"
+        verbose_name_plural = "Buyer Ratings"
+
+    def __str__(self):
+        return f"{self.buyer.name}: {self.rating}"
+
+
+class BuyerPortfolio(models.Model):
+    buyer = models.OneToOneField(
+        Buyer, on_delete=models.CASCADE, related_name="portfolio"
+    )
+    active_orders = models.PositiveIntegerField(default=0)
+    total_units = models.PositiveIntegerField(default=0)
+    total_value = models.DecimalField(max_digits=15, decimal_places=2, default=0.0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Buyer Portfolio"
+        verbose_name_plural = "Buyer Portfolios"
+
+    def __str__(self):
+        return f"{self.buyer.name} Portfolio"
