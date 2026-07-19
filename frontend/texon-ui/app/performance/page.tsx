@@ -5,10 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { 
-  TrendingUp, TrendingDown, AlertTriangle, Sparkles, Search,
+  TrendingUp, AlertTriangle, Search,
   MoreVertical, FileText, Table2, ArrowRight, Lightbulb
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
+import { TrendChart } from "@/components/dashboard/TrendChart"
 
 const lines = [
   { line: "Line 01", supervisor: "R. Ahmed", eff: "82.4%", effVal: 82.4, order: "PO-9921 (T-Shirts)", status: "On-Track", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200" },
@@ -21,7 +23,7 @@ const lines = [
 export default function Performance() {
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-6">
+      <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8">
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -31,14 +33,14 @@ export default function Performance() {
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <div className="flex rounded-lg border border-border overflow-hidden text-xs font-medium">
-              <button className="px-3 py-2 bg-foreground text-background">Today</button>
-              <button className="px-3 py-2 hover:bg-muted transition-colors">This Week</button>
-              <button className="px-3 py-2 hover:bg-muted transition-colors">Custom</button>
+              <button className="px-3 py-2 bg-foreground text-background" onClick={() => toast.info("Showing today's data")}>Today</button>
+              <button className="px-3 py-2 hover:bg-muted transition-colors" onClick={() => toast.info("Showing weekly data")}>This Week</button>
+              <button className="px-3 py-2 hover:bg-muted transition-colors" onClick={() => toast.info("Custom date picker coming soon")}>Custom</button>
             </div>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-9">
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-9" onClick={() => toast.success("PDF report downloaded")}>
               <FileText className="h-3.5 w-3.5" /> PDF
             </Button>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-9">
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-9" onClick={() => toast.success("Excel report downloaded")}>
               <Table2 className="h-3.5 w-3.5" /> Excel
             </Button>
           </div>
@@ -52,8 +54,8 @@ export default function Performance() {
             { label: "DHU Rate", value: "3.2", unit: "defects/100", trend: "+0.5 vs target (2.7)", trendUp: false, trendRed: true },
             { label: "Downtime", value: "145", unit: "mins", note: "Major: Line 04 (45m)" },
           ].map((kpi, i) => (
-            <Card key={i} className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-              <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+            <Card key={i} className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+              <CardHeader className="flex flex-row items-start justify-between space-y-0">
                 <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider leading-tight">
                   {kpi.label}
                 </CardTitle>
@@ -93,31 +95,23 @@ export default function Performance() {
           {/* Left: Chart + Table */}
           <div className="lg:col-span-2 space-y-6">
             {/* 30-Day Trend */}
-            <Card className="bg-white/90 backdrop-blur-md border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
+            <Card className="bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-base font-semibold">30-Day Production Trend</CardTitle>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => toast.info("Menu coming soon")}>
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </CardHeader>
               <CardContent>
-                <div className="h-[220px] border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-2 bg-muted/10">
-                  <div className="text-muted-foreground/40">
-                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                      <rect x="6" y="30" width="8" height="12" rx="2" fill="currentColor"/>
-                      <rect x="18" y="20" width="8" height="22" rx="2" fill="currentColor"/>
-                      <rect x="30" y="12" width="8" height="30" rx="2" fill="currentColor"/>
-                    </svg>
-                  </div>
-                  <p className="text-sm text-muted-foreground font-medium">Chart Visualization Area</p>
-                  <p className="text-xs text-muted-foreground/70">(Daily Output vs Targets – Primary Blue bars, Indigo milestone markers)</p>
+                <div className="h-[220px]">
+                  <TrendChart />
                 </div>
               </CardContent>
             </Card>
 
             {/* Line-wise Efficiency Table */}
-            <Card className="bg-white/90 backdrop-blur-md border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
-              <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-border">
+            <Card className="bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300 -mx-5 px-0">
+              <CardHeader className="flex flex-row items-center justify-between border-b border-border">
                 <CardTitle className="text-base font-semibold">Line-wise Efficiency</CardTitle>
                 <div className="relative w-48">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -151,7 +145,7 @@ export default function Performance() {
                   </div>
                 ))}
                 <div className="p-4 text-center border-t border-border">
-                  <Button variant="link" className="text-primary font-semibold text-sm gap-1">
+                  <Button variant="link" className="text-primary font-semibold text-sm gap-1" onClick={() => toast.info("Full lines list coming soon")}>
                     View All 10 Lines <ArrowRight className="h-3.5 w-3.5" />
                   </Button>
                 </div>
@@ -161,14 +155,14 @@ export default function Performance() {
 
           {/* Right: AI Insights */}
           <div className="space-y-4">
-            <Card className="bg-white/90 backdrop-blur-md border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
-              <CardHeader className="pb-3 border-b border-border">
+            <Card className="bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <CardHeader className="border-b border-border">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                   AI Efficiency Insights
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-4 space-y-4">
+              <CardContent className="space-y-4">
                 {/* Critical */}
                 <div className="border-l-4 border-red-500 pl-3 space-y-2">
                   <div className="flex items-start gap-2">
@@ -180,12 +174,12 @@ export default function Performance() {
                       </p>
                     </div>
                   </div>
-                  <div className="bg-gradient-to-br from-indigo-50/80 to-white/80 backdrop-blur-md border border-indigo-100/50 shadow-sm hover:shadow-md transition-shadow duration-300 rounded-md p-3">
+                  <div className="bg-white border border-indigo-100/50 shadow-sm hover:shadow-md transition-shadow duration-300 rounded-md p-3">
                     <div className="text-[11px] font-bold text-primary mb-1.5 uppercase tracking-wide">AI Recommendation</div>
                     <p className="text-xs text-foreground/80 leading-relaxed">
                       Re-route cutting batch #45A to Line 04 temporarily to minimize idle time. Estimated recovery: +12% efficiency today.
                     </p>
-                    <Button size="sm" className="mt-3 h-7 text-xs font-semibold w-full bg-primary hover:bg-primary/90">
+                    <Button size="sm" className="mt-3 h-7 text-xs font-semibold w-full bg-primary hover:bg-primary/90" onClick={() => toast.success("Re-route executed successfully")}>
                       Execute Re-route
                     </Button>
                   </div>
@@ -210,11 +204,11 @@ export default function Performance() {
             </Card>
 
             {/* Floor Activity Heatmap */}
-            <Card className="bg-white/90 backdrop-blur-md border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
-              <CardHeader className="pb-3 border-b border-border">
+            <Card className="bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <CardHeader className="border-b border-border">
                 <CardTitle className="text-sm font-semibold text-muted-foreground">Floor Activity Heatmap (Last Hour)</CardTitle>
               </CardHeader>
-              <CardContent className="p-3">
+              <CardContent>
                 <div className="grid grid-cols-8 gap-0.5 h-20">
                   {Array.from({ length: 40 }).map((_, i) => {
                     // Predefined pseudo-random intensities to avoid Next.js hydration errors

@@ -158,8 +158,8 @@ export default function ModuleMapPage() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Card className="rounded-lg border-border/80 bg-white/90 shadow-sm">
-            <CardHeader className="pb-2">
+          <Card className="rounded-lg border-border/80 bg-white">
+            <CardHeader>
               <CardTitle className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                 Modules
               </CardTitle>
@@ -169,8 +169,8 @@ export default function ModuleMapPage() {
               <p className="mt-1 text-xs text-muted-foreground">Major ERP areas</p>
             </CardContent>
           </Card>
-          <Card className="rounded-lg border-border/80 bg-white/90 shadow-sm">
-            <CardHeader className="pb-2">
+          <Card className="rounded-lg border-border/80 bg-white">
+            <CardHeader>
               <CardTitle className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                 Pages
               </CardTitle>
@@ -180,8 +180,8 @@ export default function ModuleMapPage() {
               <p className="mt-1 text-xs text-muted-foreground">Static workflows listed</p>
             </CardContent>
           </Card>
-          <Card className="rounded-lg border-border/80 bg-white/90 shadow-sm">
-            <CardHeader className="pb-2">
+          <Card className="rounded-lg border-border/80 bg-white">
+            <CardHeader>
               <CardTitle className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                 Factory Ops
               </CardTitle>
@@ -191,8 +191,8 @@ export default function ModuleMapPage() {
               <p className="mt-1 text-xs text-muted-foreground">Production-facing pages</p>
             </CardContent>
           </Card>
-          <Card className="rounded-lg border-border/80 bg-white/90 shadow-sm">
-            <CardHeader className="pb-2">
+          <Card className="rounded-lg border-border/80 bg-white">
+            <CardHeader>
               <CardTitle className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                 Platform
               </CardTitle>
@@ -204,7 +204,7 @@ export default function ModuleMapPage() {
           </Card>
         </div>
 
-        <div className="sticky top-[76px] z-20 rounded-lg border border-border bg-white/90 p-3 shadow-sm backdrop-blur-md">
+        <div className="sticky top-[76px] z-20 rounded-lg border border-border bg-white p-3 shadow-sm backdrop-blur-md">
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
             <div className="relative min-w-0 flex-1">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -293,10 +293,10 @@ export default function ModuleMapPage() {
                 <Card
                   key={module.slug}
                   id={module.slug}
-                  className="scroll-mt-40 rounded-lg border-border/80 bg-white/95 shadow-sm"
+                  className="scroll-mt-40 rounded-lg border-border/80 bg-white"
                 >
                   <div className={cn("h-1 w-full", styles.rail)} />
-                  <CardHeader className="gap-3 px-5 sm:flex sm:flex-row sm:items-start sm:justify-between">
+                  <CardHeader className="gap-4 px-6 sm:flex sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex min-w-0 items-start gap-3">
                       <div className={cn("rounded-lg p-2 ring-1", styles.icon)}>
                         <Icon className="h-5 w-5" />
@@ -314,7 +314,7 @@ export default function ModuleMapPage() {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="px-5 pb-5">
+                  <CardContent className="px-6 pb-6">
                     <ul className="grid gap-x-6 gap-y-2 sm:grid-cols-2 xl:grid-cols-3">
                       {visibleItems.map((item, index) => (
                         <li key={item} className="flex min-w-0 items-start gap-2 rounded-md py-1.5">
@@ -330,7 +330,7 @@ export default function ModuleMapPage() {
             })}
 
             {visibleModules.length === 0 && (
-              <div className="rounded-lg border border-dashed border-border bg-white/80 px-6 py-12 text-center">
+              <div className="rounded-lg border border-dashed border-border bg-white px-6 py-12 text-center">
                 <div className="text-base font-semibold">No matching pages</div>
                 <p className="mt-1 text-sm text-muted-foreground">Try another module or workflow name.</p>
                 <Button

@@ -4,6 +4,7 @@ import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ShieldCheck, Edit, Plus } from "lucide-react"
+import { toast } from "sonner"
 
 const roles = [
   { name: "Factory Owner", level: "Super Admin", users: 2 },
@@ -33,7 +34,7 @@ const modules = [
 export default function Security() {
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-6">
+      <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8">
 
         {/* Header */}
         <div>
@@ -44,8 +45,8 @@ export default function Security() {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Left Nav */}
           <div className="lg:col-span-1">
-            <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-              <CardContent className="p-2">
+            <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+              <CardContent>
                 {[
                   { label: "Personal Profile", active: false },
                   { label: "Language & Region", active: false },
@@ -55,6 +56,7 @@ export default function Security() {
                 ].map((item) => (
                   <button
                     key={item.label}
+                    onClick={() => toast.info(`Switched to ${item.label}`)}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left ${
                       item.active
                         ? "bg-accent text-primary border-l-[3px] border-primary"
@@ -72,12 +74,12 @@ export default function Security() {
           {/* Right Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Security & Role Section */}
-            <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-              <CardHeader className="border-b border-border pb-4">
+            <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+              <CardHeader className="border-b border-border">
                 <CardTitle className="text-lg font-bold">Security & Role-Based Access</CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">Manage system roles, granular permissions, and account security protocols.</p>
               </CardHeader>
-              <CardContent className="p-6 space-y-6">
+              <CardContent className="space-y-6">
                 {/* Role Management */}
                 <div>
                   <div className="text-sm font-bold text-foreground mb-3">Role Management</div>
@@ -90,13 +92,13 @@ export default function Security() {
                         <div className="font-medium text-foreground">{role.name}</div>
                         <div className="text-muted-foreground">{role.level}</div>
                         <div className="text-muted-foreground">{role.users}</div>
-                        <button className="text-primary font-semibold text-sm hover:underline flex items-center gap-1">
+                        <button onClick={() => toast.info("Role editor coming soon")} className="text-primary font-semibold text-sm hover:underline flex items-center gap-1">
                           <Edit className="h-3 w-3" /> Edit
                         </button>
                       </div>
                     ))}
                   </div>
-                  <Button size="sm" variant="outline" className="mt-3 gap-1.5 text-xs">
+                  <Button size="sm" variant="outline" className="mt-3 gap-1.5 text-xs" onClick={() => toast.info("New role form coming soon")}>
                     <Plus className="h-3.5 w-3.5" /> Add New Role
                   </Button>
                 </div>
@@ -105,7 +107,7 @@ export default function Security() {
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <div className="text-sm font-bold text-foreground">Permissions Matrix: Floor Manager</div>
-                    <button className="text-xs text-primary font-semibold hover:underline">Reset to Default</button>
+                    <button onClick={() => toast.warning("Permissions reset to defaults")} className="text-xs text-primary font-semibold hover:underline">Reset to Default</button>
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     {modules.map((mod) => (
@@ -140,7 +142,7 @@ export default function Security() {
                         <div className="text-xs text-muted-foreground mt-0.5">Secure login via mobile code</div>
                       </div>
                       {/* Toggle */}
-                      <div className="w-11 h-6 bg-primary rounded-full relative cursor-pointer">
+                      <div onClick={() => toast.success("2FA toggled")} className="w-11 h-6 bg-primary rounded-full relative cursor-pointer">
                         <div className="absolute top-1 right-1 w-4 h-4 bg-white rounded-full shadow-sm" />
                       </div>
                     </div>
@@ -162,10 +164,10 @@ export default function Security() {
                 </div>
 
                 <div className="border-t border-border pt-4 flex items-center justify-between">
-                  <button className="text-sm text-primary font-semibold flex items-center gap-1 hover:underline">
+                  <button onClick={() => toast.info("Audit logs coming soon")} className="text-sm text-primary font-semibold flex items-center gap-1 hover:underline">
                     ↻ View Audit Logs
                   </button>
-                  <Button className="bg-foreground hover:bg-foreground/90 text-background font-semibold">
+                  <Button onClick={() => toast.success("Security settings saved")} className="bg-foreground hover:bg-foreground/90 text-background font-semibold">
                     Save Security Settings
                   </Button>
                 </div>

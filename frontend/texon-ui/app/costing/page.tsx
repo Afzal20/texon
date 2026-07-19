@@ -4,6 +4,7 @@ import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Download, AlertTriangle, CheckCircle2, Clock, Sparkles, RefreshCw, TrendingUp } from "lucide-react"
+import { toast } from "sonner"
 
 const bomItems = [
   { desc: "Cotton Twill 280 GSM, Olive Drab (C-100%)", supplier: "Artistic Milliners", cons: "1.45 Yds", unitPrice: "$2.10", total: "$3.045", status: "Sourced", statusColor: "bg-emerald-100 text-emerald-700 border-emerald-200" },
@@ -22,20 +23,20 @@ const costBreakdown = [
 export default function Costing() {
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-6">
+      <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8">
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">Costing & BOM: PO-84920</h2>
             <p className="text-muted-foreground mt-1 text-sm">
-              Men's Cargo Pant (Style: HCP-24-A) | Created: Oct 12, 2023 |{" "}
+              Men&apos;s Cargo Pant (Style: HCP-24-A) | Created: Oct 12, 2023 |{" "}
               <span className="text-primary font-semibold">Status: In Review</span>
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="gap-2"><Download className="h-4 w-4" /> Export BOM</Button>
-            <Button className="gap-2 bg-primary hover:bg-primary/90 text-white">
+            <Button variant="outline" className="gap-2" onClick={() => toast.success("BOM exported to spreadsheet")}><Download className="h-4 w-4" /> Export BOM</Button>
+            <Button className="gap-2 bg-primary hover:bg-primary/90 text-white" onClick={() => toast.info("Approval workflow starting soon")}>
               <CheckCircle2 className="h-4 w-4" /> Approval Workflow
             </Button>
           </div>
@@ -43,7 +44,7 @@ export default function Costing() {
 
         {/* KPI Cards */}
         <div className="grid gap-4 md:grid-cols-3">
-          <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <CardContent className="pt-6">
               <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Target Margin %</div>
               <div className="text-4xl font-bold text-foreground">18.5%</div>
@@ -53,14 +54,14 @@ export default function Costing() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <CardContent className="pt-6">
               <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Total Cost / Unit (FOB)</div>
               <div className="text-4xl font-bold text-foreground">$8.42 <span className="text-sm font-normal text-muted-foreground">USD</span></div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-indigo-50/80 to-white/80 backdrop-blur-md border-indigo-100/50 shadow-sm hover:shadow-lg hover:shadow-indigo-100 hover:-translate-y-0.5 transition-all duration-300">
+          <Card className="bg-gradient-to-br from-indigo-50 to-white border-indigo-100/50 shadow-sm hover:shadow-lg hover:shadow-indigo-100 hover:-translate-y-0.5 transition-all duration-300">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="h-4 w-4 text-primary" />
@@ -78,7 +79,7 @@ export default function Costing() {
 
         <div className="grid gap-6 lg:grid-cols-3">
           {/* BOM Table */}
-          <Card className="lg:col-span-2 bg-white/90 backdrop-blur-md border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
+          <Card className="lg:col-span-2 bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300 -mx-5 px-0">
             {/* Tabs */}
             <div className="flex border-b border-border px-4">
               {["Fabric", "Trims & Accessories", "Operations/Labor"].map((tab, i) => (
@@ -89,6 +90,7 @@ export default function Costing() {
                       ? "border-primary text-primary"
                       : "border-transparent text-muted-foreground hover:text-foreground"
                   }`}
+                  onClick={() => toast.info(`Showing ${tab} tab`)}
                 >
                   {tab}
                 </button>
@@ -128,13 +130,13 @@ export default function Costing() {
 
           {/* Cost Summary */}
           <div className="space-y-4">
-            <Card className="bg-white/90 backdrop-blur-md border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
-              <CardHeader className="border-b border-border pb-3">
+            <Card className="bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <CardHeader className="border-b border-border">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
                   <Clock className="h-4 w-4 text-primary" /> Cost Summary Breakdown
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-4 space-y-3">
+              <CardContent className="space-y-3">
                 {costBreakdown.map((row) => (
                   <div key={row.label} className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">{row.label}</span>
@@ -154,8 +156,8 @@ export default function Costing() {
               </CardContent>
             </Card>
 
-            <Card className="bg-white/90 backdrop-blur-md border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
-              <CardContent className="p-4">
+            <Card className="bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <CardContent>
                 <div className="flex items-center justify-between mb-2">
                   <div>
                     <div className="text-xs text-muted-foreground">Net Margin (Calculated)</div>
@@ -171,7 +173,7 @@ export default function Costing() {
                     <div className="h-full bg-amber-400 rounded-full" style={{ width: "55%" }} />
                   </div>
                 </div>
-                <Button className="w-full mt-4 gap-2 bg-accent hover:bg-accent/80 text-primary border border-primary/20">
+                <Button className="w-full mt-4 gap-2 bg-accent hover:bg-accent/80 text-primary border border-primary/20" onClick={() => toast.success("Pricing updated")}>
                   <RefreshCw className="h-4 w-4" /> Update Pricing
                 </Button>
               </CardContent>

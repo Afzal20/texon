@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Upload, User, Globe, Bell, ShieldCheck, Building2 } from "lucide-react"
+import { toast } from "sonner"
 
 export default function Settings() {
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-6">
+      <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8">
 
         {/* Header */}
         <div>
@@ -21,8 +22,8 @@ export default function Settings() {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Left Nav */}
           <div className="lg:col-span-1">
-            <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-              <CardContent className="p-2">
+            <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+              <CardContent>
                 {[
                   { label: "Personal Profile",  icon: User,         active: true },
                   { label: "Language & Region", icon: Globe,        active: false },
@@ -32,6 +33,7 @@ export default function Settings() {
                 ].map((item) => (
                   <button
                     key={item.label}
+                    onClick={() => toast.info(`Switched to ${item.label}`)}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left ${
                       item.active
                         ? "bg-accent text-primary border-l-[3px] border-primary"
@@ -50,11 +52,11 @@ export default function Settings() {
           <div className="lg:col-span-2 space-y-6">
             
             {/* Personal Profile Section */}
-            <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-              <CardHeader className="border-b border-border pb-4">
+            <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+              <CardHeader className="border-b border-border">
                 <CardTitle className="text-lg font-bold">Personal Profile</CardTitle>
               </CardHeader>
-              <CardContent className="p-6 space-y-6">
+              <CardContent className="space-y-6">
                 
                 {/* Photo Upload */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
@@ -63,14 +65,14 @@ export default function Settings() {
                       <AvatarImage src="https://i.pravatar.cc/150?u=rafiqul" alt="User" className="rounded-xl object-cover" />
                       <AvatarFallback className="text-xl font-bold rounded-xl bg-primary text-primary-foreground">RI</AvatarFallback>
                     </Avatar>
-                    <button className="absolute -bottom-2 -right-2 bg-white border border-border text-primary rounded-full p-1.5 shadow-sm hover:bg-muted transition-colors">
+                    <button onClick={() => toast.info("Photo upload coming soon")} className="absolute -bottom-2 -right-2 bg-white border border-border text-primary rounded-full p-1.5 shadow-sm hover:bg-muted transition-colors">
                       <Upload className="h-3 w-3" />
                     </button>
                   </div>
                   <div>
                     <div className="flex gap-2">
-                      <Button className="bg-primary hover:bg-primary/90 text-white font-semibold">Upload New Photo</Button>
-                      <Button variant="ghost" className="text-muted-foreground font-semibold">Remove</Button>
+                      <Button onClick={() => toast.info("Photo upload dialog coming soon")} className="bg-primary hover:bg-primary/90 text-white font-semibold">Upload New Photo</Button>
+                      <Button onClick={() => toast.success("Photo removed")} variant="ghost" className="text-muted-foreground font-semibold">Remove</Button>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">JPG, GIF or PNG. Max size of 2MB.</p>
                   </div>
@@ -113,7 +115,7 @@ export default function Settings() {
                 </div>
 
                 <div className="border-t border-border pt-6 flex justify-end">
-                  <Button className="bg-foreground hover:bg-foreground/90 text-background font-semibold px-6">
+                  <Button onClick={() => toast.success("Profile saved")} className="bg-foreground hover:bg-foreground/90 text-background font-semibold px-6">
                     Save Changes
                   </Button>
                 </div>
@@ -121,11 +123,11 @@ export default function Settings() {
             </Card>
 
             {/* Language & Region Section */}
-            <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-              <CardHeader className="border-b border-border pb-4">
+            <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+              <CardHeader className="border-b border-border">
                 <CardTitle className="text-lg font-bold">Language & Region</CardTitle>
               </CardHeader>
-              <CardContent className="p-6 space-y-6">
+              <CardContent className="space-y-6">
                 
                 <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                   <div>
@@ -133,8 +135,8 @@ export default function Settings() {
                     <div className="text-xs text-muted-foreground mt-0.5">Select the primary language for the ERP dashboard.</div>
                   </div>
                   <div className="flex rounded-md border border-border overflow-hidden text-xs font-bold">
-                    <button className="px-4 py-2 bg-muted/50 text-foreground transition-colors hover:bg-muted">EN</button>
-                    <button className="px-4 py-2 bg-white text-muted-foreground hover:bg-muted transition-colors">BN</button>
+                    <button onClick={() => toast.info("English selected")} className="px-4 py-2 bg-muted/50 text-foreground transition-colors hover:bg-muted">EN</button>
+                    <button onClick={() => toast.info("Bangla selected")} className="px-4 py-2 bg-white text-muted-foreground hover:bg-muted transition-colors">BN</button>
                   </div>
                 </div>
 

@@ -19,11 +19,11 @@ export function AppHeader() {
 
       {/* Center: Search */}
       <div className="relative hidden md:flex items-center max-w-sm w-full">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
         <Input
           type="search"
           placeholder="Search orders..."
-          className="w-full pl-9 pr-14 h-9 bg-muted/40 border-border text-sm focus-visible:ring-primary"
+          className="w-full !pl-10 !pr-14 h-9 bg-muted/40 border-border text-sm focus-visible:ring-primary"
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
           <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
@@ -55,6 +55,7 @@ export function AppHeader() {
 
         {/* AI Command button */}
         <Button
+          data-ai-trigger
           className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 font-semibold text-sm px-4 h-9"
           onClick={() => {
             // Trigger Ctrl+K
@@ -68,8 +69,8 @@ export function AppHeader() {
 
         {/* Avatar */}
         <Avatar className="h-8 w-8 border-2 border-border cursor-pointer hover:border-primary transition-colors">
-          <AvatarImage src="https://i.pravatar.cc/150?u=a04258114e29026702d" alt="User" />
-          <AvatarFallback className="text-xs font-bold bg-primary text-primary-foreground">JD</AvatarFallback>
+          <AvatarImage src="" alt="Rafiqul Islam" />
+          <AvatarFallback className="text-xs font-bold bg-primary text-primary-foreground">RI</AvatarFallback>
         </Avatar>
       </div>
     </header>

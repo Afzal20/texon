@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { 
   Download, Plus, TrendingUp, TrendingDown, AlertTriangle, ChevronDown, 
-  Filter, MoreVertical, Search, CheckSquare, X, Mail, Star, ExternalLink, Bot, ArrowRight
+  Filter, MoreVertical, Search, CheckSquare, X, Mail, Star, Bot, ArrowRight
 } from "lucide-react"
+import { toast } from "sonner"
 
 export default function OrderManagement() {
   return (
@@ -23,10 +24,10 @@ export default function OrderManagement() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2" onClick={() => toast.success("Orders exported to CSV")}>
               <Download className="h-4 w-4" /> Export
             </Button>
-            <Button className="gap-2 bg-slate-900 hover:bg-slate-800 text-white">
+            <Button className="gap-2 bg-slate-900 hover:bg-slate-800 text-white" onClick={() => toast.info("New order form coming soon")}>
               <Plus className="h-4 w-4" /> New Order
             </Button>
           </div>
@@ -36,12 +37,12 @@ export default function OrderManagement() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {/* Card 1 */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-xs font-semibold text-muted-foreground">Total Order Value (YTD)</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">$12.4M</div>
-              <p className="text-xs text-blue-600 font-medium flex items-center mt-2">
+              <p className="text-xs text-blue-600 font-medium flex items-center mt-3">
                 <TrendingUp className="h-3 w-3 mr-1" />
                 +8.2% vs last quarter
               </p>
@@ -50,23 +51,23 @@ export default function OrderManagement() {
           
           {/* Card 2 */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-xs font-semibold text-muted-foreground">Active Buyers</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">24</div>
-              <p className="text-xs text-muted-foreground mt-2">Across 12 regions</p>
+              <p className="text-xs text-muted-foreground mt-3">Across 12 regions</p>
             </CardContent>
           </Card>
 
           {/* Card 3 */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-xs font-semibold text-muted-foreground">Avg Lead Time</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">42 Days</div>
-              <p className="text-xs text-emerald-600 font-medium flex items-center mt-2">
+              <p className="text-xs text-emerald-600 font-medium flex items-center mt-3">
                 <TrendingDown className="h-3 w-3 mr-1" />
                 -3 days efficiency gain
               </p>
@@ -74,13 +75,13 @@ export default function OrderManagement() {
           </Card>
 
           {/* Card 4 */}
-          <Card className="border-red-100 bg-red-50/30">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <Card className="border-red-100 bg-red-50">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-xs font-semibold text-muted-foreground">Samples Pending Approval</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">18</div>
-              <p className="text-xs text-red-600 font-medium flex items-center mt-2">
+              <p className="text-xs text-red-600 font-medium flex items-center mt-3">
                 <AlertTriangle className="h-3 w-3 mr-1" />
                 5 approaching deadline
               </p>
@@ -91,14 +92,14 @@ export default function OrderManagement() {
         <div className="grid gap-6 lg:grid-cols-7">
           {/* Main Pipeline Table Area */}
           <Card className="lg:col-span-5 flex flex-col relative overflow-hidden">
-            <CardHeader className="pb-4">
+            <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold">Active Pipeline</CardTitle>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" className="gap-2 text-xs">
+                  <Button variant="outline" size="sm" className="gap-2 text-xs" onClick={() => toast.success("View saved")}>
                     <Download className="h-3.5 w-3.5" /> Save View
                   </Button>
-                  <Button variant="outline" size="icon" className="h-8 w-8">
+                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => toast.info("Menu coming soon")}>
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </div>
@@ -107,13 +108,13 @@ export default function OrderManagement() {
               {/* Filters */}
               <div className="flex items-center gap-2 mt-4 pt-4 border-t">
                 <div className="relative flex-1">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Search orders or styles..." className="pl-9 h-9 text-sm" />
+    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <Input placeholder="Search orders or styles..." className="pl-9 h-9 text-sm" />
                 </div>
-                <Button variant="outline" size="sm" className="h-9 gap-2">All Stages <ChevronDown className="h-3.5 w-3.5" /></Button>
-                <Button variant="outline" size="sm" className="h-9 gap-2">All Buyers <ChevronDown className="h-3.5 w-3.5" /></Button>
-                <Button variant="outline" size="sm" className="h-9 gap-2">Priority <Filter className="h-3.5 w-3.5" /></Button>
-                <Button variant="outline" size="icon" className="h-9 w-9 shrink-0"><Filter className="h-4 w-4" /></Button>
+                <Button variant="outline" size="sm" className="h-9 gap-2" onClick={() => toast.info("Stage filter coming soon")}>All Stages <ChevronDown className="h-3.5 w-3.5" /></Button>
+                <Button variant="outline" size="sm" className="h-9 gap-2" onClick={() => toast.info("Buyer filter coming soon")}>All Buyers <ChevronDown className="h-3.5 w-3.5" /></Button>
+                <Button variant="outline" size="sm" className="h-9 gap-2" onClick={() => toast.info("Priority filter coming soon")}>Priority <Filter className="h-3.5 w-3.5" /></Button>
+                <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => toast.info("Advanced filters coming soon")}><Filter className="h-4 w-4" /></Button>
               </div>
             </CardHeader>
             
@@ -136,7 +137,7 @@ export default function OrderManagement() {
                     { id: "PO-2024-9002", buyer: "Levi's", style: "LV-501-DNM", qty: "25,000", stage: "PO Received", progress: 10, color: "bg-gray-300" },
                     { id: "PO-2024-8711", buyer: "Uniqlo", style: "UQ-HEAT-TOP", qty: "45,000", stage: "Cutting (100%)", progress: 100, color: "bg-emerald-500" },
                   ].map((row, i) => (
-                    <div key={i} className={`grid grid-cols-[40px_2fr_1fr_1fr_2fr] items-center px-6 py-4 border-b hover:bg-muted/10 transition-colors ${i === 1 || i === 2 ? 'bg-blue-50/30' : ''}`}>
+                    <div key={i} className={`grid grid-cols-[40px_2fr_1fr_1fr_2fr] items-center px-6 py-4 border-b hover:bg-muted/10 transition-colors ${i === 1 || i === 2 ? 'bg-blue-50' : ''}`}>
                       <div className={`w-4 h-4 rounded border ${i === 1 || i === 2 ? 'border-blue-500 bg-blue-500 text-white flex items-center justify-center' : 'border-gray-300'}`}>
                         {(i === 1 || i === 2) && <CheckSquare className="h-3 w-3" />}
                       </div>
@@ -168,21 +169,21 @@ export default function OrderManagement() {
                   2 items<br/>selected
                 </div>
                 <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="sm" className="h-14 flex-col gap-1 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-blue-100/50">
+                  <Button variant="ghost" size="sm" className="h-14 flex-col gap-1 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-blue-100/50" onClick={() => toast.success("Stage updated for selected orders")}>
                     <TrendingUp className="h-4 w-4" /> Update Stage
                   </Button>
-                  <Button variant="ghost" size="sm" className="h-14 flex-col gap-1 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-blue-100/50">
+                  <Button variant="ghost" size="sm" className="h-14 flex-col gap-1 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-blue-100/50" onClick={() => toast.success("Selected orders exported")}>
                     <Download className="h-4 w-4" /> Export Selected
                   </Button>
-                  <Button variant="ghost" size="sm" className="h-14 flex-col gap-1 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-blue-100/50">
+                  <Button variant="ghost" size="sm" className="h-14 flex-col gap-1 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-blue-100/50" onClick={() => toast.success("Notification sent")}>
                     <Mail className="h-4 w-4" /> Send Notification
                   </Button>
-                  <Button variant="ghost" size="sm" className="h-14 flex-col gap-1 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-blue-100/50">
+                  <Button variant="ghost" size="sm" className="h-14 flex-col gap-1 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-blue-100/50" onClick={() => toast.success("Orders marked as priority")}>
                     <AlertTriangle className="h-4 w-4" /> Mark Priority
                   </Button>
                 </div>
                 <div className="pl-2 border-l border-blue-200">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-slate-900 hover:bg-blue-100/50">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-slate-900 hover:bg-blue-100/50" onClick={() => toast.info("Selection cleared")}>
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
@@ -190,7 +191,7 @@ export default function OrderManagement() {
             </CardContent>
             
             <div className="p-4 border-t text-center">
-              <Button variant="link" className="text-blue-600 font-semibold gap-1 text-sm">
+              <Button variant="link" className="text-blue-600 font-semibold gap-1 text-sm" onClick={() => toast.info("Full orders list coming soon")}>
                 View All Orders <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
@@ -199,8 +200,8 @@ export default function OrderManagement() {
           {/* Right Side Cards */}
           <div className="lg:col-span-2 space-y-6">
             {/* AI Risk Forecast */}
-            <Card className="border-blue-100 bg-gradient-to-b from-blue-50/50 to-white shadow-sm">
-              <CardHeader className="pb-3">
+            <Card className="border-blue-100 bg-gradient-to-b from-blue-50 to-white shadow-sm">
+              <CardHeader>
                 <CardTitle className="text-base font-bold flex items-center gap-2">
                   <Bot className="h-5 w-5 text-blue-600" />
                   AI Risk Forecast
@@ -219,7 +220,7 @@ export default function OrderManagement() {
                     Fabric sourcing delay (Denim 12oz) overlaps with Line 4 scheduled maintenance. Predicted 4-day shipment delay.
                   </p>
                 </div>
-                <Button className="w-full bg-[#5c4bdf] hover:bg-[#4b3cbf] text-white">
+                <Button className="w-full bg-[#5c4bdf] hover:bg-[#4b3cbf] text-white" onClick={() => toast.info("AI mitigation analysis coming soon")}>
                   View Mitigation Options <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </CardContent>
@@ -227,7 +228,7 @@ export default function OrderManagement() {
 
             {/* Top Buyer Portfolio */}
             <Card>
-              <CardHeader className="pb-2">
+              <CardHeader>
                 <CardTitle className="text-base font-bold">Top Buyer Portfolio</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -263,14 +264,14 @@ export default function OrderManagement() {
         </div>
 
         {/* Kanban Board Area */}
-        <Card className="bg-slate-50/50">
-          <CardHeader className="flex flex-row items-center justify-between border-b pb-4 bg-white rounded-t-xl">
+        <Card className="bg-slate-50">
+          <CardHeader className="flex flex-row items-center justify-between border-b bg-white rounded-t-xl">
             <CardTitle className="text-lg font-semibold">Sampling & Development Queue</CardTitle>
-            <Button variant="ghost" size="sm" className="text-blue-600 font-semibold gap-2">
+            <Button variant="ghost" size="sm" className="text-blue-600 font-semibold gap-2" onClick={() => toast.info("Kanban filter coming soon")}>
               Filter <Filter className="h-4 w-4" />
             </Button>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               
               {/* Column 1 */}
@@ -282,7 +283,7 @@ export default function OrderManagement() {
                 
                 <Card className="border shadow-sm relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-3"><div className="w-2 h-2 rounded-full bg-amber-500"></div></div>
-                  <CardContent className="p-4">
+                  <CardContent>
                     <div className="font-mono text-xs font-semibold mb-2">HM-A992-PRT</div>
                     <div className="text-sm font-medium mb-1 text-foreground">Basic Crew Tee</div>
                     <div className="text-xs text-muted-foreground">Due: Tomorrow</div>
@@ -291,7 +292,7 @@ export default function OrderManagement() {
                 
                 <Card className="border shadow-sm relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-3"><div className="w-2 h-2 rounded-full bg-emerald-500"></div></div>
-                  <CardContent className="p-4 bg-emerald-50/30">
+                  <CardContent className="bg-emerald-50/30">
                     <div className="font-mono text-xs font-semibold mb-2 text-muted-foreground">LV-501-PRT</div>
                     <div className="text-sm font-medium mb-1 text-foreground">Denim Jacket</div>
                     <div className="text-xs text-emerald-600 font-medium">Approved 09/20</div>
@@ -309,7 +310,7 @@ export default function OrderManagement() {
                 <Card className="border-red-200 shadow-sm relative overflow-hidden">
                   <div className="absolute top-0 bottom-0 left-0 w-1 bg-red-500"></div>
                   <div className="absolute top-0 right-0 p-3"><div className="w-2 h-2 rounded-full bg-red-500"></div></div>
-                  <CardContent className="p-4 bg-red-50/30 pl-5">
+                  <CardContent className="bg-red-50/30 pl-6">
                     <div className="font-mono text-xs font-semibold mb-2 text-muted-foreground">ZR-FW24-PP</div>
                     <div className="text-sm font-medium mb-1 text-foreground">Wool Blend Coat</div>
                     <div className="text-xs text-red-600 font-medium">Rejected: Measurement Spec</div>
@@ -326,7 +327,7 @@ export default function OrderManagement() {
                 
                 <Card className="border shadow-sm relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-3"><div className="w-2 h-2 rounded-full bg-amber-500"></div></div>
-                  <CardContent className="p-4">
+                  <CardContent>
                     <div className="font-mono text-xs font-semibold mb-2 text-muted-foreground">UQ-HEAT-TOP</div>
                     <div className="text-sm font-medium mb-1 text-foreground">HeatTech Base Layer</div>
                     <div className="text-xs text-muted-foreground">Sent to buyer, pending OK</div>

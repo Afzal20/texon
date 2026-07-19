@@ -4,26 +4,28 @@ import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { 
-  Upload, FileText, CheckCircle2, AlertTriangle, Clock, 
-  Leaf, Droplets, Zap, Calendar, MoreVertical, ArrowRight
+  Upload, FileText, CheckCircle2, 
+  Leaf, Droplets, Zap, Calendar, MoreVertical,
+  AlertTriangle, XCircle
 } from "lucide-react"
+import { toast } from "sonner"
 
 const docs = [
-  { type: "Trade License",  authority: "City Corporation", expiry: "2024-12-31", status: "Valid",         statusColor: "bg-emerald-100 text-emerald-700 border-emerald-200" },
-  { type: "Fire License",   authority: "BFSCD",            expiry: "2023-11-10", status: "Expiring (14d)", statusColor: "bg-amber-100 text-amber-700 border-amber-200", expiryRed: true },
-  { type: "Env. Clearance", authority: "DoE",              expiry: "2025-06-15", status: "Valid",         statusColor: "bg-emerald-100 text-emerald-700 border-emerald-200" },
-  { type: "RSC Safety Cert", authority: "RSC",             expiry: "–",          status: "Missing Doc",   statusColor: "bg-red-100 text-red-700 border-red-200" },
+  { type: "Trade License",  authority: "City Corporation", expiry: "2024-12-31", status: "Valid",         statusColor: "bg-emerald-50 text-emerald-800 border-emerald-300",         icon: "check" },
+  { type: "Fire License",   authority: "BFSCD",            expiry: "2023-11-10", status: "Expiring (14d)", statusColor: "bg-amber-400 text-amber-950 border-amber-500 font-bold",  icon: "warning", expiryRed: true },
+  { type: "Env. Clearance", authority: "DoE",              expiry: "2025-06-15", status: "Valid",         statusColor: "bg-emerald-50 text-emerald-800 border-emerald-300",         icon: "check" },
+  { type: "RSC Safety Cert", authority: "RSC",             expiry: "–",          status: "Missing Doc",   statusColor: "bg-red-600 text-white border-red-700 font-bold",           icon: "missing" },
 ]
 
 const audits = [
-  { month: "NOV", day: "24", title: "BSCI Follow-up Audit", badge: "PENDING PREP", badgeColor: "bg-amber-100 text-amber-700 border border-amber-200", desc: "Focus on working hours & wage slip verification.", action: "Prepare Docs" },
-  { month: "DEC", day: "02", title: "Fire Safety Inspection", badge: "READY", badgeColor: "bg-emerald-100 text-emerald-700 border border-emerald-200", desc: "Annual RSC compliance check for Unit B.", action: "Docs Prepared", done: true },
+  { month: "NOV", day: "24", title: "BSCI Follow-up Audit", badge: "PENDING PREP", badgeColor: "bg-orange-50 text-orange-800 border border-orange-400 font-bold", desc: "Focus on working hours & wage slip verification.", action: "Prepare Docs" },
+  { month: "DEC", day: "02", title: "Fire Safety Inspection", badge: "READY", badgeColor: "bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold", desc: "Annual RSC compliance check for Unit B.", action: "Docs Prepared", done: true },
 ]
 
 export default function Compliance() {
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-6">
+      <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8">
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -32,10 +34,10 @@ export default function Compliance() {
             <p className="text-muted-foreground mt-1 text-sm">ESG Tracking & Export Readiness Dashboard</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2" onClick={() => toast.info("File upload dialog coming soon")}>
               <Upload className="h-4 w-4" /> Upload New Certificate
             </Button>
-            <Button className="gap-2 bg-foreground hover:bg-foreground/90 text-background">
+            <Button className="gap-2 bg-foreground hover:bg-foreground/90 text-background" onClick={() => toast.success("Compliance report generated")}>
               <FileText className="h-4 w-4" /> Generate Report
             </Button>
           </div>
@@ -43,10 +45,10 @@ export default function Compliance() {
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Total Compliance Donut */}
-          <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base font-semibold">Total Compliance</CardTitle>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => toast.info("Menu coming soon")}>
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </CardHeader>
@@ -81,7 +83,7 @@ export default function Compliance() {
           </Card>
 
           {/* AI Docu-Track */}
-          <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 -mx-5 px-0">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <span className="text-primary">✦</span> AI Docu-Track
@@ -100,7 +102,12 @@ export default function Compliance() {
                   <div className="text-muted-foreground">{d.authority}</div>
                   <div className={d.expiryRed ? "text-red-600 font-semibold" : "text-muted-foreground"}>{d.expiry}</div>
                   <div>
-                    <span className={`text-xs font-semibold px-2 py-1 rounded border ${d.statusColor}`}>{d.status}</span>
+                    <span className={`text-xs font-semibold px-2 py-1 rounded border inline-flex items-center gap-1 ${d.statusColor}`}>
+                      {d.icon === "check" && <CheckCircle2 className="h-3 w-3" />}
+                      {d.icon === "warning" && <AlertTriangle className="h-3 w-3" />}
+                      {d.icon === "missing" && <XCircle className="h-3 w-3" />}
+                      {d.status}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -110,8 +117,8 @@ export default function Compliance() {
 
         {/* ESG Metrics */}
         <div className="grid gap-4 md:grid-cols-3">
-          <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <CardHeader className="pb-2">
+          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+            <CardHeader>
               <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                 <Leaf className="h-4 w-4 text-emerald-600" /> Carbon Footprint
               </CardTitle>
@@ -127,8 +134,8 @@ export default function Compliance() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <CardHeader className="pb-2">
+          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+            <CardHeader>
               <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                 <Droplets className="h-4 w-4 text-blue-500" /> Water Recycled
               </CardTitle>
@@ -144,8 +151,8 @@ export default function Compliance() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <CardHeader className="pb-2">
+          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+            <CardHeader>
               <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                 <Zap className="h-4 w-4 text-amber-500" /> Renewable Energy Usage
               </CardTitle>
@@ -157,21 +164,21 @@ export default function Compliance() {
               </div>
               <div className="flex items-center justify-between mt-2">
                 <span className="text-xs text-muted-foreground">TARGET: 25% by 2025</span>
-                <button className="text-xs text-primary font-semibold hover:underline">View ROI →</button>
+                <button className="text-xs text-primary font-semibold hover:underline" onClick={() => toast.info("ROI details coming soon")}>View ROI →</button>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Upcoming Audits */}
-        <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
+        <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-border">
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <Calendar className="h-4 w-4 text-primary" /> Upcoming Audits
             </CardTitle>
-            <Button variant="outline" size="sm" className="text-xs">Mock Audit</Button>
+            <Button variant="outline" size="sm" className="text-xs" onClick={() => toast.info("Mock audit starting...")}>Mock Audit</Button>
           </CardHeader>
-          <CardContent className="p-6 space-y-4">
+          <CardContent className="space-y-4">
             {audits.map((a, i) => (
               <div key={i} className="flex items-start gap-4 p-4 border border-border rounded-lg hover:bg-muted/10 transition-colors">
                 <div className="bg-muted rounded-lg p-3 text-center min-w-[52px]">
@@ -189,7 +196,7 @@ export default function Compliance() {
                       <CheckCircle2 className="h-3.5 w-3.5" /> {a.action}
                     </div>
                   ) : (
-                    <Button variant="outline" size="sm" className="mt-2 h-7 text-xs gap-1">
+                    <Button variant="outline" size="sm" className="mt-2 h-7 text-xs gap-1" onClick={() => toast.info("Document preparation started")}>
                       <FileText className="h-3 w-3" /> {a.action}
                     </Button>
                   )}

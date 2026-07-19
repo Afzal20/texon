@@ -26,10 +26,13 @@ import { PanelLeftIcon } from "lucide-react"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "16rem"
+const SIDEBAR_WIDTH_PX = 256
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
+const SIDEBAR_MIN_WIDTH = 200
+const SIDEBAR_MAX_WIDTH = 500
+const SIDEBAR_WIDTH_COOKIE = "sidebar-resize-width"
 
 type SidebarContextProps = {
   state: "expanded" | "collapsed"
@@ -39,6 +42,10 @@ type SidebarContextProps = {
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
   toggleSidebar: () => void
+  sidebarWidth: number
+  setSidebarWidth: (width: number) => void
+  isResizing: boolean
+  setIsResizing: (resizing: boolean) => void
 }
 
 const SidebarContext = React.createContext<SidebarContextProps | null>(null)
@@ -50,6 +57,23 @@ function useSidebar() {
   }
 
   return context
+}
+
+function parseCookie(name: string): string | null {
+  if (typeof document === "undefined") return null
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))
+  return match ? decodeURIComponent(match[1]) : null
+}
+
+function getInitialSidebarWidth(): number {
+  const stored = parseCookie(SIDEBAR_WIDTH_COOKIE)
+  if (stored) {
+    const parsed = parseInt(stored)
+    if (!isNaN(parsed) && parsed >= SIDEBAR_MIN_WIDTH && parsed <= SIDEBAR_MAX_WIDTH) {
+      return parsed
+    }
+  }
+  return SIDEBAR_WIDTH_PX
 }
 
 function SidebarProvider({
@@ -87,6 +111,25 @@ function SidebarProvider({
     [setOpenProp, open]
   )
 
+  // Sidebar width state (resizable)
+  const [sidebarWidth, setSidebarWidthState] = React.useState<number>(SIDEBAR_WIDTH_PX)
+
+  // Read saved width from cookie before first paint to avoid flash
+  React.useLayoutEffect(() => {
+    const saved = getInitialSidebarWidth()
+    if (saved !== SIDEBAR_WIDTH_PX) {
+      setSidebarWidthState(saved)
+    }
+  }, [])
+
+  const setSidebarWidth = React.useCallback((width: number) => {
+    const clamped = Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, width))
+    setSidebarWidthState(clamped)
+    document.cookie = `${SIDEBAR_WIDTH_COOKIE}=${clamped}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+  }, [])
+
+  const [isResizing, setIsResizing] = React.useState(false)
+
   // Helper to toggle the sidebar.
   const toggleSidebar = React.useCallback(() => {
     return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open)
@@ -121,8 +164,12 @@ function SidebarProvider({
       openMobile,
       setOpenMobile,
       toggleSidebar,
+      sidebarWidth,
+      setSidebarWidth,
+      isResizing,
+      setIsResizing,
     }),
-    [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+    [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, sidebarWidth, setSidebarWidth, isResizing]
   )
 
   return (
@@ -131,7 +178,7 @@ function SidebarProvider({
         data-slot="sidebar-wrapper"
         style={
           {
-            "--sidebar-width": SIDEBAR_WIDTH,
+            "--sidebar-width": `${sidebarWidth}px`,
             "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
             ...style,
           } as React.CSSProperties
@@ -161,7 +208,7 @@ function Sidebar({
   variant?: "sidebar" | "floating" | "inset"
   collapsible?: "offcanvas" | "icon" | "none"
 }) {
-  const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+  const { isMobile, state, openMobile, setOpenMobile, isResizing } = useSidebar()
 
   if (collapsible === "none") {
     return (
@@ -217,7 +264,8 @@ function Sidebar({
       <div
         data-slot="sidebar-gap"
         className={cn(
-          "relative w-[var(--sidebar-width)] bg-transparent transition-[width] duration-200 ease-linear",
+          "relative w-[var(--sidebar-width)] bg-transparent",
+          isResizing ? "" : "transition-[width] duration-200 ease-linear",
           "group-data-[collapsible=offcanvas]:w-0",
           "group-data-[side=right]:rotate-180",
           variant === "floating" || variant === "inset"
@@ -229,7 +277,9 @@ function Sidebar({
         data-slot="sidebar-container"
         data-side={side}
         className={cn(
-          "fixed inset-y-0 z-10 hidden h-svh w-[var(--sidebar-width)] transition-[left,right,width] duration-200 ease-linear data-[side=left]:left-0 data-[side=left]:group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] data-[side=right]:right-0 data-[side=right]:group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)] md:flex",
+          "fixed inset-y-0 z-10 hidden h-svh w-[var(--sidebar-width)]",
+          isResizing ? "" : "transition-[left,right,width] duration-200 ease-linear",
+          "data-[side=left]:left-0 data-[side=left]:group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] data-[side=right]:right-0 data-[side=right]:group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)] md:flex",
           // Adjust the padding for floating and inset variants.
           variant === "floating" || variant === "inset"
             ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(1rem)+2px)]"
@@ -296,6 +346,63 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
         "[[data-side=right][data-collapsible=offcanvas]_&]:-left-2",
         className
       )}
+      {...props}
+    />
+  )
+}
+
+function SidebarResizeHandle({ className, ...props }: React.ComponentProps<"div">) {
+  const { sidebarWidth, setSidebarWidth, isMobile, state, isResizing, setIsResizing } = useSidebar()
+  const dragRef = React.useRef<{
+    startX: number
+    startWidth: number
+  } | null>(null)
+
+  React.useEffect(() => {
+    if (!isResizing) return
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!dragRef.current) return
+      const delta = e.clientX - dragRef.current.startX
+      setSidebarWidth(dragRef.current.startWidth + delta)
+    }
+
+    const onMouseUp = () => {
+      dragRef.current = null
+      setIsResizing(false)
+      document.body.style.cursor = ""
+      document.body.style.userSelect = ""
+      document.removeEventListener("mousemove", onMouseMove)
+      document.removeEventListener("mouseup", onMouseUp)
+    }
+
+    document.addEventListener("mousemove", onMouseMove)
+    document.addEventListener("mouseup", onMouseUp)
+    return () => {
+      document.removeEventListener("mousemove", onMouseMove)
+      document.removeEventListener("mouseup", onMouseUp)
+    }
+  }, [isResizing, setSidebarWidth, setIsResizing])
+
+  if (isMobile || state === "collapsed") return null
+
+  return (
+    <div
+      data-sidebar="resize-handle"
+      data-slot="sidebar-resize-handle"
+      className={cn(
+        "absolute inset-y-0 right-0 z-30 w-1 cursor-col-resize transition-colors",
+        "hover:bg-primary/30 active:bg-primary/50",
+        isResizing && "bg-primary/40",
+        className
+      )}
+      onMouseDown={(e) => {
+        e.preventDefault()
+        dragRef.current = { startX: e.clientX, startWidth: sidebarWidth }
+        setIsResizing(true)
+        document.body.style.cursor = "col-resize"
+        document.body.style.userSelect = "none"
+      }}
       {...props}
     />
   )
@@ -696,6 +803,7 @@ export {
   SidebarMenuSubItem,
   SidebarProvider,
   SidebarRail,
+  SidebarResizeHandle,
   SidebarSeparator,
   SidebarTrigger,
   useSidebar,

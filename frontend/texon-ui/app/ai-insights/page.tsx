@@ -3,12 +3,13 @@
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Sparkles, BrainCircuit, TrendingUp, AlertTriangle, ArrowRight, Activity, Zap } from "lucide-react"
+import { Sparkles, BrainCircuit, TrendingUp, AlertTriangle, Activity, Zap } from "lucide-react"
+import { toast } from "sonner"
 
 export default function AiInsights() {
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-6">
+      <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8">
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -19,7 +20,7 @@ export default function AiInsights() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="gap-2 border-primary/20 text-primary hover:bg-accent">
+            <Button variant="outline" className="gap-2 border-primary/20 text-primary hover:bg-accent" onClick={() => toast.info("Deep analysis running...")}>
               <Activity className="h-4 w-4" /> Run Deep Analysis
             </Button>
           </div>
@@ -30,7 +31,7 @@ export default function AiInsights() {
           
           <Card className="bg-white border-red-200 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 bottom-0 left-0 w-1.5 bg-red-500" />
-            <CardContent className="p-6">
+            <CardContent>
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-2">
                   <div className="bg-red-100 p-2 rounded-md">
@@ -50,7 +51,7 @@ export default function AiInsights() {
                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Recommended Mitigation</h4>
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium text-foreground">Re-route cutting batch #45A to Line 02</span>
-                  <Button size="sm" className="bg-primary hover:bg-primary/90 text-white h-7 text-xs px-4">Execute</Button>
+                  <Button size="sm" onClick={() => toast.success("Mitigation executed")} className="bg-primary hover:bg-primary/90 text-white h-7 text-xs px-4">Execute</Button>
                 </div>
               </div>
             </CardContent>
@@ -58,7 +59,7 @@ export default function AiInsights() {
 
           <Card className="bg-white border-blue-200 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 bottom-0 left-0 w-1.5 bg-blue-500" />
-            <CardContent className="p-6">
+            <CardContent>
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-2">
                   <div className="bg-blue-100 p-2 rounded-md">
@@ -78,7 +79,7 @@ export default function AiInsights() {
                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Recommended Mitigation</h4>
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium text-foreground">Adjust Finishing Schedule (-$450/week)</span>
-                  <Button size="sm" className="bg-primary hover:bg-primary/90 text-white h-7 text-xs px-4">Review Schedule</Button>
+                  <Button size="sm" onClick={() => toast.info("Schedule review coming soon")} className="bg-primary hover:bg-primary/90 text-white h-7 text-xs px-4">Review Schedule</Button>
                 </div>
               </div>
             </CardContent>
@@ -91,13 +92,13 @@ export default function AiInsights() {
         <div className="grid gap-6 md:grid-cols-3">
           
           {/* Production */}
-          <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <CardHeader className="pb-3 border-b border-border">
+          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+            <CardHeader className="border-b border-border">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-emerald-600" /> Production Efficiency
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 space-y-4">
+            <CardContent className="space-y-4">
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold text-foreground">Line 01 Outperforming</h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -107,21 +108,21 @@ export default function AiInsights() {
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold text-foreground">Defect Rate Anomaly</h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Sudden 2.4% spike in "Uneven Stitching" defects on Machine #442. Recommend immediate maintenance check.
+                  Sudden 2.4% spike in &quot;Uneven Stitching&quot; defects on Machine #442. Recommend immediate maintenance check.
                 </p>
               </div>
-              <Button variant="link" className="px-0 h-auto text-primary font-semibold text-xs">View all Production Insights →</Button>
+              <Button variant="link" onClick={() => toast.info("Full insights coming soon")} className="px-0 h-auto text-primary font-semibold text-xs">View all Production Insights →</Button>
             </CardContent>
           </Card>
 
           {/* Inventory */}
-          <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <CardHeader className="pb-3 border-b border-border">
+          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+            <CardHeader className="border-b border-border">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <BrainCircuit className="h-4 w-4 text-indigo-600" /> Inventory & Supply
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 space-y-4">
+            <CardContent className="space-y-4">
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold text-foreground">Deadstock Risk</h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -131,21 +132,21 @@ export default function AiInsights() {
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold text-foreground">Lead Time Prediction</h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Supplier "Trims Co" is trending 3 days late on average for metal zippers. Adjust buffer stock for Q3 orders.
+                  Supplier &quot;Trims Co&quot; is trending 3 days late on average for metal zippers. Adjust buffer stock for Q3 orders.
                 </p>
               </div>
-              <Button variant="link" className="px-0 h-auto text-primary font-semibold text-xs">View all Inventory Insights →</Button>
+              <Button variant="link" onClick={() => toast.info("Full insights coming soon")} className="px-0 h-auto text-primary font-semibold text-xs">View all Inventory Insights →</Button>
             </CardContent>
           </Card>
 
           {/* Costing */}
-          <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <CardHeader className="pb-3 border-b border-border">
+          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+            <CardHeader className="border-b border-border">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-amber-500" /> Cost Optimization
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 space-y-4">
+            <CardContent className="space-y-4">
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold text-foreground">Marker Efficiency</h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -158,7 +159,7 @@ export default function AiInsights() {
                   Current scheduling trajectory suggests a 15% overrun in overtime budget for Unit 04 this month.
                 </p>
               </div>
-              <Button variant="link" className="px-0 h-auto text-primary font-semibold text-xs">View all Cost Insights →</Button>
+              <Button variant="link" onClick={() => toast.info("Full insights coming soon")} className="px-0 h-auto text-primary font-semibold text-xs">View all Cost Insights →</Button>
             </CardContent>
           </Card>
 

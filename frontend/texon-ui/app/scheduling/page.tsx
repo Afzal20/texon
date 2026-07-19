@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Sparkles, Users, AlertTriangle, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 type ShiftCell = {
   shift: string
@@ -74,7 +75,7 @@ const available = [
 export default function Scheduling() {
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-6">
+      <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8">
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -83,8 +84,8 @@ export default function Scheduling() {
             <p className="text-muted-foreground mt-1 text-sm">Week 42: Oct 16 – Oct 22, 2023</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="gap-2"><Plus className="h-4 w-4" /> Create Manual Shift</Button>
-            <Button className="gap-2 bg-primary hover:bg-primary/90 text-white">
+            <Button variant="outline" className="gap-2" onClick={() => toast.info("Shift creation form coming soon")}><Plus className="h-4 w-4" /> Create Manual Shift</Button>
+            <Button className="gap-2 bg-primary hover:bg-primary/90 text-white" onClick={() => toast.success("AI schedule generated")}>
               <Sparkles className="h-4 w-4" /> Generate Auto-Schedule
             </Button>
           </div>
@@ -92,8 +93,8 @@ export default function Scheduling() {
 
         {/* KPI Cards */}
         <div className="grid gap-4 md:grid-cols-3">
-          <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Workers Scheduled</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground/40" />
             </CardHeader>
@@ -102,8 +103,8 @@ export default function Scheduling() {
               <p className="text-xs text-primary font-semibold flex items-center gap-1 mt-2">↑ +4%</p>
             </CardContent>
           </Card>
-          <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Night Shift Load</CardTitle>
             </CardHeader>
             <CardContent>
@@ -117,7 +118,7 @@ export default function Scheduling() {
             </CardContent>
           </Card>
           <Card className="bg-white border-red-100 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Unassigned Staff</CardTitle>
               <AlertTriangle className="h-4 w-4 text-red-400" />
             </CardHeader>
@@ -131,7 +132,7 @@ export default function Scheduling() {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Schedule Table */}
           <Card className="lg:col-span-2 bg-white border-border shadow-sm overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-3">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border">
               <CardTitle className="text-base font-semibold">Department Schedule</CardTitle>
               <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground">
                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-primary/30 inline-block border border-primary/40"/>Day</span>
@@ -182,14 +183,14 @@ export default function Scheduling() {
           </Card>
 
           {/* Available for Assignment */}
-          <Card className="bg-white/80 backdrop-blur-md border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <CardHeader className="border-b border-border pb-3">
+          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+            <CardHeader className="border-b border-border">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-semibold">Available for Assignment</CardTitle>
                 <span className="text-xs font-bold bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full">12</span>
               </div>
             </CardHeader>
-            <CardContent className="p-4 space-y-3">
+            <CardContent className="space-y-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input placeholder="Filter staff..." className="pl-8 h-8 text-xs" />
@@ -204,10 +205,10 @@ export default function Scheduling() {
                   <span className={`text-[10px] font-bold px-2 py-1 rounded border ${staff.gradeColor}`}>{staff.grade}</span>
                 </div>
               ))}
-              <button className="w-full text-xs text-primary font-semibold py-2 border border-dashed border-primary/30 rounded-lg hover:bg-accent/50 transition-colors">
+              <button className="w-full text-xs text-primary font-semibold py-2 border border-dashed border-primary/30 rounded-lg hover:bg-accent/50 transition-colors" onClick={() => toast.info("Showing all unassigned staff")}>
                 + 9 more unassigned
               </button>
-              <Button className="w-full bg-foreground hover:bg-foreground/90 text-background text-xs font-bold">
+              <Button className="w-full bg-foreground hover:bg-foreground/90 text-background text-xs font-bold" onClick={() => toast.success("Staff auto-assigned successfully")}>
                 Auto-Assign Remaining
               </Button>
             </CardContent>

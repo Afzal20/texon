@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Filter, AlertTriangle, ZoomIn, ZoomOut } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 const days = [
   { day: "MON", date: "12", isToday: false },
@@ -43,15 +44,15 @@ const units: Unit[] = [
         name: "Cutting Line A1",
         cap: "Cap: 5000 pcs/day",
         bars: [
-          { po: "PO-9921: Denim", label: "Qty: 10,000", color: "bg-gradient-to-r from-slate-800 to-slate-900 text-white", startDay: 0, spanDays: 1.5 },
-          { po: "PO-9922: Chinos", color: "bg-gradient-to-r from-slate-800 to-slate-900 text-white", startDay: 1.5, spanDays: 3.5 },
+          { po: "PO-9921: Denim", label: "Qty: 10,000", color: "bg-gradient-to-r from-slate-600 to-slate-700 text-white", startDay: 0, spanDays: 1.5 },
+          { po: "PO-9922: Chinos", color: "bg-gradient-to-r from-slate-600 to-slate-700 text-white", startDay: 1.5, spanDays: 3.5 },
         ],
       },
       {
         name: "Sewing Line S1 (Auto)",
         cap: "Cap: 1200 pcs/day",
         bars: [
-          { po: "PO-9921: Denim", label: "Sewing • Auto", color: "bg-gradient-to-r from-slate-800 to-slate-900 text-white", startDay: 1, spanDays: 2 },
+          { po: "PO-9921: Denim", label: "Sewing • Auto", color: "bg-gradient-to-r from-slate-400 to-slate-500 text-white", startDay: 1, spanDays: 2 },
         ],
       },
       {
@@ -59,7 +60,7 @@ const units: Unit[] = [
         cap: "Cap: 1000 pcs/day",
         alert: true,
         bars: [
-          { po: "PO-8810: Jackets", color: "bg-gradient-to-r from-slate-800 to-slate-900 text-white", startDay: 2.5, spanDays: 1.5 },
+          { po: "PO-8810: Jackets", color: "bg-gradient-to-r from-slate-400 to-slate-500 text-white", startDay: 2.5, spanDays: 1.5 },
           { po: "PO-9930 (RUSH)", color: "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-red-200 shadow-md", startDay: 4, spanDays: 1, rush: true },
         ],
       },
@@ -67,7 +68,7 @@ const units: Unit[] = [
         name: "Finishing Station F1",
         cap: "Cap: 6000 pcs/day",
         bars: [
-          { po: "PO-9921: Denim", label: "Finishing & Pack", color: "bg-gradient-to-r from-primary to-indigo-600 text-white", startDay: 3, spanDays: 2 },
+          { po: "PO-9921: Denim", label: "Finishing & Pack", color: "bg-gradient-to-r from-violet-500 to-purple-600 text-white", startDay: 3, spanDays: 2 },
         ],
       },
     ],
@@ -79,14 +80,14 @@ const units: Unit[] = [
         name: "Sewing Line K1",
         cap: "Cap: 2500 pcs/day",
         bars: [
-          { po: "PO-7744: Basic Tees (Continuous)", color: "bg-gradient-to-r from-slate-800 to-slate-900 text-white", startDay: 0, spanDays: 5 },
+          { po: "PO-7744: Basic Tees (Continuous)", color: "bg-gradient-to-r from-slate-400 to-slate-500 text-white", startDay: 0, spanDays: 5 },
         ],
       },
       {
         name: "Sewing Line K2",
         cap: "Cap: 2500 pcs/day",
         bars: [
-          { po: "PO-7750: Polos", color: "bg-gradient-to-r from-slate-800 to-slate-900 text-white", startDay: 1, spanDays: 3 },
+          { po: "PO-7750: Polos", color: "bg-gradient-to-r from-slate-400 to-slate-500 text-white", startDay: 1, spanDays: 3 },
         ],
       },
     ],
@@ -116,6 +117,7 @@ function GanttRow({ line }: { line: Line }) {
                 bar.color
               )}
               style={{ left: `${left}%`, width: `calc(${width}% - 4px)`, marginLeft: "2px" }}
+              onClick={() => toast.info("Opening order details...")}
             >
               <div className="font-bold truncate">{bar.po}</div>
               {bar.label && <div className="text-[10px] font-medium opacity-80 mt-0.5">{bar.label}</div>}
@@ -130,7 +132,7 @@ function GanttRow({ line }: { line: Line }) {
 export default function ProductionPlanning() {
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-6">
+      <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8">
 
         {/* Header */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -144,22 +146,22 @@ export default function ProductionPlanning() {
               <h2 className="text-lg font-bold text-foreground">Weekly Plan: Nov 12 – Nov 18</h2>
             </div>
             <div className="h-5 w-px bg-border" />
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8">
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={() => toast.info("Filter panel coming soon")}>
               <Filter className="h-3.5 w-3.5" /> Filter
             </Button>
             {/* Legend */}
             <div className="flex items-center gap-3 text-xs font-medium">
-              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-foreground inline-block"/>Cutting</span>
-              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-foreground/60 inline-block"/>Sewing</span>
-              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-primary inline-block"/>Finishing</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-gradient-to-r from-slate-600 to-slate-700 inline-block"/>Cutting</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-gradient-to-r from-slate-400 to-slate-500 inline-block"/>Sewing</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-gradient-to-r from-violet-500 to-purple-600 inline-block"/>Finishing</span>
             </div>
             <Badge variant="destructive" className="gap-1 text-xs">
               <AlertTriangle className="h-3 w-3" /> Conflict Detected
             </Badge>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" className="h-8 w-8"><ZoomIn className="h-4 w-4" /></Button>
-            <Button variant="outline" size="icon" className="h-8 w-8"><ZoomOut className="h-4 w-4" /></Button>
+            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => toast.info("Zoomed in")}><ZoomIn className="h-4 w-4" /></Button>
+            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => toast.info("Zoomed out")}><ZoomOut className="h-4 w-4" /></Button>
           </div>
         </div>
 
