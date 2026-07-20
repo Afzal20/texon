@@ -1,31 +1,59 @@
 "use client"
 
+import * as React from "react"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { 
+import {
   TrendingUp, AlertTriangle, Search,
   MoreVertical, FileText, Table2, ArrowRight, Lightbulb
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { TrendChart } from "@/components/dashboard/TrendChart"
-
-const lines = [
-  { line: "Line 01", supervisor: "R. Ahmed", eff: "82.4%", effVal: 82.4, order: "PO-9921 (T-Shirts)", status: "On-Track", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200" },
-  { line: "Line 02", supervisor: "S. Begum",  eff: "76.1%", effVal: 76.1, order: "PO-9921 (T-Shirts)", status: "On-Track", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200" },
-  { line: "Line 03", supervisor: "M. Rahman", eff: "68.5%", effVal: 68.5, order: "PO-1045 (Hoodies)", status: "At-Risk",  statusColor: "text-amber-700 bg-amber-50 border-amber-200" },
-  { line: "Line 04", supervisor: "K. Hasan",  eff: "54.2%", effVal: 54.2, order: "PO-1045 (Hoodies)", status: "Behind",   statusColor: "text-red-700 bg-red-50 border-red-200" },
-  { line: "Line 05", supervisor: "F. Islam",  eff: "79.0%", effVal: 79.0, order: "PO-8830 (Denim)",   status: "On-Track", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200" },
-]
+import { getProductionLines, getSewingRecords, getPerformanceRecords } from "@/lib/data/production-actions"
+import type { ProductionLine, SewingRecord, PerformanceRecord } from "@/lib/data/production"
 
 export default function Performance() {
+  const [lines, setLines] = React.useState<ProductionLine[]>([])
+  const [sewingRecords, setSewingRecords] = React.useState<SewingRecord[]>([])
+  const [performanceRecords, setPerformanceRecords] = React.useState<PerformanceRecord[]>([])
+  const [search, setSearch] = React.useState("")
+
+  React.useEffect(() => {
+    getProductionLines().then(setLines).catch(() => {})
+    getSewingRecords().then(setSewingRecords).catch(() => {})
+    getPerformanceRecords().then(setPerformanceRecords).catch(() => {})
+  }, [])
+
+  const lineEfficiency = lines.map(line => {
+    const records = sewingRecords.filter(r => r.production_line === line.id)
+    const avgEff = records.length > 0
+      ? records.reduce((s, r) => s + (r.efficiency || 0), 0) / records.length
+      : 0
+    return { line, efficiency: avgEff }
+  })
+
+  const oee = lineEfficiency.length > 0
+    ? lineEfficiency.reduce((s, l) => s + l.efficiency, 0) / lineEfficiency.length
+    : 0
+  const totalOutput = sewingRecords.reduce((s, r) => s + (r.output_quantity || 0), 0)
+  const totalInput = sewingRecords.reduce((s, r) => s + (r.input_quantity || 0), 0)
+  const totalDefects = sewingRecords.reduce((s, r) => s + (r.defect_quantity || 0), 0)
+  const dhu = totalOutput > 0 ? ((totalDefects / totalOutput) * 100).toFixed(1) : "0"
+  const outputPct = totalInput > 0 ? Math.round((totalOutput / totalInput) * 100) : 0
+
+  const filteredLines = search
+    ? lineEfficiency.filter(l =>
+        l.line.name.toLowerCase().includes(search.toLowerCase())
+      )
+    : lineEfficiency
+
   return (
     <AppLayout>
       <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8">
 
-        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">Performance Reports</h2>
@@ -33,9 +61,9 @@ export default function Performance() {
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <div className="flex rounded-lg border border-border overflow-hidden text-xs font-medium">
-              <button className="px-3 py-2 bg-foreground text-background" onClick={() => toast.info("Showing today's data")}>Today</button>
-              <button className="px-3 py-2 hover:bg-muted transition-colors" onClick={() => toast.info("Showing weekly data")}>This Week</button>
-              <button className="px-3 py-2 hover:bg-muted transition-colors" onClick={() => toast.info("Custom date picker coming soon")}>Custom</button>
+              <button className="px-3 py-2 bg-foreground text-background">Today</button>
+              <button className="px-3 py-2 hover:bg-muted transition-colors">This Week</button>
+              <button className="px-3 py-2 hover:bg-muted transition-colors">Custom</button>
             </div>
             <Button variant="outline" size="sm" className="gap-1.5 text-xs h-9" onClick={() => toast.success("PDF report downloaded")}>
               <FileText className="h-3.5 w-3.5" /> PDF
@@ -46,13 +74,12 @@ export default function Performance() {
           </div>
         </div>
 
-        {/* KPI Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[
-            { label: "Overall Equip. Eff. (OEE)", value: "78.4", unit: "%", trend: "+2.1% vs last week", trendUp: true },
-            { label: "Output (Target vs Actual)", value: "12,450", unit: "/ 13,000", sub: "95.7%", bar: 95.7 },
-            { label: "DHU Rate", value: "3.2", unit: "defects/100", trend: "+0.5 vs target (2.7)", trendUp: false, trendRed: true },
-            { label: "Downtime", value: "145", unit: "mins", note: "Major: Line 04 (45m)" },
+            { label: "Overall Equip. Eff. (OEE)", value: oee.toFixed(1), unit: "%", trend: `${(oee > 70 ? "+" : "")}${(oee - 75).toFixed(1)}% vs target`, trendUp: oee >= 75 },
+            { label: "Output (Target vs Actual)", value: totalOutput.toLocaleString(), unit: `/ ${totalInput.toLocaleString()}`, sub: `${outputPct}%`, bar: outputPct },
+            { label: "DHU Rate", value: dhu, unit: "defects/100", trend: `${parseFloat(dhu) > 3 ? "+" : ""}${dhu} vs target (3.0)`, trendUp: false, trendRed: parseFloat(dhu) > 3 },
+            { label: "Active Lines", value: String(lines.length), unit: "lines", note: `${sewingRecords.length} records today` },
           ].map((kpi, i) => (
             <Card key={i} className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
               <CardHeader className="flex flex-row items-start justify-between space-y-0">
@@ -65,14 +92,14 @@ export default function Performance() {
                   <div className="text-3xl font-bold text-foreground">{kpi.value}</div>
                   <div className="text-sm text-muted-foreground">{kpi.unit}</div>
                 </div>
-                {kpi.bar && (
+                {"bar" in kpi && (
                   <div className="mt-2">
                     <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                       <div className="h-full bg-foreground rounded-full" style={{ width: `${kpi.bar}%` }} />
                     </div>
                   </div>
                 )}
-                {kpi.trend && (
+                {"trend" in kpi && (
                   <p className={cn("text-xs font-semibold flex items-center gap-1 mt-2",
                     kpi.trendRed ? "text-red-600" : "text-primary"
                   )}>
@@ -80,21 +107,19 @@ export default function Performance() {
                     {kpi.trend}
                   </p>
                 )}
-                {kpi.note && (
+                {"note" in kpi && (
                   <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                     <AlertTriangle className="h-3 w-3 shrink-0" />{kpi.note}
                   </p>
                 )}
-                {kpi.sub && !kpi.bar && <p className="text-xs text-muted-foreground mt-2">{kpi.sub}</p>}
+                {"sub" in kpi && !("bar" in kpi) && <p className="text-xs text-muted-foreground mt-2">{kpi.sub}</p>}
               </CardContent>
             </Card>
           ))}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* Left: Chart + Table */}
           <div className="lg:col-span-2 space-y-6">
-            {/* 30-Day Trend */}
             <Card className="bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-base font-semibold">30-Day Production Trend</CardTitle>
@@ -109,116 +134,101 @@ export default function Performance() {
               </CardContent>
             </Card>
 
-            {/* Line-wise Efficiency Table */}
             <Card className="bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300 -mx-5 px-0">
               <CardHeader className="flex flex-row items-center justify-between border-b border-border">
                 <CardTitle className="text-base font-semibold">Line-wise Efficiency</CardTitle>
                 <div className="relative w-48">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                  <Input placeholder="Filter lines..." className="pl-8 h-8 text-xs" />
+                  <Input
+                    placeholder="Filter lines..."
+                    className="pl-8 h-8 text-xs"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
                 </div>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="grid grid-cols-[1fr_1fr_1fr_1.5fr_1fr] text-xs font-bold text-muted-foreground uppercase tracking-wider px-6 py-3 border-b border-border bg-muted/20">
                   <div>Sewing Line</div>
-                  <div>Supervisor</div>
+                  <div>Code</div>
                   <div>Efficiency %</div>
-                  <div>Active Order</div>
+                  <div>Capacity</div>
                   <div>Status</div>
                 </div>
-                {lines.map((l, i) => (
+                {filteredLines.length === 0 && (
+                  <div className="px-6 py-8 text-center text-sm text-muted-foreground">
+                    No production lines loaded.
+                  </div>
+                )}
+                {filteredLines.map(({ line, efficiency }) => (
                   <div
-                    key={i}
+                    key={line.id}
                     className="grid grid-cols-[1fr_1fr_1fr_1.5fr_1fr] items-center px-6 py-4 border-b border-border last:border-0 hover:bg-muted/10 transition-colors text-sm"
                   >
-                    <div className="font-mono font-semibold text-foreground">{l.line}</div>
-                    <div className="text-muted-foreground">{l.supervisor}</div>
-                    <div className={cn("font-bold", l.effVal >= 75 ? "text-primary" : l.effVal >= 65 ? "text-amber-600" : "text-red-600")}>
-                      {l.eff}
+                    <div className="font-mono font-semibold text-foreground">{line.name}</div>
+                    <div className="text-muted-foreground">{line.code}</div>
+                    <div className={cn("font-bold", efficiency >= 75 ? "text-primary" : efficiency >= 60 ? "text-amber-600" : "text-red-600")}>
+                      {efficiency.toFixed(1)}%
                     </div>
-                    <div className="text-xs text-muted-foreground font-mono">{l.order}</div>
+                    <div className="text-xs text-muted-foreground font-mono">{line.capacity}/day</div>
                     <div>
-                      <span className={cn("text-xs font-semibold px-2 py-1 rounded border", l.statusColor)}>
-                        {l.status}
+                      <span className={cn("text-xs font-semibold px-2 py-1 rounded border",
+                        line.is_active ? "text-emerald-700 bg-emerald-50 border-emerald-200" : "text-gray-700 bg-gray-50 border-gray-200"
+                      )}>
+                        {line.is_active ? "Active" : "Inactive"}
                       </span>
                     </div>
                   </div>
                 ))}
-                <div className="p-4 text-center border-t border-border">
-                  <Button variant="link" className="text-primary font-semibold text-sm gap-1" onClick={() => toast.info("Full lines list coming soon")}>
-                    View All 10 Lines <ArrowRight className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
+                {filteredLines.length > 0 && (
+                  <div className="p-4 text-center border-t border-border">
+                    <Button variant="link" className="text-primary font-semibold text-sm gap-1" onClick={() => toast.info("Full lines list coming soon")}>
+                      View All {lines.length} Lines <ArrowRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
 
-          {/* Right: AI Insights */}
           <div className="space-y-4">
             <Card className="bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
               <CardHeader className="border-b border-border">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                  AI Efficiency Insights
+                  Performance Insights
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Critical */}
-                <div className="border-l-4 border-red-500 pl-3 space-y-2">
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
-                    <div>
-                      <div className="text-sm font-bold text-red-800">Critical Bottleneck: Line 04</div>
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                        Efficiency dropped to 54.2% due to <strong>Fabric Delay (Batch #44B)</strong> at the cutting section.
-                      </p>
+                {lineEfficiency.filter(l => l.efficiency < 65).length > 0 && (
+                  <div className="border-l-4 border-red-500 pl-3 space-y-2">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="text-sm font-bold text-red-800">Lines Below Target</div>
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                          {lineEfficiency.filter(l => l.efficiency < 65).length} line(s) operating below 65% efficiency. Review resource allocation.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <div className="bg-white border border-indigo-100/50 shadow-sm hover:shadow-md transition-shadow duration-300 rounded-md p-3">
-                    <div className="text-[11px] font-bold text-primary mb-1.5 uppercase tracking-wide">AI Recommendation</div>
-                    <p className="text-xs text-foreground/80 leading-relaxed">
-                      Re-route cutting batch #45A to Line 04 temporarily to minimize idle time. Estimated recovery: +12% efficiency today.
-                    </p>
-                    <Button size="sm" className="mt-3 h-7 text-xs font-semibold w-full bg-primary hover:bg-primary/90" onClick={() => toast.success("Re-route executed successfully")}>
-                      Execute Re-route
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Optimization */}
-                <div className="border-l-4 border-primary pl-3">
-                  <div className="flex items-start gap-2">
-                    <Lightbulb className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                    <div>
-                      <div className="text-sm font-bold text-foreground">Optimization Opportunity</div>
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                        Line 01 is overperforming (+6% vs target). Supervisor R. Ahmed has optimized the sleeve attachment process.
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                        Consider documenting this process variation for Line 02 &amp; 03 to improve overall floor OEE by projected 1.5%.
-                      </p>
+                )}
+                {lineEfficiency.filter(l => l.efficiency >= 90).length > 0 && (
+                  <div className="border-l-4 border-primary pl-3">
+                    <div className="flex items-start gap-2">
+                      <Lightbulb className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <div className="text-sm font-bold text-foreground">Optimization Opportunity</div>
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                          {lineEfficiency.filter(l => l.efficiency >= 90).length} line(s) are overperforming. Consider documenting best practices.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Floor Activity Heatmap */}
-            <Card className="bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
-              <CardHeader className="border-b border-border">
-                <CardTitle className="text-sm font-semibold text-muted-foreground">Floor Activity Heatmap (Last Hour)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-8 gap-0.5 h-20">
-                  {Array.from({ length: 40 }).map((_, i) => {
-                    // Predefined pseudo-random intensities to avoid Next.js hydration errors
-                    const intensities = [0.8, 0.2, 0.5, 0.9, 0.1, 0.3, 0.6, 0.4, 0.7, 0.2, 0.8, 0.5, 0.1, 0.9, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8, 0.5, 0.9, 0.1, 0.3, 0.6, 0.4, 0.7, 0.2, 0.8, 0.5, 0.1, 0.9, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8, 0.5, 0.9]
-                    const intensity = intensities[i]
-                    const bg = intensity > 0.7 ? "bg-red-300" : intensity > 0.4 ? "bg-primary/30" : "bg-muted"
-                    return <div key={i} className={cn("rounded-[2px]", bg)} />
-                  })}
-                </div>
-                <p className="text-[10px] text-muted-foreground text-center mt-2 font-medium">Live Floor Data Syncing...</p>
+                )}
+                {lineEfficiency.length === 0 && (
+                  <p className="text-xs text-muted-foreground">No data available yet.</p>
+                )}
               </CardContent>
             </Card>
           </div>

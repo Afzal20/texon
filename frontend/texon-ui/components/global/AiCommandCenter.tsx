@@ -5,13 +5,7 @@ import { Sparkles, Send, X, Loader2, ArrowUpRight, Bot, User } from "lucide-reac
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-
-interface Message {
-  id: string
-  role: "user" | "assistant"
-  content: string
-  timestamp: Date
-}
+import { useAiChat } from "@/hooks/use-ai-chat"
 
 const SUGGESTIONS = [
   {
@@ -39,11 +33,12 @@ const SUGGESTIONS = [
 export function AiCommandCenter() {
   const [open, setOpen] = React.useState(false)
   const [input, setInput] = React.useState("")
-  const [messages, setMessages] = React.useState<Message[]>([])
-  const [isTyping, setIsTyping] = React.useState(false)
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const inputRef = React.useRef<HTMLInputElement>(null)
   const panelRef = React.useRef<HTMLDivElement>(null)
+  const initializedRef = React.useRef(false)
+
+  const { messages, isTyping, error, send, clear, connect, disconnect } = useAiChat()
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -81,6 +76,16 @@ export function AiCommandCenter() {
   }, [open])
 
   React.useEffect(() => {
+    if (open && !initializedRef.current) {
+      initializedRef.current = true
+      connect()
+    }
+    if (!open) {
+      disconnect()
+    }
+  }, [open, connect, disconnect])
+
+  React.useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
@@ -90,27 +95,8 @@ export function AiCommandCenter() {
     const text = (prompt ?? input).trim()
     if (!text || isTyping) return
 
-    const userMsg: Message = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content: text,
-      timestamp: new Date(),
-    }
-
-    setMessages((prev) => [...prev, userMsg])
     setInput("")
-    setIsTyping(true)
-
-    setTimeout(() => {
-      const aiMsg: Message = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: generateResponse(text),
-        timestamp: new Date(),
-      }
-      setMessages((prev) => [...prev, aiMsg])
-      setIsTyping(false)
-    }, 1200 + Math.random() * 800)
+    send(text)
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -124,7 +110,6 @@ export function AiCommandCenter() {
     <>
       {open && (
         <div ref={panelRef} className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-full max-w-lg h-[680px] flex flex-col rounded-2xl border bg-white shadow-2xl overflow-hidden z-[200] animate-in slide-in-from-bottom-4 fade-in duration-200">
-            {/* Header */}
             <div className="flex items-center justify-between px-5 py-3.5 border-b bg-white shrink-0">
               <div className="flex items-center gap-3">
                 <div className="flex items-center justify-center size-9 rounded-xl bg-primary/10">
@@ -149,12 +134,18 @@ export function AiCommandCenter() {
               </Button>
             </div>
 
-            {/* Messages */}
             <div
               ref={scrollRef}
               className="flex-1 overflow-y-auto px-5 py-4 space-y-4"
             >
-              {messages.length === 0 && (
+              {error && (
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
+                  <span className="size-1.5 rounded-full bg-red-500 shrink-0" />
+                  {error}
+                </div>
+              )}
+
+              {messages.length === 0 && !error && (
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <div className="flex items-center justify-center size-14 rounded-2xl bg-primary/10 mb-4">
                     <Bot className="size-7 text-primary" />
@@ -202,7 +193,7 @@ export function AiCommandCenter() {
                   )}
                   <div
                     className={cn(
-                      "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+                      "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap",
                       msg.role === "user"
                         ? "bg-primary text-primary-foreground rounded-br-md"
                         : "bg-muted text-foreground rounded-bl-md",
@@ -234,7 +225,6 @@ export function AiCommandCenter() {
               )}
             </div>
 
-            {/* Input */}
             <div className="border-t px-4 py-3 bg-white shrink-0">
               <div className="flex items-center gap-2">
                 <Input
@@ -271,19 +261,4 @@ export function AiCommandCenter() {
       )}
     </>
   )
-}
-
-function generateResponse(query: string): string {
-  const lower = query.toLowerCase()
-  if (lower.includes("production") || lower.includes("output"))
-    return "Today's production output is at 12,450 units across 6 active lines. Line 3 is leading with 3,200 units (94% efficiency). Line 5 is slightly behind target due to a brief downtime event at 10:15 AM. Overall OEE is at 78.3%, up 2.1% from yesterday."
-  if (lower.includes("risk") || lower.includes("bottleneck"))
-    return "I've identified 2 bottleneck risks: (1) PO-84920 (H&M) has an 82% delay risk due to Dyeing Unit 3 capacity constraints. (2) PO-85012 (Zara) fabric sourcing for Denim 12oz is 4 days behind schedule. I recommend reassigning Line 7 to cover the Zara order after Line 5 completes its current batch."
-  if (lower.includes("inventory") || lower.includes("fabric"))
-    return "Current fabric inventory summary: Cotton jersey (180gsm) — 12,400m in stock, reorder at 8,000m. Denim 12oz — 3,200m remaining (critical for PO-85012). 3 deadstock alerts flagged for surplus polyester blend (8,500m, aged 90+ days). I recommend initiating a markdown sale or contacting buyers for uptake."
-  if (lower.includes("hr") || lower.includes("attendance"))
-    return "Today's attendance: 892 out of 940 employees checked in (94.9%). Cutting department at 97.2%, Sewing at 93.8%, Finishing at 91.4%. 12 employees on approved leave, 3 unexcused absences flagged. Shift B starts at 2:00 PM with expected 100% coverage."
-  if (lower.includes("compliance") || lower.includes("audit"))
-    return "Compliance status: 2 upcoming audits — OEKO-TEX recertification (Oct 28) and buyer audit by H&M (Nov 5). Current score: 87/100. 3 open audit findings from the last SEDEX audit need corrective action by Nov 1. ESG metrics are within target except water recycling (currently at 62%, target 75%)."
-  return `Based on your query about "${query}", here's what I found: The Texon ERP system has the latest data available. To give you a more specific answer, could you provide more details such as a specific order number, line ID, or date range? I can pull up detailed analytics for any aspect of your factory operations.`
 }

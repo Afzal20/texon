@@ -12,10 +12,10 @@ export function BuyersKpiCards({ buyers }: BuyersKpiCardsProps) {
   const ratedBuyers = buyers.filter((b) => b.rating)
   const avgRating =
     ratedBuyers.length > 0
-      ? ratedBuyers.reduce((sum, b) => sum + (b.rating?.rating ?? 0), 0) /
+      ? ratedBuyers.reduce((sum, b) => sum + Number(b.rating?.rating ?? 0), 0) /
         ratedBuyers.length
       : 0
-  const topRated = ratedBuyers.filter((b) => (b.rating?.rating ?? 0) >= 4.5).length
+  const topRated = ratedBuyers.filter((b) => Number(b.rating?.rating ?? 0) >= 4.5).length
 
   const kpis = [
     {

@@ -280,8 +280,10 @@ function noticeClass(tone: WorkspaceConfig["notices"][number]["tone"]) {
   return tone === "rose" ? "border-rose-200 bg-rose-50" : tone === "emerald" ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"
 }
 
-export function TnAWorkspace({ module }: { module: ModuleKey }) {
+export function TnAWorkspace({ module, metrics, rows }: { module: ModuleKey; metrics?: WorkspaceConfig["metrics"]; rows?: WorkspaceConfig["rows"] }) {
   const config = configs[module]
+  const resolvedMetrics = metrics ?? config.metrics
+  const resolvedRows = rows ?? config.rows
 
   return (
     <AppLayout>
@@ -304,7 +306,7 @@ export function TnAWorkspace({ module }: { module: ModuleKey }) {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {config.metrics.map((metric) => (
+          {resolvedMetrics.map((metric) => (
             <Card key={metric.label} className="gap-3 border-border/70 py-4 shadow-none">
               <CardContent className="p-0">
                 <p className="text-xs font-medium text-muted-foreground">{metric.label}</p>
@@ -340,8 +342,8 @@ export function TnAWorkspace({ module }: { module: ModuleKey }) {
                     <tr>{config.columns.map((column) => <th key={column} className="px-5 py-3 font-medium">{column}</th>)}</tr>
                   </thead>
                   <tbody>
-                    {config.rows.map((row) => (
-                      <tr key={row[0]} className="border-t transition-colors hover:bg-muted/30">
+                    {resolvedRows.map((row, rowIdx) => (
+                      <tr key={rowIdx} className="border-t transition-colors hover:bg-muted/30">
                         {row.map((cell, index) => (
                           <td key={`${row[0]}-${index}`} className={`px-5 py-4 ${index === 0 ? "font-medium" : "text-muted-foreground"}`}>
                             {index === config.statusIndex ? <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${noticeClass(cell as "amber" | "rose" | "emerald")}`}>{cell}</span> : cell}

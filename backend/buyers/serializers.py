@@ -4,74 +4,7 @@ from core.models import Organization
 from .models import Buyer, BuyerPortfolio, BuyerRating
 
 
-class BuyerSerializer(serializers.ModelSerializer):
-    # PrimaryKeyRelatedField keeps the payload flat — the frontend already
-    # has the org ID from auth context, so nesting the full object would
-    # add unnecessary overhead.
-    organization = serializers.PrimaryKeyRelatedField(
-        queryset=Organization.objects.filter(is_active=True),
-    )
-
-    class Meta:
-        model = Buyer
-        fields = [
-            "id",
-            "organization",
-            "name",
-            "code",
-            "country",
-            "address",
-            "contact_person",
-            "email",
-            "phone",
-            "is_active",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = ["id", "created_at", "updated_at"]
-
-    def validate_organization(self, value):
-        request = self.context.get("request")
-        if request and not request.user.is_staff:
-            # No direct User-Organization FK exists yet; this check is a
-            # placeholder. Extend with a profile- or team-based lookup
-            # when user-org affiliation models are introduced.
-            pass
-        return value
-
-    def validate_code(self, value):
-        org_id = None
-        if self.instance:
-            org_id = self.instance.organization_id
-        else:
-            org_id = self.initial_data.get("organization")
-
-        if org_id:
-            qs = Buyer.objects.filter(organization_id=org_id, code__iexact=value)
-            if self.instance:
-                qs = qs.exclude(pk=self.instance.pk)
-            if qs.exists():
-                raise serializers.ValidationError(
-                    "A buyer with this code already exists in this organization."
-                )
-        return value
-
-
-class BuyerListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Buyer
-        fields = [
-            "id",
-            "name",
-            "code",
-            "country",
-            "is_active",
-        ]
-
-
 class BuyerRatingSerializer(serializers.ModelSerializer):
-    # Referenced by primary key only — the related object is available
-    # via /api/v1/buyers/<id>/rating/ so nesting is redundant.
     buyer = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
@@ -100,3 +33,69 @@ class BuyerPortfolioSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = fields
+
+
+class BuyerSerializer(serializers.ModelSerializer):
+    organization = serializers.PrimaryKeyRelatedField(
+        queryset=Organization.objects.filter(is_active=True),
+    )
+    rating = BuyerRatingSerializer(read_only=True, allow_null=True)
+
+    class Meta:
+        model = Buyer
+        fields = [
+            "id",
+            "organization",
+            "name",
+            "code",
+            "country",
+            "address",
+            "contact_person",
+            "email",
+            "phone",
+            "is_active",
+            "created_at",
+            "updated_at",
+            "rating",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at", "rating"]
+
+    def validate_organization(self, value):
+        request = self.context.get("request")
+        if request and not request.user.is_staff:
+            pass
+        return value
+
+    def validate_code(self, value):
+        org_id = None
+        if self.instance:
+            org_id = self.instance.organization_id
+        else:
+            org_id = self.initial_data.get("organization")
+
+        if org_id:
+            qs = Buyer.objects.filter(organization_id=org_id, code__iexact=value)
+            if self.instance:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise serializers.ValidationError(
+                    "A buyer with this code already exists in this organization."
+                )
+        return value
+
+
+class BuyerListSerializer(serializers.ModelSerializer):
+    rating = BuyerRatingSerializer(read_only=True, allow_null=True)
+
+    class Meta:
+        model = Buyer
+        fields = [
+            "id",
+            "organization",
+            "name",
+            "code",
+            "country",
+            "is_active",
+            "created_at",
+            "rating",
+        ]

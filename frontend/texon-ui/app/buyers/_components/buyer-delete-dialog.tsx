@@ -20,7 +20,7 @@ interface BuyerDeleteDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   buyer: Buyer | null
-  onDeleted: () => void
+  onDeleted: (id: number) => void
 }
 
 export function BuyerDeleteDialog({
@@ -45,7 +45,7 @@ export function BuyerDeleteDialog({
       if (result.success) {
         toast.success("Buyer deleted")
         onOpenChange(false)
-        onDeleted()
+        onDeleted(buyer.id)
       } else {
         toast.error(result.error ?? "Failed to delete buyer")
       }

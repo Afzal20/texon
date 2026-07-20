@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { Plus, Search, Download, RefreshCw } from "lucide-react"
+import { Plus, Search, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AppLayout } from "@/components/layout/AppLayout"
@@ -10,6 +10,7 @@ import { BuyersTable } from "./buyers-table"
 import { getBuyerColumns } from "./buyers-columns"
 import { BuyerFormDialog } from "./buyer-form-dialog"
 import { BuyerDeleteDialog } from "./buyer-delete-dialog"
+import { BuyerDetailDialog } from "./buyer-detail-dialog"
 import type { Buyer } from "../types"
 import { toast } from "sonner"
 
@@ -18,10 +19,11 @@ interface BuyersPageClientProps {
 }
 
 export function BuyersPageClient({ initialBuyers }: BuyersPageClientProps) {
-  const [buyers] = useState(initialBuyers)
+  const [buyers, setBuyers] = useState(initialBuyers)
   const [search, setSearch] = useState("")
   const [formOpen, setFormOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [detailOpen, setDetailOpen] = useState(false)
   const [selectedBuyer, setSelectedBuyer] = useState<Buyer | null>(null)
 
   const filtered = buyers.filter(
@@ -41,16 +43,37 @@ export function BuyersPageClient({ initialBuyers }: BuyersPageClientProps) {
     setDeleteOpen(true)
   }, [])
 
+  const handleRowClick = useCallback((buyer: Buyer) => {
+    setSelectedBuyer(buyer)
+    setDetailOpen(true)
+  }, [])
+
   const handleAddNew = useCallback(() => {
     setSelectedBuyer(null)
     setFormOpen(true)
   }, [])
 
-  const handleRefresh = useCallback(() => {
-    window.location.reload()
+  const handleSaved = useCallback((saved: Buyer) => {
+    setBuyers((prev) => {
+      const idx = prev.findIndex((b) => b.id === saved.id)
+      if (idx >= 0) {
+        const next = [...prev]
+        next[idx] = saved
+        return next
+      }
+      return [saved, ...prev]
+    })
+  }, [])
+
+  const handleDeleted = useCallback((id: number) => {
+    setBuyers((prev) => prev.filter((b) => b.id !== id))
   }, [])
 
   const columns = getBuyerColumns({ onEdit: handleEdit, onDelete: handleDelete })
+
+  const handleRefresh = useCallback(() => {
+    window.location.reload()
+  }, [])
 
   return (
     <AppLayout>
@@ -72,10 +95,6 @@ export function BuyersPageClient({ initialBuyers }: BuyersPageClientProps) {
               >
                 <RefreshCw className="h-4 w-4" />
                 Refresh
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2" onClick={() => toast.success("Buyer list exported to CSV")}>
-                <Download className="h-4 w-4" />
-                Export
               </Button>
               <Button size="sm" className="gap-2" onClick={handleAddNew}>
                 <Plus className="h-4 w-4" />
@@ -104,6 +123,7 @@ export function BuyersPageClient({ initialBuyers }: BuyersPageClientProps) {
               columns={columns}
               data={filtered}
               actions={{ onEdit: handleEdit, onDelete: handleDelete }}
+              onRowClick={handleRowClick}
             />
           </div>
         </div>
@@ -113,14 +133,22 @@ export function BuyersPageClient({ initialBuyers }: BuyersPageClientProps) {
         open={formOpen}
         onOpenChange={setFormOpen}
         buyer={selectedBuyer}
-        onSaved={handleRefresh}
+        onSaved={handleSaved}
       />
 
       <BuyerDeleteDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         buyer={selectedBuyer}
-        onDeleted={handleRefresh}
+        onDeleted={handleDeleted}
+      />
+
+      <BuyerDetailDialog
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        buyer={selectedBuyer}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
       />
     </AppLayout>
   )

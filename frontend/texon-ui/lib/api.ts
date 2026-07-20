@@ -1,3 +1,7 @@
+
+import axios from 'axios';
+
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"
 
 export class ApiError extends Error {
@@ -51,3 +55,2486 @@ export async function apiFetch<T>(
 export function getToken(sessionAccessToken: string): string {
   return sessionAccessToken
 }
+
+
+// GET
+// /api/v1/accessories/
+
+
+// POST
+// /api/v1/accessories/
+
+
+
+// GET
+// /api/v1/accessories/{id}/
+
+
+
+// PUT
+// /api/v1/accessories/{id}/
+
+
+
+// PATCH
+// /api/v1/accessories/{id}/
+
+
+
+// DELETE
+// /api/v1/accessories/{id}/
+
+
+// accounts-payable
+
+
+// GET
+// /api/v1/accounts-payable/
+
+
+
+// POST
+// /api/v1/accounts-payable/
+
+
+
+// GET
+// /api/v1/accounts-payable/{id}/
+
+
+
+// PUT
+// /api/v1/accounts-payable/{id}/
+
+
+
+// PATCH
+// /api/v1/accounts-payable/{id}/
+
+
+
+// DELETE
+// /api/v1/accounts-payable/{id}/
+
+
+// accounts-receivable
+
+
+// GET
+// /api/v1/accounts-receivable/
+
+
+
+// POST
+// /api/v1/accounts-receivable/
+
+
+
+// GET
+// /api/v1/accounts-receivable/{id}/
+
+
+
+// PUT
+// /api/v1/accounts-receivable/{id}/
+
+
+
+// PATCH
+// /api/v1/accounts-receivable/{id}/
+
+
+
+// DELETE
+// /api/v1/accounts-receivable/{id}/
+
+
+// ai
+
+// alarm-notifications
+
+
+// GET
+// /api/v1/alarm-notifications/
+
+
+
+// GET
+// /api/v1/alarm-notifications/{id}/
+
+
+// asset-categories
+
+
+// GET
+// /api/v1/asset-categories/
+
+
+
+// POST
+// /api/v1/asset-categories/
+
+
+
+// GET
+// /api/v1/asset-categories/{id}/
+
+
+
+// PUT
+// /api/v1/asset-categories/{id}/
+
+
+
+// PATCH
+// /api/v1/asset-categories/{id}/
+
+
+
+// DELETE
+// /api/v1/asset-categories/{id}/
+
+
+// attendance
+
+
+// GET
+// /api/v1/attendance/
+
+
+
+// POST
+// /api/v1/attendance/
+
+
+
+// GET
+// /api/v1/attendance/{id}/
+
+
+
+// PUT
+// /api/v1/attendance/{id}/
+
+
+
+// PATCH
+// /api/v1/attendance/{id}/
+
+
+
+// DELETE
+// /api/v1/attendance/{id}/
+
+
+// auth
+
+
+// POST
+// /api/v1/auth/forgot-password/
+
+
+
+// POST
+// /api/v1/auth/login/
+
+
+
+// POST
+// /api/v1/auth/logout/
+
+
+
+// GET
+// /api/v1/auth/me/
+
+
+
+// POST
+// /api/v1/auth/refresh/
+
+
+
+// POST
+// /api/v1/auth/register/
+
+
+
+// POST
+// /api/v1/auth/reset-password/
+
+
+
+// POST
+// /api/v1/auth/update-password/
+
+
+
+// POST
+// /api/v1/auth/verify-otp/
+
+
+// bills-of-exchange
+
+
+// GET
+// /api/v1/bills-of-exchange/
+
+
+
+// POST
+// /api/v1/bills-of-exchange/
+
+
+
+// GET
+// /api/v1/bills-of-exchange/{id}/
+
+
+
+// PUT
+// /api/v1/bills-of-exchange/{id}/
+
+
+
+// PATCH
+// /api/v1/bills-of-exchange/{id}/
+
+
+
+// DELETE
+// /api/v1/bills-of-exchange/{id}/
+
+
+// bonuses
+
+
+// GET
+// /api/v1/bonuses/
+
+
+
+// POST
+// /api/v1/bonuses/
+
+
+
+// GET
+// /api/v1/bonuses/{id}/
+
+
+
+// PUT
+// /api/v1/bonuses/{id}/
+
+
+
+// PATCH
+// /api/v1/bonuses/{id}/
+
+
+
+// DELETE
+// /api/v1/bonuses/{id}/
+
+
+// buyer-communications
+
+
+// GET
+// /api/v1/buyer-communications/
+
+
+
+// POST
+// /api/v1/buyer-communications/
+
+
+
+// GET
+// /api/v1/buyer-communications/{id}/
+
+
+
+// PUT
+// /api/v1/buyer-communications/{id}/
+
+
+
+// PATCH
+// /api/v1/buyer-communications/{id}/
+
+
+
+// DELETE
+// /api/v1/buyer-communications/{id}/
+
+
+// buyer-enquiries
+
+
+// GET
+// /api/v1/buyer-enquiries/
+
+
+
+// POST
+// /api/v1/buyer-enquiries/
+
+
+
+// GET
+// /api/v1/buyer-enquiries/{id}/
+
+
+
+// PUT
+// /api/v1/buyer-enquiries/{id}/
+
+
+
+// PATCH
+// /api/v1/buyer-enquiries/{id}/
+
+
+
+// DELETE
+// /api/v1/buyer-enquiries/{id}/
+
+
+// buyer-portfolios
+
+
+// GET
+// /api/v1/buyer-portfolios/
+
+
+
+// GET
+// /api/v1/buyer-portfolios/{id}/
+
+
+// buyer-profitabilities
+
+
+// GET
+// /api/v1/buyer-profitabilities/
+
+
+
+// GET
+// /api/v1/buyer-profitabilities/{id}/
+
+
+// buyer-ratings
+
+
+// GET
+// /api/v1/buyer-ratings/
+
+
+
+// GET
+// /api/v1/buyer-ratings/{id}/
+
+
+// buyers
+
+
+// GET
+// /api/v1/buyers/
+
+// POST
+// /api/v1/buyers/
+
+// GET
+// /api/v1/buyers/{id}/
+
+// PUT
+// /api/v1/buyers/{id}/
+
+// PATCH
+// /api/v1/buyers/{id}/
+
+// DELETE
+// /api/v1/buyers/{id}/
+
+
+// capacity-bookings
+
+
+// GET
+// /api/v1/capacity-bookings/
+
+
+
+// POST
+// /api/v1/capacity-bookings/
+
+
+
+// GET
+// /api/v1/capacity-bookings/{id}/
+
+
+
+// PUT
+// /api/v1/capacity-bookings/{id}/
+
+
+
+// PATCH
+// /api/v1/capacity-bookings/{id}/
+
+
+
+// DELETE
+// /api/v1/capacity-bookings/{id}/
+
+
+// chart-of-accounts
+
+
+// GET
+// /api/v1/chart-of-accounts/
+
+
+
+// POST
+// /api/v1/chart-of-accounts/
+
+
+
+// GET
+// /api/v1/chart-of-accounts/{id}/
+
+
+
+// PUT
+// /api/v1/chart-of-accounts/{id}/
+
+
+
+// PATCH
+// /api/v1/chart-of-accounts/{id}/
+
+
+
+// DELETE
+// /api/v1/chart-of-accounts/{id}/
+
+
+// companies
+
+
+// GET
+// /api/v1/companies/
+
+
+
+// POST
+// /api/v1/companies/
+
+
+
+// GET
+// /api/v1/companies/{id}/
+
+
+
+// PUT
+// /api/v1/companies/{id}/
+
+
+
+// PATCH
+// /api/v1/companies/{id}/
+
+
+
+// DELETE
+// /api/v1/companies/{id}/
+
+
+// compliance-records
+
+
+// GET
+// /api/v1/compliance-records/
+
+
+
+// POST
+// /api/v1/compliance-records/
+
+
+
+// GET
+// /api/v1/compliance-records/{id}/
+
+
+
+// PUT
+// /api/v1/compliance-records/{id}/
+
+
+
+// PATCH
+// /api/v1/compliance-records/{id}/
+
+
+
+// DELETE
+// /api/v1/compliance-records/{id}/
+
+
+// cost-centers
+
+
+// GET
+// /api/v1/cost-centers/
+
+
+
+// POST
+// /api/v1/cost-centers/
+
+
+
+// GET
+// /api/v1/cost-centers/{id}/
+
+
+
+// PUT
+// /api/v1/cost-centers/{id}/
+
+
+
+// PATCH
+// /api/v1/cost-centers/{id}/
+
+
+
+// DELETE
+// /api/v1/cost-centers/{id}/
+
+
+// cost-sheets
+
+
+// GET
+// /api/v1/cost-sheets/
+
+
+
+// POST
+// /api/v1/cost-sheets/
+
+
+
+// GET
+// /api/v1/cost-sheets/{id}/
+
+
+
+// PUT
+// /api/v1/cost-sheets/{id}/
+
+
+
+// PATCH
+// /api/v1/cost-sheets/{id}/
+
+
+
+// DELETE
+// /api/v1/cost-sheets/{id}/
+
+
+// cutting-records
+
+
+// GET
+// /api/v1/cutting-records/
+
+
+
+// POST
+// /api/v1/cutting-records/
+
+
+
+// GET
+// /api/v1/cutting-records/{id}/
+
+
+
+// PUT
+// /api/v1/cutting-records/{id}/
+
+
+
+// PATCH
+// /api/v1/cutting-records/{id}/
+
+
+
+// DELETE
+// /api/v1/cutting-records/{id}/
+
+
+// dashboards
+
+
+// GET
+// /api/v1/dashboards/
+
+
+
+// POST
+// /api/v1/dashboards/
+
+
+
+// GET
+// /api/v1/dashboards/{id}/
+
+
+
+// PUT
+// /api/v1/dashboards/{id}/
+
+
+
+// PATCH
+// /api/v1/dashboards/{id}/
+
+
+
+// DELETE
+// /api/v1/dashboards/{id}/
+
+
+// defect-categories
+
+
+// GET
+// /api/v1/defect-categories/
+
+
+
+// POST
+// /api/v1/defect-categories/
+
+
+
+// GET
+// /api/v1/defect-categories/{id}/
+
+
+
+// PUT
+// /api/v1/defect-categories/{id}/
+
+
+
+// PATCH
+// /api/v1/defect-categories/{id}/
+
+
+
+// DELETE
+// /api/v1/defect-categories/{id}/
+
+
+// departments
+
+
+// GET
+// /api/v1/departments/
+
+
+
+// POST
+// /api/v1/departments/
+
+
+
+// GET
+// /api/v1/departments/{id}/
+
+
+
+// PUT
+// /api/v1/departments/{id}/
+
+
+
+// PATCH
+// /api/v1/departments/{id}/
+
+
+
+// DELETE
+// /api/v1/departments/{id}/
+
+
+// depreciation-schedules
+
+
+// GET
+// /api/v1/depreciation-schedules/
+
+
+
+// POST
+// /api/v1/depreciation-schedules/
+
+
+
+// GET
+// /api/v1/depreciation-schedules/{id}/
+
+
+
+// PUT
+// /api/v1/depreciation-schedules/{id}/
+
+
+
+// PATCH
+// /api/v1/depreciation-schedules/{id}/
+
+
+
+// DELETE
+// /api/v1/depreciation-schedules/{id}/
+
+
+// designations
+
+
+// GET
+// /api/v1/designations/
+
+
+
+// POST
+// /api/v1/designations/
+
+
+
+// GET
+// /api/v1/designations/{id}/
+
+
+
+// PUT
+// /api/v1/designations/{id}/
+
+
+
+// PATCH
+// /api/v1/designations/{id}/
+
+
+
+// DELETE
+// /api/v1/designations/{id}/
+
+
+// development-monitoring
+
+
+// GET
+// /api/v1/development-monitoring/
+
+
+
+// POST
+// /api/v1/development-monitoring/
+
+
+
+// GET
+// /api/v1/development-monitoring/{id}/
+
+
+
+// PUT
+// /api/v1/development-monitoring/{id}/
+
+
+
+// PATCH
+// /api/v1/development-monitoring/{id}/
+
+
+
+// DELETE
+// /api/v1/development-monitoring/{id}/
+
+
+// employees
+
+
+// GET
+// /api/v1/employees/
+
+
+
+// POST
+// /api/v1/employees/
+
+
+
+// GET
+// /api/v1/employees/{id}/
+
+
+
+// PUT
+// /api/v1/employees/{id}/
+
+
+
+// PATCH
+// /api/v1/employees/{id}/
+
+
+
+// DELETE
+// /api/v1/employees/{id}/
+
+
+// endline-qc
+
+
+// GET
+// /api/v1/endline-qc/
+
+
+
+// POST
+// /api/v1/endline-qc/
+
+
+
+// GET
+// /api/v1/endline-qc/{id}/
+
+
+
+// PUT
+// /api/v1/endline-qc/{id}/
+
+
+
+// PATCH
+// /api/v1/endline-qc/{id}/
+
+
+
+// DELETE
+// /api/v1/endline-qc/{id}/
+
+
+// expenses
+
+
+// GET
+// /api/v1/expenses/
+
+
+
+// POST
+// /api/v1/expenses/
+
+
+
+// GET
+// /api/v1/expenses/{id}/
+
+
+
+// PUT
+// /api/v1/expenses/{id}/
+
+
+
+// PATCH
+// /api/v1/expenses/{id}/
+
+
+
+// DELETE
+// /api/v1/expenses/{id}/
+
+
+// fabric-inspections
+
+
+// GET
+// /api/v1/fabric-inspections/
+
+
+
+// POST
+// /api/v1/fabric-inspections/
+
+
+
+// GET
+// /api/v1/fabric-inspections/{id}/
+
+
+
+// PUT
+// /api/v1/fabric-inspections/{id}/
+
+
+
+// PATCH
+// /api/v1/fabric-inspections/{id}/
+
+
+
+// DELETE
+// /api/v1/fabric-inspections/{id}/
+
+
+// fabrics
+
+
+// GET
+// /api/v1/fabrics/
+
+
+
+// POST
+// /api/v1/fabrics/
+
+
+
+// GET
+// /api/v1/fabrics/{id}/
+
+
+
+// PUT
+// /api/v1/fabrics/{id}/
+
+
+
+// PATCH
+// /api/v1/fabrics/{id}/
+
+
+
+// DELETE
+// /api/v1/fabrics/{id}/
+
+
+// final-inspections
+
+
+// GET
+// /api/v1/final-inspections/
+
+
+
+// POST
+// /api/v1/final-inspections/
+
+
+
+// GET
+// /api/v1/final-inspections/{id}/
+
+
+
+// PUT
+// /api/v1/final-inspections/{id}/
+
+
+
+// PATCH
+// /api/v1/final-inspections/{id}/
+
+
+
+// DELETE
+// /api/v1/final-inspections/{id}/
+
+
+// fixed-assets
+
+
+// GET
+// /api/v1/fixed-assets/
+
+
+
+// POST
+// /api/v1/fixed-assets/
+
+
+
+// GET
+// /api/v1/fixed-assets/{id}/
+
+
+
+// PUT
+// /api/v1/fixed-assets/{id}/
+
+
+
+// PATCH
+// /api/v1/fixed-assets/{id}/
+
+
+
+// DELETE
+// /api/v1/fixed-assets/{id}/
+
+
+// floor-requisitions
+
+
+// GET
+// /api/v1/floor-requisitions/
+
+
+
+// POST
+// /api/v1/floor-requisitions/
+
+
+
+// GET
+// /api/v1/floor-requisitions/{id}/
+
+
+
+// PUT
+// /api/v1/floor-requisitions/{id}/
+
+
+
+// PATCH
+// /api/v1/floor-requisitions/{id}/
+
+
+
+// DELETE
+// /api/v1/floor-requisitions/{id}/
+
+
+// group-companies
+
+
+// GET
+// /api/v1/group-companies/
+
+
+
+// POST
+// /api/v1/group-companies/
+
+
+
+// GET
+// /api/v1/group-companies/{id}/
+
+
+
+// PUT
+// /api/v1/group-companies/{id}/
+
+
+
+// PATCH
+// /api/v1/group-companies/{id}/
+
+
+
+// DELETE
+// /api/v1/group-companies/{id}/
+
+
+// inline-qc
+
+
+// GET
+// /api/v1/inline-qc/
+
+
+
+// POST
+// /api/v1/inline-qc/
+
+
+
+// GET
+// /api/v1/inline-qc/{id}/
+
+
+
+// PUT
+// /api/v1/inline-qc/{id}/
+
+
+
+// PATCH
+// /api/v1/inline-qc/{id}/
+
+
+
+// DELETE
+// /api/v1/inline-qc/{id}/
+
+
+// inspection-packing
+
+
+// GET
+// /api/v1/inspection-packing/
+
+
+
+// POST
+// /api/v1/inspection-packing/
+
+
+
+// GET
+// /api/v1/inspection-packing/{id}/
+
+
+
+// PUT
+// /api/v1/inspection-packing/{id}/
+
+
+
+// PATCH
+// /api/v1/inspection-packing/{id}/
+
+
+
+// DELETE
+// /api/v1/inspection-packing/{id}/
+
+
+// invoices
+
+
+// GET
+// /api/v1/invoices/
+
+
+
+// POST
+// /api/v1/invoices/
+
+
+
+// GET
+// /api/v1/invoices/{id}/
+
+
+
+// PUT
+// /api/v1/invoices/{id}/
+
+
+
+// PATCH
+// /api/v1/invoices/{id}/
+
+
+
+// DELETE
+// /api/v1/invoices/{id}/
+
+
+// job-orders
+
+
+// GET
+// /api/v1/job-orders/
+
+
+
+// POST
+// /api/v1/job-orders/
+
+
+
+// GET
+// /api/v1/job-orders/{id}/
+
+
+
+// PUT
+// /api/v1/job-orders/{id}/
+
+
+
+// PATCH
+// /api/v1/job-orders/{id}/
+
+
+
+// DELETE
+// /api/v1/job-orders/{id}/
+
+
+// journal-entries
+
+
+// GET
+// /api/v1/journal-entries/
+
+
+
+// POST
+// /api/v1/journal-entries/
+
+
+
+// GET
+// /api/v1/journal-entries/{id}/
+
+
+
+// PUT
+// /api/v1/journal-entries/{id}/
+
+
+
+// PATCH
+// /api/v1/journal-entries/{id}/
+
+
+
+// DELETE
+// /api/v1/journal-entries/{id}/
+
+
+// lcs
+
+
+// GET
+// /api/v1/lcs/
+
+
+
+// POST
+// /api/v1/lcs/
+
+
+
+// GET
+// /api/v1/lcs/{id}/
+
+
+
+// PUT
+// /api/v1/lcs/{id}/
+
+
+
+// PATCH
+// /api/v1/lcs/{id}/
+
+
+
+// DELETE
+// /api/v1/lcs/{id}/
+
+
+// leaves
+
+
+// GET
+// /api/v1/leaves/
+
+
+
+// POST
+// /api/v1/leaves/
+
+
+
+// GET
+// /api/v1/leaves/{id}/
+
+
+
+// PUT
+// /api/v1/leaves/{id}/
+
+
+
+// PATCH
+// /api/v1/leaves/{id}/
+
+
+
+// DELETE
+// /api/v1/leaves/{id}/
+
+
+// line-plans
+
+
+// GET
+// /api/v1/line-plans/
+
+
+
+// POST
+// /api/v1/line-plans/
+
+
+
+// GET
+// /api/v1/line-plans/{id}/
+
+
+
+// PUT
+// /api/v1/line-plans/{id}/
+
+
+
+// PATCH
+// /api/v1/line-plans/{id}/
+
+
+
+// DELETE
+// /api/v1/line-plans/{id}/
+
+
+// location-operations
+
+
+// GET
+// /api/v1/location-operations/
+
+
+
+// POST
+// /api/v1/location-operations/
+
+
+
+// GET
+// /api/v1/location-operations/{id}/
+
+
+
+// PUT
+// /api/v1/location-operations/{id}/
+
+
+
+// PATCH
+// /api/v1/location-operations/{id}/
+
+
+
+// DELETE
+// /api/v1/location-operations/{id}/
+
+
+// order-amendment-histories
+
+
+// GET
+// /api/v1/order-amendment-histories/
+
+
+
+// POST
+// /api/v1/order-amendment-histories/
+
+
+
+// GET
+// /api/v1/order-amendment-histories/{id}/
+
+
+
+// PUT
+// /api/v1/order-amendment-histories/{id}/
+
+
+
+// PATCH
+// /api/v1/order-amendment-histories/{id}/
+
+
+
+// DELETE
+// /api/v1/order-amendment-histories/{id}/
+
+
+// orders
+
+
+// GET
+// /api/v1/orders/
+
+
+
+// POST
+// /api/v1/orders/
+
+
+
+// GET
+// /api/v1/orders/{id}/
+
+
+
+// PUT
+// /api/v1/orders/{id}/
+
+
+
+// PATCH
+// /api/v1/orders/{id}/
+
+
+
+// DELETE
+// /api/v1/orders/{id}/
+
+
+// overtime
+
+
+// GET
+// /api/v1/overtime/
+
+
+
+// POST
+// /api/v1/overtime/
+
+
+
+// GET
+// /api/v1/overtime/{id}/
+
+
+
+// PUT
+// /api/v1/overtime/{id}/
+
+
+
+// PATCH
+// /api/v1/overtime/{id}/
+
+
+
+// DELETE
+// /api/v1/overtime/{id}/
+
+
+// performance-records
+
+
+// GET
+// /api/v1/performance-records/
+
+
+
+// POST
+// /api/v1/performance-records/
+
+
+
+// GET
+// /api/v1/performance-records/{id}/
+
+
+
+// PUT
+// /api/v1/performance-records/{id}/
+
+
+
+// PATCH
+// /api/v1/performance-records/{id}/
+
+
+
+// DELETE
+// /api/v1/performance-records/{id}/
+
+
+// physical-inventories
+
+
+// GET
+// /api/v1/physical-inventories/
+
+
+
+// POST
+// /api/v1/physical-inventories/
+
+
+
+// GET
+// /api/v1/physical-inventories/{id}/
+
+
+
+// PUT
+// /api/v1/physical-inventories/{id}/
+
+
+
+// PATCH
+// /api/v1/physical-inventories/{id}/
+
+
+
+// DELETE
+// /api/v1/physical-inventories/{id}/
+
+
+// plans
+
+
+// GET
+// /api/v1/plans/
+
+
+
+// POST
+// /api/v1/plans/
+
+
+
+// GET
+// /api/v1/plans/{id}/
+
+
+
+// PUT
+// /api/v1/plans/{id}/
+
+
+
+// PATCH
+// /api/v1/plans/{id}/
+
+
+
+// DELETE
+// /api/v1/plans/{id}/
+
+
+// pre-costings
+
+
+// GET
+// /api/v1/pre-costings/
+
+
+
+// POST
+// /api/v1/pre-costings/
+
+
+
+// GET
+// /api/v1/pre-costings/{id}/
+
+
+
+// PUT
+// /api/v1/pre-costings/{id}/
+
+
+
+// PATCH
+// /api/v1/pre-costings/{id}/
+
+
+
+// DELETE
+// /api/v1/pre-costings/{id}/
+
+
+// production-lines
+
+
+// GET
+// /api/v1/production-lines/
+
+
+
+// POST
+// /api/v1/production-lines/
+
+
+
+// GET
+// /api/v1/production-lines/{id}/
+
+
+
+// PUT
+// /api/v1/production-lines/{id}/
+
+
+
+// PATCH
+// /api/v1/production-lines/{id}/
+
+
+
+// DELETE
+// /api/v1/production-lines/{id}/
+
+
+// production-orders
+
+
+// GET
+// /api/v1/production-orders/
+
+
+
+// POST
+// /api/v1/production-orders/
+
+
+
+// GET
+// /api/v1/production-orders/{id}/
+
+
+
+// PUT
+// /api/v1/production-orders/{id}/
+
+
+
+// PATCH
+// /api/v1/production-orders/{id}/
+
+
+
+// DELETE
+// /api/v1/production-orders/{id}/
+
+
+// production-plans
+
+
+// GET
+// /api/v1/production-plans/
+
+
+
+// POST
+// /api/v1/production-plans/
+
+
+
+// GET
+// /api/v1/production-plans/{id}/
+
+
+
+// PUT
+// /api/v1/production-plans/{id}/
+
+
+
+// PATCH
+// /api/v1/production-plans/{id}/
+
+
+
+// DELETE
+// /api/v1/production-plans/{id}/
+
+
+// purchase-orders
+
+
+// GET
+// /api/v1/purchase-orders/
+
+
+
+// POST
+// /api/v1/purchase-orders/
+
+
+
+// GET
+// /api/v1/purchase-orders/{id}/
+
+
+
+// PUT
+// /api/v1/purchase-orders/{id}/
+
+
+
+// PATCH
+// /api/v1/purchase-orders/{id}/
+
+
+
+// DELETE
+// /api/v1/purchase-orders/{id}/
+
+
+// quotation-analyses
+
+
+// GET
+// /api/v1/quotation-analyses/
+
+
+
+// POST
+// /api/v1/quotation-analyses/
+
+
+
+// GET
+// /api/v1/quotation-analyses/{id}/
+
+
+
+// PUT
+// /api/v1/quotation-analyses/{id}/
+
+
+
+// PATCH
+// /api/v1/quotation-analyses/{id}/
+
+
+
+// DELETE
+// /api/v1/quotation-analyses/{id}/
+
+
+// rejection-reports
+
+
+// GET
+// /api/v1/rejection-reports/
+
+
+
+// POST
+// /api/v1/rejection-reports/
+
+
+
+// GET
+// /api/v1/rejection-reports/{id}/
+
+
+
+// PUT
+// /api/v1/rejection-reports/{id}/
+
+
+
+// PATCH
+// /api/v1/rejection-reports/{id}/
+
+
+
+// DELETE
+// /api/v1/rejection-reports/{id}/
+
+
+// reports
+
+
+// GET
+// /api/v1/reports/
+
+
+
+// POST
+// /api/v1/reports/
+
+
+
+// GET
+// /api/v1/reports/{id}/
+
+
+
+// PUT
+// /api/v1/reports/{id}/
+
+
+
+// PATCH
+// /api/v1/reports/{id}/
+
+
+
+// DELETE
+// /api/v1/reports/{id}/
+
+
+// risk-assessments
+
+
+// GET
+// /api/v1/risk-assessments/
+
+
+
+// POST
+// /api/v1/risk-assessments/
+
+
+
+// GET
+// /api/v1/risk-assessments/{id}/
+
+
+
+// PUT
+// /api/v1/risk-assessments/{id}/
+
+
+
+// PATCH
+// /api/v1/risk-assessments/{id}/
+
+
+
+// DELETE
+// /api/v1/risk-assessments/{id}/
+
+
+// rm-bookings
+
+
+// GET
+// /api/v1/rm-bookings/
+
+
+
+// POST
+// /api/v1/rm-bookings/
+
+
+
+// GET
+// /api/v1/rm-bookings/{id}/
+
+
+
+// PUT
+// /api/v1/rm-bookings/{id}/
+
+
+
+// PATCH
+// /api/v1/rm-bookings/{id}/
+
+
+
+// DELETE
+// /api/v1/rm-bookings/{id}/
+
+
+// rm-requisitions
+
+
+// GET
+// /api/v1/rm-requisitions/
+
+
+
+// POST
+// /api/v1/rm-requisitions/
+
+
+
+// GET
+// /api/v1/rm-requisitions/{id}/
+
+
+
+// PUT
+// /api/v1/rm-requisitions/{id}/
+
+
+
+// PATCH
+// /api/v1/rm-requisitions/{id}/
+
+
+
+// DELETE
+// /api/v1/rm-requisitions/{id}/
+
+
+// salary-sheets
+
+
+// GET
+// /api/v1/salary-sheets/
+
+
+
+// POST
+// /api/v1/salary-sheets/
+
+
+
+// GET
+// /api/v1/salary-sheets/{id}/
+
+
+
+// PUT
+// /api/v1/salary-sheets/{id}/
+
+
+
+// PATCH
+// /api/v1/salary-sheets/{id}/
+
+
+
+// DELETE
+// /api/v1/salary-sheets/{id}/
+
+
+// sample-orders
+
+
+// GET
+// /api/v1/sample-orders/
+
+
+
+// POST
+// /api/v1/sample-orders/
+
+
+
+// GET
+// /api/v1/sample-orders/{id}/
+
+
+
+// PUT
+// /api/v1/sample-orders/{id}/
+
+
+
+// PATCH
+// /api/v1/sample-orders/{id}/
+
+
+
+// DELETE
+// /api/v1/sample-orders/{id}/
+
+
+// schedules
+
+
+// GET
+// /api/v1/schedules/
+
+
+
+// POST
+// /api/v1/schedules/
+
+
+
+// GET
+// /api/v1/schedules/{id}/
+
+
+
+// PUT
+// /api/v1/schedules/{id}/
+
+
+
+// PATCH
+// /api/v1/schedules/{id}/
+
+
+
+// DELETE
+// /api/v1/schedules/{id}/
+
+
+// sewing-records
+
+
+// GET
+// /api/v1/sewing-records/
+
+
+
+// POST
+// /api/v1/sewing-records/
+
+
+
+// GET
+// /api/v1/sewing-records/{id}/
+
+
+
+// PUT
+// /api/v1/sewing-records/{id}/
+
+
+
+// PATCH
+// /api/v1/sewing-records/{id}/
+
+
+
+// DELETE
+// /api/v1/sewing-records/{id}/
+
+
+// shade-approvals
+
+
+// GET
+// /api/v1/shade-approvals/
+
+
+
+// POST
+// /api/v1/shade-approvals/
+
+
+
+// GET
+// /api/v1/shade-approvals/{id}/
+
+
+
+// PUT
+// /api/v1/shade-approvals/{id}/
+
+
+
+// PATCH
+// /api/v1/shade-approvals/{id}/
+
+
+
+// DELETE
+// /api/v1/shade-approvals/{id}/
+
+
+// shipments
+
+
+// GET
+// /api/v1/shipments/
+
+
+
+// POST
+// /api/v1/shipments/
+
+
+
+// GET
+// /api/v1/shipments/{id}/
+
+
+
+// PUT
+// /api/v1/shipments/{id}/
+
+
+
+// PATCH
+// /api/v1/shipments/{id}/
+
+
+
+// DELETE
+// /api/v1/shipments/{id}/
+
+
+// smv-records
+
+
+// GET
+// /api/v1/smv-records/
+
+
+
+// POST
+// /api/v1/smv-records/
+
+
+
+// GET
+// /api/v1/smv-records/{id}/
+
+
+
+// PUT
+// /api/v1/smv-records/{id}/
+
+
+
+// PATCH
+// /api/v1/smv-records/{id}/
+
+
+
+// DELETE
+// /api/v1/smv-records/{id}/
+
+
+// stock-movements
+
+
+// GET
+// /api/v1/stock-movements/
+
+
+
+// POST
+// /api/v1/stock-movements/
+
+
+
+// GET
+// /api/v1/stock-movements/{id}/
+
+
+
+// PUT
+// /api/v1/stock-movements/{id}/
+
+
+
+// PATCH
+// /api/v1/stock-movements/{id}/
+
+
+
+// DELETE
+// /api/v1/stock-movements/{id}/
+
+
+// style-analyses
+
+
+// GET
+// /api/v1/style-analyses/
+
+
+
+// POST
+// /api/v1/style-analyses/
+
+
+
+// GET
+// /api/v1/style-analyses/{id}/
+
+
+
+// PUT
+// /api/v1/style-analyses/{id}/
+
+
+
+// PATCH
+// /api/v1/style-analyses/{id}/
+
+
+
+// DELETE
+// /api/v1/style-analyses/{id}/
+
+
+// styles
+
+
+// GET
+// /api/v1/styles/
+
+
+
+// POST
+// /api/v1/styles/
+
+
+
+// GET
+// /api/v1/styles/{id}/
+
+
+
+// PUT
+// /api/v1/styles/{id}/
+
+
+
+// PATCH
+// /api/v1/styles/{id}/
+
+
+
+// DELETE
+// /api/v1/styles/{id}/
+
+
+// subcontract-orders
+
+
+// GET
+// /api/v1/subcontract-orders/
+
+
+
+// POST
+// /api/v1/subcontract-orders/
+
+
+
+// GET
+// /api/v1/subcontract-orders/{id}/
+
+
+
+// PUT
+// /api/v1/subcontract-orders/{id}/
+
+
+
+// PATCH
+// /api/v1/subcontract-orders/{id}/
+
+
+
+// DELETE
+// /api/v1/subcontract-orders/{id}/
+
+
+// subcontract-tracking
+
+
+// GET
+// /api/v1/subcontract-tracking/
+
+
+
+// POST
+// /api/v1/subcontract-tracking/
+
+
+
+// GET
+// /api/v1/subcontract-tracking/{id}/
+
+
+
+// PUT
+// /api/v1/subcontract-tracking/{id}/
+
+
+
+// PATCH
+// /api/v1/subcontract-tracking/{id}/
+
+
+
+// DELETE
+// /api/v1/subcontract-tracking/{id}/
+
+
+// suppliers
+
+
+// GET
+// /api/v1/suppliers/
+
+
+
+// POST
+// /api/v1/suppliers/
+
+
+
+// GET
+// /api/v1/suppliers/{id}/
+
+
+
+// PUT
+// /api/v1/suppliers/{id}/
+
+
+
+// PATCH
+// /api/v1/suppliers/{id}/
+
+
+
+// DELETE
+// /api/v1/suppliers/{id}/
+
+
+// tasks
+
+
+// GET
+// /api/v1/tasks/
+
+
+
+// POST
+// /api/v1/tasks/
+
+
+
+// GET
+// /api/v1/tasks/{id}/
+
+
+
+// PUT
+// /api/v1/tasks/{id}/
+
+
+
+// PATCH
+// /api/v1/tasks/{id}/
+
+
+
+// DELETE
+// /api/v1/tasks/{id}/
+
+
+// timelines
+
+
+// GET
+// /api/v1/timelines/
+
+
+
+// POST
+// /api/v1/timelines/
+
+
+
+// GET
+// /api/v1/timelines/{id}/
+
+
+
+// PUT
+// /api/v1/timelines/{id}/
+
+
+
+// PATCH
+// /api/v1/timelines/{id}/
+
+
+
+// DELETE
+// /api/v1/timelines/{id}/
+
+
+// trims
+
+
+// GET
+// /api/v1/trims/
+
+
+
+// POST
+// /api/v1/trims/
+
+
+
+// GET
+// /api/v1/trims/{id}/
+
+
+
+// PUT
+// /api/v1/trims/{id}/
+
+
+
+// PATCH
+// /api/v1/trims/{id}/
+
+
+
+// DELETE
+// /api/v1/trims/{id}/
+
+
+// warehouses
+
+
+// GET
+// /api/v1/warehouses/
+
+
+
+// POST
+// /api/v1/warehouses/
+
+
+
+// GET
+// /api/v1/warehouses/{id}/
+
+
+
+// PUT
+// /api/v1/warehouses/{id}/
+
+
+
+// PATCH
+// /api/v1/warehouses/{id}/
+
+
+
+// DELETE
+// /api/v1/warehouses/{id}/

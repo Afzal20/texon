@@ -10,4 +10,7 @@ router.register(
     basename="performance-record",
 )
 
-urlpatterns = router.urls
+urlpatterns = [
+    path("performance/dashboard-summary/", views.dashboard_summary, name="performance-dashboard-summary"),
+    path("", include(router.urls)),
+]

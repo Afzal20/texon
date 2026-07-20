@@ -113,7 +113,7 @@ export function getBuyerColumns(
         return (
           <div className="flex items-center gap-2">
             <span className={`text-sm font-semibold ${color}`}>
-              {rating.rating.toFixed(1)}
+              {Number(rating.rating).toFixed(1)}
             </span>
             <span className="text-xs text-muted-foreground">
               ({rating.reviews_count})

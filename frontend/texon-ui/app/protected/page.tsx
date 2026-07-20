@@ -1,19 +1,17 @@
-import { redirect } from "next/navigation";
-
-import { createClient } from "@/lib/supabase/server";
-import { InfoIcon } from "lucide-react";
-import { FetchDataSteps } from "@/components/tutorial/fetch-data-steps";
-import { Suspense } from "react";
+import { getSession } from "@/auth/lib/session"
+import { redirect } from "next/navigation"
+import { Suspense } from "react"
+import { InfoIcon } from "lucide-react"
 
 async function UserDetails() {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getClaims();
+  const session = await getSession()
+  if (!session) redirect("/auth/login")
 
-  if (error || !data?.claims) {
-    redirect("/auth/login");
-  }
-
-  return JSON.stringify(data.claims, null, 2);
+  return (
+    <pre className="text-xs font-mono p-3 rounded border max-h-32 overflow-auto">
+      {JSON.stringify({ userId: session.userId, email: session.email, role: session.role }, null, 2)}
+    </pre>
+  )
 }
 
 export default function ProtectedPage() {
@@ -28,16 +26,16 @@ export default function ProtectedPage() {
       </div>
       <div className="flex flex-col gap-2 items-start">
         <h2 className="font-bold text-2xl mb-4">Your user details</h2>
-        <pre className="text-xs font-mono p-3 rounded border max-h-32 overflow-auto">
-          <Suspense>
-            <UserDetails />
-          </Suspense>
-        </pre>
+        <Suspense fallback={<pre className="text-xs font-mono p-3 rounded border max-h-32 overflow-auto">Loading...</pre>}>
+          <UserDetails />
+        </Suspense>
       </div>
       <div>
-        <h2 className="font-bold text-2xl mb-4">Next steps</h2>
-        <FetchDataSteps />
+        <h2 className="font-bold text-2xl mb-4">You are authenticated</h2>
+        <p className="text-sm text-muted-foreground">
+          Your session is active and secure.
+        </p>
       </div>
     </div>
-  );
+  )
 }

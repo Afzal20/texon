@@ -17,6 +17,11 @@ export const buyerFormSchema = z.object({
     .string()
     .min(1, "Country is required")
     .max(100, "Country must be 100 characters or fewer"),
+  address: z.string().max(500).optional(),
+  contact_person: z.string().max(255).optional(),
+  email: z.string().max(255).optional(),
+  phone: z.string().max(50).optional(),
+  is_active: z.boolean(),
 })
 
 export type BuyerFormValues = z.infer<typeof buyerFormSchema>

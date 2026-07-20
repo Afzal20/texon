@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+import { loginAction } from "@/auth/actions/login";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,23 +28,18 @@ export function LoginForm({
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
     setIsLoading(true);
     setError(null);
 
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-      // Update this route to redirect to an authenticated route. The user already has an active session.
-      router.push("/protected");
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
-    } finally {
-      setIsLoading(false);
+    const result = await loginAction({ email, password });
+    if (result.success) {
+      if (result.accessToken) localStorage.setItem("django_access_token", result.accessToken);
+      router.push("/");
+      router.refresh();
+    } else {
+      setError(result.error ?? "An error occurred");
     }
+    setIsLoading(false);
   };
 
   return (

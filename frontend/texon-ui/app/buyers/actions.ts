@@ -1,22 +1,13 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { createClient } from "@/lib/supabase/server"
+import { getApiToken } from "@/auth/lib/api-client"
 import { apiFetch, ApiError } from "@/lib/api"
 import type { Buyer, BuyersListResponse } from "./types"
 import type { BuyerFormValues } from "./schema"
 
 async function getAuthToken(): Promise<string> {
-  const supabase = await createClient()
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  if (!session?.access_token) {
-    throw new Error("Not authenticated")
-  }
-
-  return session.access_token
+  return getApiToken()
 }
 
 export async function getBuyers(

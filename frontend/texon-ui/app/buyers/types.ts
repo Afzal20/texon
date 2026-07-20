@@ -10,7 +10,13 @@ export interface Buyer {
   name: string
   code: string
   country: string
+  address?: string
+  contact_person?: string
+  email?: string
+  phone?: string
+  is_active: boolean
   created_at: string
+  updated_at: string
   rating?: BuyerRating
 }
 

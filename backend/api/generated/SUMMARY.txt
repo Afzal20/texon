@@ -1,0 +1,139 @@
+Generated Code Summary
+============================================================
+
+
+accounts:
+  - AccountsPayable
+  - AccountsReceivable
+  - ChartOfAccount
+  - CostCenter
+  - Expense
+  - Invoice
+  - JournalEntry
+
+ai:
+  - ConversationLog
+
+authentication:
+  - ForgotPassword
+  - Login
+  - Register
+  - ResetPassword
+  - UpdatePassword
+  - User
+  - VerifyOTP
+
+buyers:
+  - Buyer
+  - BuyerPortfolio
+  - BuyerRating
+
+commercial:
+  - BillOfExchange
+  - LC
+  - Shipment
+
+compliance:
+  - ComplianceRecord
+  - RiskAssessment
+
+costing:
+  - CostSheet
+  - PreCosting
+  - QuotationAnalysis
+
+crm:
+  - BuyerCommunication
+  - BuyerProfitability
+  - OrderAmendmentHistory
+
+fixed_assets:
+  - AssetCategory
+  - DepreciationSchedule
+  - FixedAsset
+
+hr:
+  - Attendance
+  - Bonus
+  - Department
+  - Designation
+  - Employee
+  - Leave
+  - Overtime
+  - SalarySheet
+
+inventory:
+  - Accessory
+  - Fabric
+  - PhysicalInventory
+  - ShadeApproval
+  - StockMovement
+  - Trim
+  - Warehouse
+
+merchandising:
+  - BuyerEnquiry
+  - DevelopmentMonitoring
+  - SMVRecord
+  - Style
+  - StyleAnalysis
+
+multi_company:
+  - GroupCompany
+  - LocationBasedOperation
+  - MultiCompany
+
+orders:
+  - JobOrder
+  - Order
+  - SampleOrder
+
+performance:
+  - PerformanceRecord
+
+planning:
+  - Plan
+  - Task
+
+procurement:
+  - PurchaseOrder
+  - QuotationAnalysis
+  - RawMaterialBooking
+  - RawMaterialRequisition
+  - Supplier
+
+production:
+  - CuttingRecord
+  - FloorRequisition
+  - InspectionPacking
+  - ProductionLine
+  - ProductionOrder
+  - SewingRecord
+
+quality:
+  - DefectCategory
+  - EndLineQC
+  - FabricInspection
+  - FinalInspection
+  - InlineQC
+  - RejectionReport
+
+reporting:
+  - Dashboard
+  - Report
+
+scheduling:
+  - CapacityBooking
+  - LinePlan
+  - ProductionPlan
+  - Schedule
+
+subcontract:
+  - SubcontractOrder
+  - SubcontractTracking
+
+tna:
+  - AlarmNotification
+  - JobOrder
+  - Task
+  - Timeline

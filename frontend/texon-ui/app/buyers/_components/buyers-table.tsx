@@ -28,9 +28,10 @@ interface BuyersTableProps {
   columns: ReturnType<typeof import("./buyers-columns").getBuyerColumns>
   data: Buyer[]
   actions: BuyerColumnActions
+  onRowClick?: (buyer: Buyer) => void
 }
 
-export function BuyersTable({ columns, data }: BuyersTableProps) {
+export function BuyersTable({ columns, data, onRowClick }: BuyersTableProps) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
@@ -73,6 +74,8 @@ export function BuyersTable({ columns, data }: BuyersTableProps) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className="cursor-pointer"
+                  onClick={() => onRowClick?.(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
