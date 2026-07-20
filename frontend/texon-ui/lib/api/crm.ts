@@ -27,6 +27,12 @@ export const getBuyerCommunication = (id: number) =>
 export const createBuyerCommunication = (data: Record<string, unknown>) =>
   apiClient.post('/api/v1/buyer-communications/', data)
 
+export const getBuyerPortfolios = (params?: Record<string, unknown>) =>
+  apiClient.get('/api/v1/buyer-portfolios/', { params })
+
+export const getBuyerPortfolio = (id: number) =>
+  apiClient.get(`/api/v1/buyer-portfolios/${id}/`)
+
 export const getOrderAmendments = (params?: Record<string, unknown>) =>
   apiClient.get('/api/v1/order-amendment-histories/', { params })
 

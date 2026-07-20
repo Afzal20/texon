@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { ArrowLeft, ArrowUpRight, CalendarDays, Download, FileText, Filter, Plus, Search, TrendingDown, TrendingUp, BarChart3 } from "lucide-react"
 import { toast } from "sonner"
+import { RawItemsViewer } from "@/components/data/RawDataViewer"
 
 type ModuleKey =
   | "mis-reporting"
@@ -219,7 +220,7 @@ function noticeClass(tone: WorkspaceConfig["notices"][number]["tone"]) {
   return tone === "rose" ? "border-rose-200 bg-rose-50" : tone === "emerald" ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"
 }
 
-export function ReportingWorkspace({ module }: { module: ModuleKey }) {
+export function ReportingWorkspace({ module, rawItems }: { module: ModuleKey; rawItems?: Record<string, unknown>[] }) {
   const config = configs[module]
 
   return (
@@ -327,6 +328,7 @@ export function ReportingWorkspace({ module }: { module: ModuleKey }) {
             </Card>
           </div>
         </div>
+        {rawItems && rawItems.length > 0 && <RawItemsViewer items={rawItems} />}
       </main>
     </AppLayout>
   )

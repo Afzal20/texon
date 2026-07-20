@@ -34,6 +34,7 @@ export function LoginForm({
     const result = await loginAction({ email, password });
     if (result.success) {
       if (result.accessToken) localStorage.setItem("django_access_token", result.accessToken);
+      if (result.refreshToken) localStorage.setItem("django_refresh_token", result.refreshToken);
       router.push("/");
       router.refresh();
     } else {

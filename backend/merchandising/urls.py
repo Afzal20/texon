@@ -14,5 +14,10 @@ router.register(
     views.DevelopmentMonitoringViewSet,
     basename="development-monitoring",
 )
+router.register(r"budget-demand-assessments", views.BudgetDemandAssessmentViewSet, basename="budget-demand-assessment")
+router.register(r"ie-suggestions", views.IeSuggestionViewSet, basename="ie-suggestion")
+router.register(r"skill-inventories", views.SkillInventoryViewSet, basename="skill-inventory")
+router.register(r"production-downtimes", views.ProductionDowntimeViewSet, basename="production-downtime")
+router.register(r"process-wise-targets", views.ProcessWiseTargetViewSet, basename="process-wise-target")
 
 urlpatterns = router.urls

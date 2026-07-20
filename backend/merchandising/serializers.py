@@ -1,12 +1,19 @@
 from rest_framework import serializers
 from buyers.models import Buyer
 from core.models import Organization
+from production.models import ProductionLine
+from hr.models import Employee
 from .models import (
+    BudgetDemandAssessment,
     BuyerEnquiry,
     DevelopmentMonitoring,
+    IeSuggestion,
+    ProcessWiseTarget,
+    ProductionDowntime,
     PurchaseOrder,
     SMVRecord,
     SampleOrder,
+    SkillInventory,
     Style,
 )
 
@@ -285,4 +292,110 @@ class DevelopmentMonitoringSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {"completion_date": "Completion date cannot be before start date."}
                 )
+        return attrs
+
+
+
+class BudgetDemandAssessmentSerializer(serializers.ModelSerializer):
+    organization = serializers.PrimaryKeyRelatedField(
+        queryset=Organization.objects.filter(is_active=True),
+    )
+    buyer = serializers.PrimaryKeyRelatedField(
+        queryset=Buyer.objects.filter(is_active=True),
+    )
+
+    class Meta:
+        model = BudgetDemandAssessment
+        fields = [
+            "id", "organization", "buyer", "assessment_date",
+            "forecast_quantity", "booked_quantity", "gap_quantity",
+            "revenue_estimate", "confidence", "notes",
+            "created_at", "updated_at",
+        ]
+        read_only_fields = ["id", "gap_quantity", "created_at", "updated_at"]
+
+    def validate(self, attrs):
+        attrs["gap_quantity"] = max(0, attrs.get("forecast_quantity", 0) - attrs.get("booked_quantity", 0))
+        return attrs
+
+
+class IeSuggestionSerializer(serializers.ModelSerializer):
+    organization = serializers.PrimaryKeyRelatedField(
+        queryset=Organization.objects.filter(is_active=True),
+    )
+    production_line = serializers.PrimaryKeyRelatedField(
+        queryset=ProductionLine.objects.all(), allow_null=True, required=False,
+    )
+    style = serializers.PrimaryKeyRelatedField(
+        queryset=Style.objects.filter(is_active=True), allow_null=True, required=False,
+    )
+
+    class Meta:
+        model = IeSuggestion
+        fields = [
+            "id", "organization", "production_line", "style", "operation",
+            "current_pph", "target_pph", "description", "status",
+            "created_at", "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class SkillInventorySerializer(serializers.ModelSerializer):
+    organization = serializers.PrimaryKeyRelatedField(
+        queryset=Organization.objects.filter(is_active=True),
+    )
+    employee = serializers.PrimaryKeyRelatedField(
+        queryset=Employee.objects.all(), allow_null=True, required=False,
+    )
+    production_line = serializers.PrimaryKeyRelatedField(
+        queryset=ProductionLine.objects.all(), allow_null=True, required=False,
+    )
+
+    class Meta:
+        model = SkillInventory
+        fields = [
+            "id", "organization", "employee", "operator_name", "production_line",
+            "skill_name", "skill_level", "multi_skill", "last_assessed", "notes",
+            "created_at", "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class ProductionDowntimeSerializer(serializers.ModelSerializer):
+    organization = serializers.PrimaryKeyRelatedField(
+        queryset=Organization.objects.filter(is_active=True),
+    )
+    production_line = serializers.PrimaryKeyRelatedField(
+        queryset=ProductionLine.objects.all(), allow_null=True, required=False,
+    )
+    style = serializers.PrimaryKeyRelatedField(
+        queryset=Style.objects.filter(is_active=True), allow_null=True, required=False,
+    )
+
+    class Meta:
+        model = ProductionDowntime
+        fields = [
+            "id", "organization", "production_line", "style",
+            "start_datetime", "duration_hours", "cause", "description", "status",
+            "created_at", "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class ProcessWiseTargetSerializer(serializers.ModelSerializer):
+    organization = serializers.PrimaryKeyRelatedField(
+        queryset=Organization.objects.filter(is_active=True),
+    )
+
+    class Meta:
+        model = ProcessWiseTarget
+        fields = [
+            "id", "organization", "process_name", "target_quantity",
+            "achieved_quantity", "variance", "target_date", "status", "notes",
+            "created_at", "updated_at",
+        ]
+        read_only_fields = ["id", "variance", "created_at", "updated_at"]
+
+    def validate(self, attrs):
+        attrs["variance"] = attrs.get("achieved_quantity", 0) - attrs.get("target_quantity", 0)
         return attrs

@@ -3,7 +3,7 @@
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Construction } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 
 const pages = [
   { title: "Buyer profile", slug: "buyer-profile" },
@@ -21,8 +21,8 @@ export default function CRMIndexPage() {
             <h2 className="text-3xl font-bold tracking-tight">CRM</h2>
             <p className="text-muted-foreground mt-1 text-sm">4 modules</p>
           </div>
-          <Badge variant="outline" className="gap-1 text-xs text-amber-600 border-amber-200 bg-amber-50">
-            <Construction className="h-3 w-3" /> Under Development
+          <Badge variant="outline" className="gap-1 text-xs text-emerald-600 border-emerald-200 bg-emerald-50">
+            Live — API Connected
           </Badge>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

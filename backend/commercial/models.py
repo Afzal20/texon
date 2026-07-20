@@ -49,6 +49,7 @@ class LC(models.Model):
         verbose_name = "LC"
         verbose_name_plural = "LCs"
         unique_together = ("organization", "lc_number")
+        ordering = ["-created_at"]
 
     def __str__(self):
         return f"{self.lc_type} - {self.lc_number}"
@@ -94,6 +95,7 @@ class Shipment(models.Model):
         verbose_name = "Shipment"
         verbose_name_plural = "Shipments"
         unique_together = ("organization", "shipment_number")
+        ordering = ["-created_at"]
 
     def __str__(self):
         return f"Shipment {self.shipment_number} - {self.buyer.name}"
@@ -134,6 +136,7 @@ class Invoice(models.Model):
         verbose_name = "Commercial Invoice"
         verbose_name_plural = "Commercial Invoices"
         unique_together = ("organization", "invoice_number")
+        ordering = ["-created_at"]
 
     def __str__(self):
         return f"Invoice {self.invoice_number} - {self.buyer.name}"
@@ -172,6 +175,7 @@ class BillOfExchange(models.Model):
         verbose_name = "Bill of Exchange"
         verbose_name_plural = "Bills of Exchange"
         unique_together = ("organization", "bill_number")
+        ordering = ["-created_at"]
 
     def __str__(self):
         return f"BOE {self.bill_number} - {self.buyer.name}"

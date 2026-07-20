@@ -11,6 +11,10 @@ router.register(
 )
 
 urlpatterns = [
-    path("performance/dashboard-summary/", views.dashboard_summary, name="performance-dashboard-summary"),
+    path(
+        "performance/dashboard-summary/",
+        views.PerformanceRecordViewSet.as_view({"get": "dashboard_summary"}),
+        name="performance-dashboard-summary",
+    ),
     path("", include(router.urls)),
 ]

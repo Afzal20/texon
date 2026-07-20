@@ -8,11 +8,13 @@ const ENCRYPTION_KEY = new TextEncoder().encode(
   process.env.AUTH_SECRET ?? "texon-dev-secret-min-32-chars-long!!",
 )
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 7 // 7 days
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"
 
 export interface SessionPayload {
   userId: number
   email: string
-  role: string
+  roles: string[]
+  permissions: string[]
   accessToken: string
   refreshToken: string
 }
@@ -60,6 +62,59 @@ export async function getSession(): Promise<SessionPayload | null> {
   } catch {
     return null
   }
+}
+
+function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString())
+    return payload.exp * 1000 < Date.now()
+  } catch {
+    return true
+  }
+}
+
+async function refreshAccessToken(refresh: string): Promise<{ access: string } | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/auth/refresh/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh }),
+    })
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
+}
+
+export async function getValidSession(): Promise<SessionPayload | null> {
+  const session = await getSession()
+  if (!session?.accessToken) return null
+
+  if (!isTokenExpired(session.accessToken)) return session
+
+  if (!session.refreshToken) return null
+
+  const data = await refreshAccessToken(session.refreshToken)
+  if (!data) {
+    await clearSession()
+    return null
+  }
+
+  const updated: SessionPayload = { ...session, accessToken: data.access }
+  await setSession(updated)
+
+  const meRes = await fetch(`${API_BASE_URL}/api/v1/auth/me/`, {
+    headers: { Authorization: `Bearer ${data.access}` },
+  })
+  if (meRes.ok) {
+    const me = await meRes.json()
+    updated.permissions = me.permissions ?? []
+    updated.roles = me.roles ?? []
+    await setSession(updated)
+  }
+
+  return updated
 }
 
 export function getSessionFromRequest(

@@ -1,23 +1,40 @@
 "use client"
 
+import * as React from "react"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Sparkles, BrainCircuit, TrendingUp, AlertTriangle, Activity, Zap } from "lucide-react"
 import { toast } from "sonner"
+import { getAiConversations } from "@/lib/api/ai"
 
 export default function AiInsights() {
+  const [conversations, setConversations] = React.useState<any[]>([])
+
+  React.useEffect(() => {
+    getAiConversations().then((res) => {
+      const items = Array.isArray(res.data?.results) ? res.data.results : Array.isArray(res.data) ? res.data : []
+      setConversations(items)
+    }).catch(() => {})
+  }, [])
+
   return (
     <AppLayout>
       <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8">
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">AI Insights & Optimization</h2>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Machine learning analysis and predictive recommendations across all operations.
-            </p>
+          <div className="flex items-center gap-3">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight">AI Insights & Optimization</h2>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Machine learning analysis and predictive recommendations across all operations.
+              </p>
+            </div>
+            <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700 text-xs whitespace-nowrap self-start mt-2">
+              Sample data — connect backend for live AI insights
+            </Badge>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" className="gap-2 border-primary/20 text-primary hover:bg-accent" onClick={() => toast.info("Deep analysis running...")}>

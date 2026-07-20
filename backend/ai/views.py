@@ -79,6 +79,7 @@ class ConversationViewSet(ModelViewSet):
 class ChatViewSet(ViewSet):
     permission_classes = [IsAuthenticated]
     throttle_classes = [UserRateThrottle]
+    serializer_class = ChatRequestSerializer
 
     def create(self, request):
         serializer = ChatRequestSerializer(data=request.data)

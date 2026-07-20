@@ -2,7 +2,7 @@ from datetime import date, timedelta
 
 from django.db.models import Count, Sum, Q
 from rest_framework import mixins, viewsets
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -99,8 +99,3 @@ class PerformanceRecordViewSet(
         })
 
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def dashboard_summary(request):
-    view = PerformanceRecordViewSet.as_view({"get": "dashboard_summary"})
-    return view(request)

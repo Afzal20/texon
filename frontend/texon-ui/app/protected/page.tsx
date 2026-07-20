@@ -9,7 +9,7 @@ async function UserDetails() {
 
   return (
     <pre className="text-xs font-mono p-3 rounded border max-h-32 overflow-auto">
-      {JSON.stringify({ userId: session.userId, email: session.email, role: session.role }, null, 2)}
+      {JSON.stringify({ userId: session.userId, email: session.email, roles: session.roles }, null, 2)}
     </pre>
   )
 }

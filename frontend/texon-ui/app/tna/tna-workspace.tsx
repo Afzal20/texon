@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { ArrowLeft, ArrowUpRight, CalendarDays, Download, FileText, Filter, Plus, Search, TrendingDown, TrendingUp, Clock } from "lucide-react"
 import { toast } from "sonner"
+import { RawItemsViewer } from "@/components/data/RawDataViewer"
 
 type ModuleKey =
   | "task-job-order-management-monitoring"
@@ -280,7 +281,7 @@ function noticeClass(tone: WorkspaceConfig["notices"][number]["tone"]) {
   return tone === "rose" ? "border-rose-200 bg-rose-50" : tone === "emerald" ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"
 }
 
-export function TnAWorkspace({ module, metrics, rows }: { module: ModuleKey; metrics?: WorkspaceConfig["metrics"]; rows?: WorkspaceConfig["rows"] }) {
+export function TnAWorkspace({ module, metrics, rows, rawItems }: { module: ModuleKey; metrics?: WorkspaceConfig["metrics"]; rows?: WorkspaceConfig["rows"]; rawItems?: Record<string, unknown>[] }) {
   const config = configs[module]
   const resolvedMetrics = metrics ?? config.metrics
   const resolvedRows = rows ?? config.rows
@@ -390,6 +391,7 @@ export function TnAWorkspace({ module, metrics, rows }: { module: ModuleKey; met
             </Card>
           </div>
         </div>
+        {rawItems && rawItems.length > 0 && <RawItemsViewer items={rawItems} />}
       </main>
     </AppLayout>
   )

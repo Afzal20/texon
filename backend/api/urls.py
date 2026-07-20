@@ -26,5 +26,6 @@ urlpatterns = [
     path("v1/", include("performance.urls")),
     path("v1/", include("planning.urls")),
     path("v1/", include("scheduling.urls")),
+    path("v1/", include("rbac.urls")),
     path("v1/ai/", include("ai.urls")),
 ]

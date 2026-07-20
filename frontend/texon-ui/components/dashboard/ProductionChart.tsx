@@ -39,7 +39,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export function ProductionChart() {
   return (
     <div className="h-full w-full min-h-[200px]">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 320, height: 200 }}>
         <LineChart data={data} margin={{ top: 16, right: 16, left: -10, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
           <XAxis

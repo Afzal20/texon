@@ -1,7 +1,7 @@
 from datetime import date
 
 from django.db import models
-from django.db.models import Avg, Count, Sum
+from django.db.models import Avg, Count, Q, Sum
 from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied

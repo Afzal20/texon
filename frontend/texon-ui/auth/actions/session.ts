@@ -5,9 +5,10 @@ import { getSession } from "@/auth/lib/session"
 export async function getSessionClaims(): Promise<{
   email: string
   userId: number
-  role: string
+  roles: string[]
+  permissions: string[]
 } | null> {
   const session = await getSession()
   if (!session) return null
-  return { email: session.email, userId: session.userId, role: session.role }
+  return { email: session.email, userId: session.userId, roles: session.roles, permissions: session.permissions }
 }

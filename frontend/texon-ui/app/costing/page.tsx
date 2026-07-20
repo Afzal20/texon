@@ -1,10 +1,12 @@
 "use client"
 
+import * as React from "react"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Download, AlertTriangle, CheckCircle2, Clock, Sparkles, RefreshCw, TrendingUp } from "lucide-react"
 import { toast } from "sonner"
+import { getCostSheets } from "@/lib/api/costing"
 
 const bomItems = [
   { desc: "Cotton Twill 280 GSM, Olive Drab (C-100%)", supplier: "Artistic Milliners", cons: "1.45 Yds", unitPrice: "$2.10", total: "$3.045", status: "Sourced", statusColor: "bg-emerald-100 text-emerald-700 border-emerald-200" },
@@ -21,6 +23,28 @@ const costBreakdown = [
 ]
 
 export default function Costing() {
+  const [costSheets, setCostSheets] = React.useState<any[]>([])
+  const [bomItemsState, setBomItemsState] = React.useState(bomItems)
+
+  React.useEffect(() => {
+    getCostSheets().then((res) => {
+      const items = Array.isArray(res.data?.results) ? res.data.results : Array.isArray(res.data) ? res.data : []
+      if (items.length > 0) {
+        setCostSheets(items)
+        setBomItemsState(items.slice(0, 3).map((i: any) => ({
+          desc: i.description ?? i.item_description ?? i.name ?? "-",
+          supplier: i.supplier ?? i.vendor ?? "-",
+          cons: i.consumption ?? i.quantity ? `${i.quantity}` : "-",
+          unitPrice: i.unit_price ? `$${i.unit_price}` : "-",
+          total: i.total_cost ? `$${i.total_cost}` : "-",
+          status: i.status ?? "Pending",
+          statusColor: i.status === "Sourced" ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-amber-100 text-amber-700 border-amber-200",
+          alert: i.status !== "Sourced",
+        })))
+      }
+    }).catch(() => {})
+  }, [])
+
   return (
     <AppLayout>
       <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8">
@@ -106,7 +130,7 @@ export default function Costing() {
                 <div>Total Cost</div>
                 <div>Status</div>
               </div>
-              {bomItems.map((item, i) => (
+              {bomItemsState.map((item, i) => (
                 <div key={i} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] items-center px-6 py-4 border-b border-border hover:bg-muted/10 transition-colors text-sm">
                   <div className="flex items-center gap-2 font-medium text-foreground">
                     {item.alert && <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0" />}

@@ -55,11 +55,15 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         refresh = RefreshToken.for_user(user)
+        roles = list(user.user_roles.values_list("role__name", flat=True))
+        perms = sorted(get_user_permissions(user))
         return Response(
             {
                 "user": UserSerializer(user).data,
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
+                "permissions": perms,
+                "roles": roles,
             },
             status=status.HTTP_201_CREATED,
         )
@@ -101,11 +105,15 @@ class LoginView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
         refresh = RefreshToken.for_user(user)
+        roles = list(user.user_roles.values_list("role__name", flat=True))
+        perms = sorted(get_user_permissions(user))
         return Response(
             {
                 "user": UserSerializer(user).data,
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
+                "permissions": perms,
+                "roles": roles,
             }
         )
 
@@ -138,6 +146,9 @@ class LogoutView(APIView):
         return Response({"detail": "Logged out successfully."})
 
 
+from rbac.permissions import get_user_permissions
+
+
 class MeView(generics.RetrieveAPIView):
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticated,)
@@ -145,6 +156,16 @@ class MeView(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        perms = get_user_permissions(instance)
+        roles = list(instance.user_roles.values_list("role__name", flat=True))
+        data = serializer.data
+        data["permissions"] = sorted(perms)
+        data["roles"] = roles
+        return Response(data)
 
 
 class UpdatePasswordView(APIView):

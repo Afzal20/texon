@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { ArrowLeft, ArrowUpRight, CalendarDays, Download, FileText, Filter, Plus, Search, TrendingDown, TrendingUp, Package } from "lucide-react"
 import { toast } from "sonner"
+import { RawItemsViewer } from "@/components/data/RawDataViewer"
 
 type ModuleKey =
   | "fabric-inventory"
@@ -556,8 +557,57 @@ function noticeClass(tone: WorkspaceConfig["notices"][number]["tone"]) {
   return tone === "rose" ? "border-rose-200 bg-rose-50" : tone === "emerald" ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"
 }
 
-export function InventoryWorkspace({ module }: { module: ModuleKey }) {
-  const config = configs[module]
+export function InventoryWorkspace({ 
+  module, 
+  metrics, 
+  rows, 
+  rawItems,
+  isLoading, 
+  error 
+}: { 
+  module: ModuleKey
+  metrics?: WorkspaceConfig["metrics"]
+  rows?: WorkspaceConfig["rows"]
+  rawItems?: Record<string, unknown>[]
+  isLoading?: boolean
+  error?: string | null
+}) {
+  const baseConfig = configs[module]
+  const config = {
+    ...baseConfig,
+    metrics: metrics ?? baseConfig.metrics,
+    rows: rows ?? baseConfig.rows,
+  }
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <main className="mx-auto max-w-[1600px] space-y-6 p-6 md:p-8">
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <div className="mx-auto mb-4 size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
+              <p className="text-sm text-muted-foreground">Loading {baseConfig.title.toLowerCase()} data...</p>
+            </div>
+          </div>
+        </main>
+      </AppLayout>
+    )
+  }
+
+  if (error) {
+    return (
+      <AppLayout>
+        <main className="mx-auto max-w-[1600px] space-y-6 p-6 md:p-8">
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <p className="text-lg font-medium text-rose-600">Failed to load data</p>
+              <p className="mt-1 text-sm text-muted-foreground">{error}</p>
+            </div>
+          </div>
+        </main>
+      </AppLayout>
+    )
+  }
 
   return (
     <AppLayout>
@@ -664,6 +714,7 @@ export function InventoryWorkspace({ module }: { module: ModuleKey }) {
             </Card>
           </div>
         </div>
+        {rawItems && rawItems.length > 0 && <RawItemsViewer items={rawItems} />}
       </main>
     </AppLayout>
   )

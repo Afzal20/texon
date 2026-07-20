@@ -10,6 +10,12 @@ export async function requireAuth(): Promise<SessionPayload> {
 
 export async function requireRole(...roles: string[]): Promise<SessionPayload> {
   const session = await requireAuth()
-  if (!roles.includes(session.role)) redirect("/")
+  if (!roles.some(r => session.roles.includes(r))) redirect("/")
+  return session
+}
+
+export async function requirePermission(...perms: string[]): Promise<SessionPayload> {
+  const session = await requireAuth()
+  if (!perms.some(p => session.permissions.includes(p))) redirect("/")
   return session
 }

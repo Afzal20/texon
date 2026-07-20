@@ -15,11 +15,13 @@ function statusClass(status: string) {
 
 export default function BuyerCommunicationRecordsPage() {
   const [data, setData] = React.useState<{ metrics?: { label: string; value: string; note: string; trend: "up" | "down" | "neutral" }[]; rows?: string[][] }>({})
+  const [rawItems, setRawItems] = React.useState<Record<string, unknown>[]>([])
 
   React.useEffect(() => {
     getBuyerCommunications().then((res) => {
       const items = Array.isArray(res.data?.results) ? res.data.results : Array.isArray(res.data) ? res.data : []
       if (!items.length) return
+      setRawItems(items as Record<string, unknown>[])
 
       const today = new Date().toISOString().slice(0, 10)
       const todayCount = items.filter((i: any) => i.communication_date?.startsWith(today)).length
@@ -46,5 +48,5 @@ export default function BuyerCommunicationRecordsPage() {
     }).catch(() => {})
   }, [])
 
-  return <CRMWorkspace module="buyer-communication-records" metrics={data.metrics} rows={data.rows} />
+  return <CRMWorkspace module="buyer-communication-records" metrics={data.metrics} rows={data.rows} rawItems={rawItems} />
 }

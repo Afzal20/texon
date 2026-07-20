@@ -14,11 +14,13 @@ function trendLabel(margin: number) {
 
 export default function BuyerWiseProfitabilityPage() {
   const [data, setData] = React.useState<{ metrics?: { label: string; value: string; note: string; trend: "up" | "down" | "neutral" }[]; rows?: string[][] }>({})
+  const [rawItems, setRawItems] = React.useState<Record<string, unknown>[]>([])
 
   React.useEffect(() => {
     getBuyerProfitabilities().then((res) => {
       const items = Array.isArray(res.data?.results) ? res.data.results : Array.isArray(res.data) ? res.data : []
       if (!items.length) return
+      setRawItems(items as Record<string, unknown>[])
 
       const totalRevenue = items.reduce((s: number, i: any) => s + Number(i.total_revenue ?? 0), 0)
       const totalCost = items.reduce((s: number, i: any) => s + Number(i.total_cost ?? 0), 0)
@@ -46,5 +48,5 @@ export default function BuyerWiseProfitabilityPage() {
     }).catch(() => {})
   }, [])
 
-  return <CRMWorkspace module="buyer-wise-profitability" metrics={data.metrics} rows={data.rows} />
+  return <CRMWorkspace module="buyer-wise-profitability" metrics={data.metrics} rows={data.rows} rawItems={rawItems} />
 }

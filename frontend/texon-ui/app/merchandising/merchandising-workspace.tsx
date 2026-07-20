@@ -1,12 +1,15 @@
 "use client"
 
+import { useState, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, ArrowUpRight, CalendarDays, Download, FileText, Filter, Plus, Search, TrendingDown, TrendingUp, Shirt } from "lucide-react"
+import { ArrowLeft, ArrowUpRight, CalendarDays, ChevronLeft, ChevronRight, FileText, Filter, Plus, Search, TrendingDown, TrendingUp, Shirt } from "lucide-react"
 import { toast } from "sonner"
+import { RawItemsViewer } from "@/components/data/RawDataViewer"
 
 type ModuleKey =
   | "style-management"
@@ -378,7 +381,7 @@ const configs: Record<ModuleKey, WorkspaceConfig> = {
   "ie-suggestion-for-pph": {
     title: "IE Suggestion for PPH",
     eyebrow: "Industrial engineering",
-    description: "Generate IE recommendations forPieces Per Hour targets and method improvements.",
+    description: "Generate IE recommendations for Pieces Per Hour targets and method improvements.",
     action: "New suggestion",
     metrics: [
       { label: "Active suggestions", value: "32", note: "Open IE recommendations", trend: "neutral" },
@@ -561,12 +564,65 @@ function noticeClass(tone: WorkspaceConfig["notices"][number]["tone"]) {
   return tone === "rose" ? "border-rose-200 bg-rose-50" : tone === "emerald" ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"
 }
 
-export function MerchandisingWorkspace({ module }: { module: ModuleKey }) {
+const ROWS_PER_PAGE = 15
+
+export function MerchandisingWorkspace({ module, metrics, rows, isLoading, error, dataNotice, rowLink, rawItems }: { module: ModuleKey; metrics?: WorkspaceConfig["metrics"]; rows?: WorkspaceConfig["rows"]; isLoading?: boolean; error?: string | null; dataNotice?: string | null; rowLink?: (row: string[]) => string; rawItems?: Record<string, unknown>[] }) {
+  const router = useRouter()
   const config = configs[module]
+  const resolvedMetrics = metrics ?? config.metrics
+  const resolvedRows = rows ?? config.rows
+  const [page, setPage] = useState(1)
+  const totalPages = Math.max(1, Math.ceil(resolvedRows.length / ROWS_PER_PAGE))
+  const paginatedRows = useMemo(() => resolvedRows.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE), [resolvedRows, page])
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <main className="mx-auto max-w-[1600px] space-y-6 p-6 md:p-8">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="h-8 w-48 animate-pulse rounded bg-muted" />
+              <div className="h-4 w-64 animate-pulse rounded bg-muted" />
+            </div>
+            <div className="h-10 w-32 animate-pulse rounded bg-muted" />
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i} className="gap-3 border-border/70 py-4 shadow-none">
+                <CardContent className="p-0">
+                  <div className="h-3 w-24 animate-pulse rounded bg-muted" />
+                  <div className="mt-3 h-7 w-32 animate-pulse rounded bg-muted" />
+                  <div className="mt-3 h-3 w-36 animate-pulse rounded bg-muted" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </main>
+      </AppLayout>
+    )
+  }
+
+  if (error) {
+    return (
+      <AppLayout>
+        <main className="mx-auto max-w-[1600px] space-y-6 p-6 md:p-8">
+          <div className="flex flex-col items-center justify-center rounded-lg border border-rose-200 bg-rose-50 p-12 text-center">
+            <p className="text-lg font-semibold text-rose-800">Failed to load data</p>
+            <p className="mt-1 text-sm text-rose-600">{error}</p>
+          </div>
+        </main>
+      </AppLayout>
+    )
+  }
 
   return (
     <AppLayout>
       <main className="mx-auto max-w-[1600px] space-y-6 p-6 md:p-8">
+        {dataNotice && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-5 py-3 text-sm text-amber-800">
+            {dataNotice}
+          </div>
+        )}
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <a href="/merchandising" className="mb-2 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
@@ -578,14 +634,11 @@ export function MerchandisingWorkspace({ module }: { module: ModuleKey }) {
             </div>
             <p className="mt-1 text-sm text-muted-foreground">{config.description}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" className="gap-2" onClick={() => toast.success(`${config.title} exported`)}><Download className="size-4" /> Export</Button>
-            <Button className="gap-2" onClick={() => toast.info(`${config.action} form opened`)}><Plus className="size-4" /> {config.action}</Button>
-          </div>
+          <Button className="gap-2" onClick={() => router.push(`/merchandising/${module}/new`)}><Plus className="size-4" /> {config.action}</Button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {config.metrics.map((metric) => (
+          {resolvedMetrics.map((metric) => (
             <Card key={metric.label} className="gap-3 border-border/70 py-4 shadow-none">
               <CardContent className="p-0">
                 <p className="text-xs font-medium text-muted-foreground">{metric.label}</p>
@@ -621,21 +674,55 @@ export function MerchandisingWorkspace({ module }: { module: ModuleKey }) {
                     <tr>{config.columns.map((column) => <th key={column} className="px-5 py-3 font-medium">{column}</th>)}</tr>
                   </thead>
                   <tbody>
-                    {config.rows.map((row) => (
-                      <tr key={row[0]} className="border-t transition-colors hover:bg-muted/30">
-                        {row.map((cell, index) => (
+                    {paginatedRows.length > 0 ? paginatedRows.map((row) => (
+                      <tr
+                        key={row[0]}
+                        className={`border-t transition-colors ${rowLink ? "cursor-pointer hover:bg-muted/50" : "hover:bg-muted/30"}`}
+                        onClick={() => { if (rowLink) router.push(rowLink(row)) }}
+                      >
+                        {row.slice(0, config.columns.length).map((cell, index) => (
                           <td key={`${row[0]}-${index}`} className={`px-5 py-4 ${index === 0 ? "font-medium" : "text-muted-foreground"}`}>
                             {index === config.statusIndex ? <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${noticeClass(cell as "amber" | "rose" | "emerald")}`}>{cell}</span> : cell}
                           </td>
                         ))}
                       </tr>
-                    ))}
+                    )) : (
+                      <tr>
+                        <td colSpan={config.columns.length} className="px-5 py-8 text-center text-sm text-muted-foreground">No records found</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
               <div className="flex items-center justify-between border-t px-5 py-3 text-xs text-muted-foreground">
-                <span>Showing 4 of 24 records</span>
-                <button className="flex items-center gap-1 font-medium text-primary hover:underline" onClick={() => toast.info("Opening full register")}>View all <ArrowUpRight className="size-3" /></button>
+                <span>{resolvedRows.length} record{resolvedRows.length !== 1 ? "s" : ""}</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    className={`inline-flex size-7 items-center justify-center rounded-md ${page <= 1 ? "text-muted-foreground/40" : "text-muted-foreground hover:bg-muted"}`}
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  >
+                    <ChevronLeft className="size-4" />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                    <button
+                      key={p}
+                      className={`inline-flex size-7 items-center justify-center rounded-md text-xs font-medium ${
+                        p === page ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
+                      }`}
+                      onClick={() => setPage(p)}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                  <button
+                    className={`inline-flex size-7 items-center justify-center rounded-md ${page >= totalPages ? "text-muted-foreground/40" : "text-muted-foreground hover:bg-muted"}`}
+                    disabled={page >= totalPages}
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  >
+                    <ChevronRight className="size-4" />
+                  </button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -669,6 +756,8 @@ export function MerchandisingWorkspace({ module }: { module: ModuleKey }) {
             </Card>
           </div>
         </div>
+
+        {rawItems && <RawItemsViewer items={rawItems} />}
       </main>
     </AppLayout>
   )

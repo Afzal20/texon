@@ -3,19 +3,21 @@
 import * as React from "react"
 import { CRMWorkspace } from "../crm-workspace"
 import { getBuyers } from "@/lib/api/crm"
-import { getBuyerPortfolios } from "@/lib/api/merchandising"
+import { getBuyerPortfolios } from "@/lib/api/crm"
 
 const fmt = (n: number) => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const fmtCount = (n: number) => n.toLocaleString()
 
 export default function BuyerProfilePage() {
   const [data, setData] = React.useState<{ metrics?: { label: string; value: string; note: string; trend: "up" | "down" | "neutral" }[]; rows?: string[][] }>({})
+  const [rawItems, setRawItems] = React.useState<Record<string, unknown>[]>([])
 
   React.useEffect(() => {
     Promise.all([getBuyers(), getBuyerPortfolios()]).then(([buyersRes, portfoliosRes]) => {
       const items = Array.isArray(buyersRes.data?.results) ? buyersRes.data.results : Array.isArray(buyersRes.data) ? buyersRes.data : []
       const portfolios = Array.isArray(portfoliosRes.data?.results) ? portfoliosRes.data.results : Array.isArray(portfoliosRes.data) ? portfoliosRes.data : []
       if (!items.length) return
+      setRawItems(items as Record<string, unknown>[])
 
       const portfolioMap = new Map<number, any>(portfolios.map((p: any) => [p.buyer, p]))
       const active = items.filter((i: any) => i.is_active)
@@ -47,5 +49,5 @@ export default function BuyerProfilePage() {
     }).catch(() => {})
   }, [])
 
-  return <CRMWorkspace module="buyer-profile" metrics={data.metrics} rows={data.rows} />
+  return <CRMWorkspace module="buyer-profile" metrics={data.metrics} rows={data.rows} rawItems={rawItems} />
 }

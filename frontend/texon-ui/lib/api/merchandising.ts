@@ -20,26 +20,6 @@ export const patchBuyer = (id: number, data: Record<string, unknown>) =>
 export const deleteBuyer = (id: number) =>
   apiClient.delete(`/api/v1/buyers/${id}/`)
 
-// ─── Buyer Communications ────────────────────────────────────────────────────
-
-export const getBuyerCommunications = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/buyer-communications/', { params })
-
-export const getBuyerCommunication = (id: number) =>
-  apiClient.get(`/api/v1/buyer-communications/${id}/`)
-
-export const createBuyerCommunication = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/buyer-communications/', data)
-
-export const updateBuyerCommunication = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/buyer-communications/${id}/`, data)
-
-export const patchBuyerCommunication = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/buyer-communications/${id}/`, data)
-
-export const deleteBuyerCommunication = (id: number) =>
-  apiClient.delete(`/api/v1/buyer-communications/${id}/`)
-
 // ─── Buyer Enquiries ─────────────────────────────────────────────────────────
 
 export const getBuyerEnquiries = (params?: Record<string, unknown>) =>
@@ -59,30 +39,6 @@ export const patchBuyerEnquiry = (id: number, data: Record<string, unknown>) =>
 
 export const deleteBuyerEnquiry = (id: number) =>
   apiClient.delete(`/api/v1/buyer-enquiries/${id}/`)
-
-// ─── Buyer Portfolios ────────────────────────────────────────────────────────
-
-export const getBuyerPortfolios = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/buyer-portfolios/', { params })
-
-export const getBuyerPortfolio = (id: number) =>
-  apiClient.get(`/api/v1/buyer-portfolios/${id}/`)
-
-// ─── Buyer Profitabilities ───────────────────────────────────────────────────
-
-export const getBuyerProfitabilities = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/buyer-profitabilities/', { params })
-
-export const getBuyerProfitability = (id: number) =>
-  apiClient.get(`/api/v1/buyer-profitabilities/${id}/`)
-
-// ─── Buyer Ratings ───────────────────────────────────────────────────────────
-
-export const getBuyerRatings = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/buyer-ratings/', { params })
-
-export const getBuyerRating = (id: number) =>
-  apiClient.get(`/api/v1/buyer-ratings/${id}/`)
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
@@ -104,42 +60,117 @@ export const patchStyle = (id: number, data: Record<string, unknown>) =>
 export const deleteStyle = (id: number) =>
   apiClient.delete(`/api/v1/styles/${id}/`)
 
-// ─── Style Analyses ──────────────────────────────────────────────────────────
+// ─── SMV Records ────────────────────────────────────────────────────────────
 
-export const getStyleAnalyses = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/style-analyses/', { params })
+export const getSMVRecords = (params?: Record<string, unknown>) =>
+  apiClient.get('/api/v1/smv-records/', { params })
 
-export const getStyleAnalysis = (id: number) =>
-  apiClient.get(`/api/v1/style-analyses/${id}/`)
+export const getSMVRecord = (id: number) =>
+  apiClient.get(`/api/v1/smv-records/${id}/`)
 
-export const createStyleAnalysis = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/style-analyses/', data)
+export const createSMVRecord = (data: Record<string, unknown>) =>
+  apiClient.post('/api/v1/smv-records/', data)
 
-export const updateStyleAnalysis = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/style-analyses/${id}/`, data)
+export const updateSMVRecord = (id: number, data: Record<string, unknown>) =>
+  apiClient.put(`/api/v1/smv-records/${id}/`, data)
 
-export const patchStyleAnalysis = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/style-analyses/${id}/`, data)
+export const patchSMVRecord = (id: number, data: Record<string, unknown>) =>
+  apiClient.patch(`/api/v1/smv-records/${id}/`, data)
 
-export const deleteStyleAnalysis = (id: number) =>
-  apiClient.delete(`/api/v1/style-analyses/${id}/`)
+export const deleteSMVRecord = (id: number) =>
+  apiClient.delete(`/api/v1/smv-records/${id}/`)
 
-// ─── Shade Approvals ─────────────────────────────────────────────────────────
+// ─── Budget Demand Assessments ─────────────────────────────────────────────────
+export const getBudgetDemandAssessments = (params?: Record<string, unknown>) =>
+  apiClient.get('/api/v1/budget-demand-assessments/', { params })
 
-export const getShadeApprovals = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/shade-approvals/', { params })
+export const getBudgetDemandAssessment = (id: number) =>
+  apiClient.get(`/api/v1/budget-demand-assessments/${id}/`)
 
-export const getShadeApproval = (id: number) =>
-  apiClient.get(`/api/v1/shade-approvals/${id}/`)
+export const createBudgetDemandAssessment = (data: Record<string, unknown>) =>
+  apiClient.post('/api/v1/budget-demand-assessments/', data)
 
-export const createShadeApproval = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/shade-approvals/', data)
+export const updateBudgetDemandAssessment = (id: number, data: Record<string, unknown>) =>
+  apiClient.put(`/api/v1/budget-demand-assessments/${id}/`, data)
 
-export const updateShadeApproval = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/shade-approvals/${id}/`, data)
+export const patchBudgetDemandAssessment = (id: number, data: Record<string, unknown>) =>
+  apiClient.patch(`/api/v1/budget-demand-assessments/${id}/`, data)
 
-export const patchShadeApproval = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/shade-approvals/${id}/`, data)
+export const deleteBudgetDemandAssessment = (id: number) =>
+  apiClient.delete(`/api/v1/budget-demand-assessments/${id}/`)
 
-export const deleteShadeApproval = (id: number) =>
-  apiClient.delete(`/api/v1/shade-approvals/${id}/`)
+// ─── IE Suggestions ────────────────────────────────────────────────────────────
+export const getIeSuggestions = (params?: Record<string, unknown>) =>
+  apiClient.get('/api/v1/ie-suggestions/', { params })
+
+export const getIeSuggestion = (id: number) =>
+  apiClient.get(`/api/v1/ie-suggestions/${id}/`)
+
+export const createIeSuggestion = (data: Record<string, unknown>) =>
+  apiClient.post('/api/v1/ie-suggestions/', data)
+
+export const updateIeSuggestion = (id: number, data: Record<string, unknown>) =>
+  apiClient.put(`/api/v1/ie-suggestions/${id}/`, data)
+
+export const patchIeSuggestion = (id: number, data: Record<string, unknown>) =>
+  apiClient.patch(`/api/v1/ie-suggestions/${id}/`, data)
+
+export const deleteIeSuggestion = (id: number) =>
+  apiClient.delete(`/api/v1/ie-suggestions/${id}/`)
+
+// ─── Skill Inventories ─────────────────────────────────────────────────────────
+export const getSkillInventories = (params?: Record<string, unknown>) =>
+  apiClient.get('/api/v1/skill-inventories/', { params })
+
+export const getSkillInventory = (id: number) =>
+  apiClient.get(`/api/v1/skill-inventories/${id}/`)
+
+export const createSkillInventory = (data: Record<string, unknown>) =>
+  apiClient.post('/api/v1/skill-inventories/', data)
+
+export const updateSkillInventory = (id: number, data: Record<string, unknown>) =>
+  apiClient.put(`/api/v1/skill-inventories/${id}/`, data)
+
+export const patchSkillInventory = (id: number, data: Record<string, unknown>) =>
+  apiClient.patch(`/api/v1/skill-inventories/${id}/`, data)
+
+export const deleteSkillInventory = (id: number) =>
+  apiClient.delete(`/api/v1/skill-inventories/${id}/`)
+
+// ─── Production Downtimes ──────────────────────────────────────────────────────
+export const getProductionDowntimes = (params?: Record<string, unknown>) =>
+  apiClient.get('/api/v1/production-downtimes/', { params })
+
+export const getProductionDowntime = (id: number) =>
+  apiClient.get(`/api/v1/production-downtimes/${id}/`)
+
+export const createProductionDowntime = (data: Record<string, unknown>) =>
+  apiClient.post('/api/v1/production-downtimes/', data)
+
+export const updateProductionDowntime = (id: number, data: Record<string, unknown>) =>
+  apiClient.put(`/api/v1/production-downtimes/${id}/`, data)
+
+export const patchProductionDowntime = (id: number, data: Record<string, unknown>) =>
+  apiClient.patch(`/api/v1/production-downtimes/${id}/`, data)
+
+export const deleteProductionDowntime = (id: number) =>
+  apiClient.delete(`/api/v1/production-downtimes/${id}/`)
+
+// ─── Process Wise Targets ──────────────────────────────────────────────────────
+export const getProcessWiseTargets = (params?: Record<string, unknown>) =>
+  apiClient.get('/api/v1/process-wise-targets/', { params })
+
+export const getProcessWiseTarget = (id: number) =>
+  apiClient.get(`/api/v1/process-wise-targets/${id}/`)
+
+export const createProcessWiseTarget = (data: Record<string, unknown>) =>
+  apiClient.post('/api/v1/process-wise-targets/', data)
+
+export const updateProcessWiseTarget = (id: number, data: Record<string, unknown>) =>
+  apiClient.put(`/api/v1/process-wise-targets/${id}/`, data)
+
+export const patchProcessWiseTarget = (id: number, data: Record<string, unknown>) =>
+  apiClient.patch(`/api/v1/process-wise-targets/${id}/`, data)
+
+export const deleteProcessWiseTarget = (id: number) =>
+  apiClient.delete(`/api/v1/process-wise-targets/${id}/`)

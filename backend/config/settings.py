@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'planning',
     'scheduling',
     'ai',
+    'rbac',
 ]
 
 MIDDLEWARE = [

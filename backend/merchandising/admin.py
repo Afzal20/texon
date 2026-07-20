@@ -1,11 +1,16 @@
 from django.contrib import admin
 
 from .models import (
+    BudgetDemandAssessment,
     BuyerEnquiry,
     DevelopmentMonitoring,
+    IeSuggestion,
+    ProcessWiseTarget,
+    ProductionDowntime,
     PurchaseOrder,
     SMVRecord,
     SampleOrder,
+    SkillInventory,
     Style,
 )
 
@@ -45,3 +50,33 @@ class SMVRecordAdmin(admin.ModelAdmin):
 class DevelopmentMonitoringAdmin(admin.ModelAdmin):
     list_display = ("style", "supplier", "stage", "status")
     list_filter = ("status",)
+
+
+@admin.register(BudgetDemandAssessment)
+class BudgetDemandAssessmentAdmin(admin.ModelAdmin):
+    list_display = ("buyer", "assessment_date", "forecast_quantity", "booked_quantity", "confidence")
+    list_filter = ("confidence",)
+
+
+@admin.register(IeSuggestion)
+class IeSuggestionAdmin(admin.ModelAdmin):
+    list_display = ("operation", "current_pph", "target_pph", "status", "production_line")
+    list_filter = ("status",)
+
+
+@admin.register(SkillInventory)
+class SkillInventoryAdmin(admin.ModelAdmin):
+    list_display = ("operator_name", "skill_name", "skill_level", "multi_skill", "production_line")
+    list_filter = ("skill_level", "multi_skill")
+
+
+@admin.register(ProductionDowntime)
+class ProductionDowntimeAdmin(admin.ModelAdmin):
+    list_display = ("cause", "production_line", "start_datetime", "duration_hours", "status")
+    list_filter = ("status", "cause")
+
+
+@admin.register(ProcessWiseTarget)
+class ProcessWiseTargetAdmin(admin.ModelAdmin):
+    list_display = ("process_name", "target_quantity", "achieved_quantity", "variance", "target_date", "status")
+    list_filter = ("status", "process_name")

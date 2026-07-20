@@ -18,15 +18,30 @@ export function withAuth<T>(handler: ApiHandler<T>) {
   }
 }
 
-export function withRole<T>(role: string, handler: ApiHandler<T>) {
-  return async (request: Request, context: { params: T }) => {
-    const session = await getSession()
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+export function withRole<T>(...roles: string[]) {
+  return (handler: ApiHandler<T>) =>
+    async (request: Request, context: { params: T }) => {
+      const session = await getSession()
+      if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      }
+      if (!roles.some(r => session.roles.includes(r))) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+      }
+      return handler(request, session, context.params)
     }
-    if (session.role !== role) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+}
+
+export function withPermission<T>(...perms: string[]) {
+  return (handler: ApiHandler<T>) =>
+    async (request: Request, context: { params: T }) => {
+      const session = await getSession()
+      if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      }
+      if (!perms.some(p => session.permissions.includes(p))) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+      }
+      return handler(request, session, context.params)
     }
-    return handler(request, session, context.params)
-  }
 }

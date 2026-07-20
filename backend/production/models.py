@@ -1,7 +1,6 @@
 from django.db import models
 from core.models import Organization
 from merchandising.models import Style, PurchaseOrder
-from ie_planning.models import ProductionPlan
 
 
 class ProductionLine(models.Model):

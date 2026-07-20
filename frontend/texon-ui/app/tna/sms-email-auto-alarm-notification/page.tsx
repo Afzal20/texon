@@ -6,10 +6,12 @@ import { getAlarmNotifications } from "@/lib/api/tna"
 
 export default function SmsEmailAutoAlarmPage() {
   const [data, setData] = React.useState<{ metrics?: { label: string; value: string; note: string; trend: "up" | "down" | "neutral" }[]; rows?: string[][] }>({})
+  const [rawItems, setRawItems] = React.useState<Record<string, unknown>[]>([])
 
   React.useEffect(() => {
     getAlarmNotifications().then((res) => {
       const items = Array.isArray(res.data?.results) ? res.data.results : Array.isArray(res.data) ? res.data : []
+      setRawItems(items as Record<string, unknown>[])
       if (items.length > 0) {
         setData({
           metrics: [
@@ -21,5 +23,5 @@ export default function SmsEmailAutoAlarmPage() {
     }).catch(() => {})
   }, [])
 
-  return <TnAWorkspace module="sms-email-auto-alarm-notification" metrics={data.metrics} rows={data.rows} />
+  return <TnAWorkspace module="sms-email-auto-alarm-notification" metrics={data.metrics} rows={data.rows} rawItems={rawItems} />
 }

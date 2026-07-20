@@ -1,11 +1,13 @@
 "use client"
 
+import * as React from "react"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Filter, AlertTriangle, ZoomIn, ZoomOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { getPlans } from "@/lib/api/production"
 
 const days = [
   { day: "MON", date: "12", isToday: false },
@@ -130,6 +132,15 @@ function GanttRow({ line }: { line: Line }) {
 }
 
 export default function ProductionPlanning() {
+  const [plans, setPlans] = React.useState<any[]>([])
+
+  React.useEffect(() => {
+    getPlans().then((res) => {
+      const items = Array.isArray(res.data?.results) ? res.data.results : Array.isArray(res.data) ? res.data : []
+      setPlans(items)
+    }).catch(() => {})
+  }, [])
+
   return (
     <AppLayout>
       <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8">
@@ -145,6 +156,9 @@ export default function ProductionPlanning() {
               </div>
               <h2 className="text-lg font-bold text-foreground">Weekly Plan: Nov 12 – Nov 18</h2>
             </div>
+            <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700 text-xs">
+              Sample data — connect backend for live planning data
+            </Badge>
             <div className="h-5 w-px bg-border" />
             <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={() => toast.info("Filter panel coming soon")}>
               <Filter className="h-3.5 w-3.5" /> Filter

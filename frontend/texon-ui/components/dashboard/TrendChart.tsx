@@ -37,7 +37,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export function TrendChart() {
   return (
     <div className="h-full w-full min-h-[200px]">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 320, height: 200 }}>
         <AreaChart data={data} margin={{ top: 16, right: 16, left: 10, bottom: 0 }}>
           <defs>
             <linearGradient id="colorProduction" x1="0" y1="0" x2="0" y2="1">

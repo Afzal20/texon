@@ -35,13 +35,16 @@ export async function registerAction(input: RegisterInput): Promise<{
     const result: {
       access: string
       refresh: string
-      user: { id: number; email: string; role?: string }
+      user: { id: number; email: string }
+      roles?: string[]
+      permissions?: string[]
     } = await res.json()
 
     await setSession({
       userId: result.user.id,
       email: result.user.email,
-      role: result.user.role ?? "user",
+      roles: result.roles ?? [],
+      permissions: result.permissions ?? [],
       accessToken: result.access,
       refreshToken: result.refresh,
     })

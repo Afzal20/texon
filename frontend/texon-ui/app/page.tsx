@@ -3,12 +3,14 @@
 import * as React from "react"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { ArrowUpRight, Info, AlertTriangle, MapPin, ReceiptText } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { ArrowUpRight, Info, AlertTriangle, MapPin, ReceiptText, RefreshCw } from "lucide-react"
 import { ProductionChart } from "@/components/dashboard/ProductionChart"
 import { RiskHeatmap } from "@/components/dashboard/RiskHeatmap"
 import { getDashboardSummary } from "@/lib/data/production-actions"
 import { getDashboardOrdersSummary } from "@/lib/data/order-actions"
 import type { ProductionDashboard } from "@/lib/data/production"
+import { toast } from "sonner"
 
 export default function Dashboard() {
   const [summary, setSummary] = React.useState<ProductionDashboard | null>(null)
@@ -16,11 +18,27 @@ export default function Dashboard() {
     total_ytd: string; active_buyers: number;
     avg_lead_time_days: number; samples_pending: number
   } | null>(null)
+  const [error, setError] = React.useState<string | null>(null)
 
-  React.useEffect(() => {
-    getDashboardSummary().then(setSummary).catch(() => {})
-    getDashboardOrdersSummary().then(setOrdersSummary).catch(() => {})
+  const fetchData = React.useCallback(() => {
+    setError(null)
+    getDashboardSummary()
+      .then(setSummary)
+      .catch((err) => {
+        const msg = err?.message || "Failed to load dashboard"
+        setError(msg)
+        toast.error(msg)
+      })
+    getDashboardOrdersSummary()
+      .then(setOrdersSummary)
+      .catch((err) => {
+        const msg = err?.message || "Failed to load orders"
+        setError(msg)
+        toast.error(msg)
+      })
   }, [])
+
+  React.useEffect(() => { fetchData() }, [fetchData])
 
   return (
     <AppLayout>
@@ -41,6 +59,18 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+
+        {error && (
+          <div className="flex items-center justify-between rounded-lg border border-rose-200 bg-rose-50 px-4 py-3">
+            <div className="flex items-center gap-2 text-sm text-rose-700">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              <span>Failed to load some data: {error}</span>
+            </div>
+            <Button variant="outline" size="sm" onClick={fetchData} className="gap-1.5">
+              <RefreshCw className="h-3.5 w-3.5" /> Retry
+            </Button>
+          </div>
+        )}
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 

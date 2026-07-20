@@ -29,11 +29,13 @@ function amendmentImpact(previous: string, newValue: string) {
 
 export default function OrderAmendmentHistoryPage() {
   const [data, setData] = React.useState<{ metrics?: { label: string; value: string; note: string; trend: "up" | "down" | "neutral" }[]; rows?: string[][] }>({})
+  const [rawItems, setRawItems] = React.useState<Record<string, unknown>[]>([])
 
   React.useEffect(() => {
     getOrderAmendments().then((res) => {
       const items = Array.isArray(res.data?.results) ? res.data.results : Array.isArray(res.data) ? res.data : []
       if (!items.length) return
+      setRawItems(items as Record<string, unknown>[])
 
       const qtyChanges = items.filter((i: any) => amendmentType(i.reason, i.previous_value, i.new_value) === "Qty change")
       const delChanges = items.filter((i: any) => amendmentType(i.reason, i.previous_value, i.new_value) === "Delivery shift")
@@ -57,5 +59,5 @@ export default function OrderAmendmentHistoryPage() {
     }).catch(() => {})
   }, [])
 
-  return <CRMWorkspace module="order-amendment-history" metrics={data.metrics} rows={data.rows} />
+  return <CRMWorkspace module="order-amendment-history" metrics={data.metrics} rows={data.rows} rawItems={rawItems} />
 }
