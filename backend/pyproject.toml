@@ -14,3 +14,8 @@ dependencies = [
     "openai>=2.46.0",
     "python-decouple>=3.8",
 ]
+
+[dependency-groups]
+dev = [
+    "faker>=40.36.0",
+]

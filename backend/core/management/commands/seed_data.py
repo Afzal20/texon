@@ -7,11 +7,12 @@ from decimal import Decimal
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils import timezone
 from faker import Faker
 
 from accounts.models import AccountsPayable, AccountsReceivable, ChartOfAccount, CostCenter, Expense, JournalEntry
 from buyers.models import Buyer, BuyerPortfolio, BuyerRating
-from commercial.models import BillOfExchange, Invoice, LC, Shipment
+from commercial.models import BillOfExchange, Invoice, LetterOfCredit, Shipment
 from compliance.models import ComplianceRecord
 from core.models import Currency, Location
 from costing.models import CostSheet, PreCosting
@@ -63,36 +64,69 @@ class Command(BaseCommand):
     def _run(self):
         self._seed_currencies()
         self._seed_locations()
-        self._seed_designations()
-        self._seed_employees()
-        self._seed_buyers()
-        self._seed_styles()
-        self._seed_suppliers()
-        self._seed_merchandising()
-        self._seed_production_lines()
-        self._seed_inventory()
-        self._seed_procurement()
+        if not Department.objects.exists():
+            self._seed_designations()
+        if not Employee.objects.exists():
+            self._seed_employees()
+        if not Buyer.objects.exists():
+            self._seed_buyers()
+        if not Style.objects.exists():
+            self._seed_styles()
+        if not Supplier.objects.exists():
+            self._seed_suppliers()
+        if not PurchaseOrder.objects.exists():
+            self._seed_merchandising()
+        if not ProductionLine.objects.exists():
+            self._seed_production_lines()
+        if not Warehouse.objects.exists():
+            self._seed_inventory()
+        if not RawMaterialRequisition.objects.exists():
+            self._seed_procurement()
+        self._seed_quotation_analyses()
         self._seed_defect_categories()
-        self._seed_production()
-        self._seed_quality()
-        self._seed_subcontract()
-        self._seed_cost_centers()
-        self._seed_chart_of_accounts()
-        self._seed_accounts()
-        self._seed_commercial()
-        self._seed_crm()
-        self._seed_hr_details()
-        self._seed_fixed_assets()
-        self._seed_tna()
-        self._seed_ie_planning()
-        self._seed_costing()
-        self._seed_multi_company()
-        self._seed_orders()
-        self._seed_compliance()
-        self._seed_reporting()
-        self._seed_performance()
-        self._seed_planning()
-        self._seed_scheduling()
+        if not ProductionOrder.objects.exists():
+            self._seed_production()
+        if not InlineQC.objects.exists():
+            self._seed_quality()
+        if not SubcontractOrder.objects.exists():
+            self._seed_subcontract()
+        if not CostCenter.objects.exists():
+            self._seed_cost_centers()
+        if not ChartOfAccount.objects.exists():
+            self._seed_chart_of_accounts()
+        if not AccountsPayable.objects.exists():
+            self._seed_accounts()
+        if not LetterOfCredit.objects.exists():
+            self._seed_commercial()
+        if not BuyerCommunication.objects.exists():
+            self._seed_crm()
+        if not Attendance.objects.exists():
+            self._seed_hr_details()
+        if not AssetCategory.objects.exists():
+            self._seed_fixed_assets()
+        if not Task.objects.exists():
+            self._seed_tna()
+        self._seed_alarm_notifications()
+        if not CapacityBooking.objects.exists():
+            self._seed_ie_planning()
+        if not PreCosting.objects.exists():
+            self._seed_costing()
+        if not GroupCompany.objects.exists():
+            self._seed_multi_company()
+        if not Order.objects.exists():
+            self._seed_orders()
+        if not ComplianceRecord.objects.exists():
+            self._seed_compliance()
+        if not Report.objects.exists():
+            self._seed_reporting()
+        if not PerformanceRecord.objects.exists():
+            self._seed_performance()
+        if not Plan.objects.exists():
+            self._seed_planning()
+        if not Schedule.objects.exists():
+            self._seed_scheduling()
+        self._seed_otps()
+        self._seed_ai()
 
     # ── helpers ──────────────────────────────────────────────────────
     def _rand_date(self, start="-2y", end="+30d") -> date:
@@ -525,6 +559,25 @@ class Command(BaseCommand):
                 status=random.choice(["draft", "confirmed", "partial_received", "received"]),
             )
 
+    def _seed_quotation_analyses(self):
+        from procurement.models import QuotationAnalysis
+        if QuotationAnalysis.objects.exists():
+            return
+        supplier_ids = list(Supplier.objects.values_list("id", flat=True))
+        for i in range(1, 21):
+            QuotationAnalysis.objects.create(
+                organization_id=ORG_ID,
+                supplier_id=random.choice(supplier_ids),
+                item_type=random.choice(["Fabric - 100% Cotton", "Polyester", "Buttons", "Zippers", "Labels", "Threads"]),
+                quantity=random.randint(500, 30000),
+                quoted_price=self._dec(0.1, 8),
+                delivery_terms=random.choice(["Ex-Factory", "FOB Chittagong", "CIF Chittagong"]),
+                payment_terms=random.choice(["Cash on Delivery", "Net 30", "LC at Sight", "Advance Payment"]),
+                validity_date=self._future_date(45),
+                status=random.choice(["pending", "accepted", "rejected", "negotiating"]),
+                notes=fake.text(max_nb_chars=80),
+            )
+
     # ── Defect Categories ────────────────────────────────────────────
     def _seed_defect_categories(self):
         from quality.models import DefectCategory
@@ -826,56 +879,77 @@ class Command(BaseCommand):
 
     # ── Commercial ───────────────────────────────────────────────────
     def _seed_commercial(self):
-        from commercial.models import BillOfExchange, Invoice, LC, Shipment
+        from commercial.models import BillOfExchange, Invoice, LetterOfCredit, Shipment
+        from core.models import Currency
+        from orders.models import Order
         buyer_ids = list(Buyer.objects.values_list("id", flat=True))
-        po_ids = list(PurchaseOrder.objects.values_list("id", flat=True))
+        supplier_ids = list(Supplier.objects.values_list("id", flat=True))
+        order_ids = list(Order.objects.values_list("id", flat=True))
+        usd_id = Currency.objects.filter(code="USD").values_list("id", flat=True).first()
 
         for i in range(1, 13):
-            LC.objects.create(
+            LetterOfCredit.objects.create(
                 organization_id=ORG_ID, buyer_id=random.choice(buyer_ids),
-                purchase_order_id=random.choice(po_ids) if random.random() > 0.3 else None,
+                supplier_id=random.choice(supplier_ids),
                 lc_number=f"LC{2025}{i:04d}",
                 lc_type=random.choice(["export", "import", "btb"]),
+                amount=self._dec(50000, 2000000),
+                currency_id=usd_id,
                 issue_date=self._past_date(180),
                 expiry_date=self._future_date(30) if random.random() > 0.5 else self._past_date(30),
-                amount=self._dec(50000, 2000000),
-                issuing_bank=random.choice(["HSBC", "Standard Chartered", "City Bank", "Sonali Bank", "Dutch Bangla"]),
+                bank_name=random.choice(["HSBC", "Standard Chartered", "City Bank", "Sonali Bank", "Dutch Bangla"]),
                 status=random.choice(["draft", "issued", "amended", "expired"]),
+                amendment_count=random.randint(0, 3),
             )
         for i in range(1, 16):
             Shipment.objects.create(
                 organization_id=ORG_ID,
-                purchase_order_id=random.choice(po_ids),
+                purchase_order_id=random.choice(order_ids),
                 buyer_id=random.choice(buyer_ids),
+                supplier_id=random.choice(supplier_ids),
                 shipment_number=f"SHP{i:04d}",
+                direction=random.choice(["import", "export"]),
+                shipment_type=random.choice(["sea", "air", "land"]),
                 shipment_date=self._past_date(90),
                 etd=self._past_date(85), eta=self._future_date(10),
                 port_of_loading=random.choice(["Chittagong", "Dhaka ICD", "Mongla"]),
                 port_of_discharge=random.choice(["Rotterdam", "Hamburg", "New York", "Southampton", "Barcelona", "Los Angeles"]),
                 forwarder=random.choice(["Maersk", "MSC", "CMA CGM", "Evergreen", "COSCO"]),
-                quantity=random.randint(5000, 50000),
+                carrier=random.choice(["Maersk", "MSC", "CMA CGM", "Evergreen", "COSCO"]),
+                container_number=f"MAEU{random.randint(1000000, 9999999)}",
+                container_size=random.choice(["20ft", "40ft", "40hq"]),
                 gross_weight=self._dec(1000, 25000, 2),
+                net_weight=self._dec(900, 23000, 2),
+                volume_cbm=self._dec(10, 80, 3),
                 status=random.choice(["booked", "loaded", "shipped", "in_transit", "arrived", "delivered"]),
+                clearance_status=random.choice(["pending", "in_progress", "cleared"]),
             )
         for i in range(1, 16):
             amount = self._dec(10000, 500000)
             Invoice.objects.create(
                 organization_id=ORG_ID,
-                purchase_order_id=random.choice(po_ids),
+                purchase_order_id=random.choice(order_ids),
                 buyer_id=random.choice(buyer_ids),
+                supplier_id=random.choice(supplier_ids),
                 invoice_number=f"CML-INV-{i:04d}",
                 invoice_date=self._past_date(90),
+                due_date=self._future_date(15),
                 amount=amount,
-                status=random.choice(["draft", "submitted", "approved", "paid"]),
+                currency_id=usd_id,
+                paid_amount=amount if random.random() > 0.5 else self._dec(0, 50000),
+                status=random.choice(["draft", "submitted", "approved", "paid", "partial", "overdue"]),
+                payment_terms=random.choice(["Net 30", "Net 60", "LC at Sight"]),
             )
         for i in range(1, 11):
             BillOfExchange.objects.create(
                 organization_id=ORG_ID, buyer_id=random.choice(buyer_ids),
                 bill_number=f"BOE{i:04d}",
+                bank_name=random.choice(["HSBC", "Standard Chartered", "City Bank"]),
                 issue_date=self._past_date(120),
-                due_date=self._future_date(15) if random.random() > 0.5 else self._past_date(30),
+                maturity_date=self._future_date(15) if random.random() > 0.5 else self._past_date(30),
                 amount=self._dec(20000, 300000),
-                status=random.choice(["draft", "submitted", "accepted", "paid", "dishonored"]),
+                currency_id=usd_id,
+                status=random.choice(["draft", "submitted", "under_review", "accepted", "negotiated", "paid"]),
             )
 
     # ── CRM ──────────────────────────────────────────────────────────
@@ -1068,6 +1142,7 @@ class Command(BaseCommand):
             "Fabric Booking", "Fabric Received", "Cutting Start", "Sewing Start",
             "Finishing Start", "Inspection", "Packing", "Shipment",
         ]
+        task_ids = []
         for i in range(1, 26):
             sid = random.choice(style_ids)
             pid = random.choice(po_ids) if po_ids else None
@@ -1086,6 +1161,7 @@ class Command(BaseCommand):
                 status=random.choice(["not_started", "in_progress", "completed", "delayed"]),
                 progress=random.randint(0, 100),
             )
+            task_ids.append(task.id)
 
             for j in range(random.randint(0, 3)):
                 JobOrder.objects.create(
@@ -1110,6 +1186,25 @@ class Command(BaseCommand):
                     actual_date=pd + timedelta(days=random.randint(-5, 10)),
                     status=random.choice(["on_track", "delayed", "completed"]),
                 )
+
+    def _seed_alarm_notifications(self):
+        from tna.models import AlarmNotification, Task
+        if AlarmNotification.objects.exists():
+            return
+        task_ids = list(Task.objects.values_list("id", flat=True))
+        for i in range(1, 21):
+            task_id = random.choice(task_ids) if task_ids else None
+            scheduled = timezone.now() + timedelta(days=random.randint(-10, 15))
+            AlarmNotification.objects.create(
+                organization_id=ORG_ID,
+                task_id=task_id,
+                alarm_type=random.choice(["sms", "email", "in_app"]),
+                recipient=fake.email(),
+                message=f"Reminder: Task deadline approaching - {fake.sentence(nb_words=8)}",
+                scheduled_at=scheduled,
+                sent_at=scheduled if random.random() > 0.3 else None,
+                status=random.choice(["scheduled", "sent", "failed"]),
+            )
 
     # ── Orders ───────────────────────────────────────────────────────
     def _seed_orders(self):
@@ -1303,6 +1398,59 @@ class Command(BaseCommand):
                 location_id=random.choice([1, 2, 3]),
                 operation_type=random.choice(["manufacturing", "sourcing", "trading", "logistics"]),
             )
+
+    # ── OTP ─────────────────────────────────────────────────────────
+    def _seed_otps(self):
+        from authentication.models import OTP, User
+        if OTP.objects.exists():
+            return
+        user_ids = list(User.objects.values_list("id", flat=True))
+        if not user_ids:
+            return
+        for user_id in user_ids:
+            for purpose in ["password_reset", "email_verify"]:
+                used = random.random() > 0.5
+                OTP.objects.create(
+                    user_id=user_id,
+                    code=str(random.randint(100000, 999999)),
+                    purpose=purpose,
+                    is_used=used,
+                    expires_at=timezone.now() + timedelta(minutes=10),
+                )
+
+    # ── AI ──────────────────────────────────────────────────────────
+    def _seed_ai(self):
+        from ai.models import ConversationLog, MessageLog
+        from authentication.models import User
+        if ConversationLog.objects.exists():
+            return
+        user_ids = list(User.objects.values_list("id", flat=True))
+        if not user_ids:
+            return
+        prompts = [
+            "What is the current production status?",
+            "Show me pending shipments",
+            "Summarize today's attendance",
+            "Which orders are delayed?",
+            "What is the open LC exposure?",
+        ]
+        for i in range(1, 11):
+            conv = ConversationLog.objects.create(
+                conversation_id=f"conv-{2025}-{i:04d}",
+                user_id=random.choice(user_ids),
+            )
+            for role, content in [
+                ("user", random.choice(prompts)),
+                ("assistant", fake.text(max_nb_chars=200)),
+                ("user", random.choice(prompts)),
+                ("assistant", fake.text(max_nb_chars=180)),
+            ]:
+                MessageLog.objects.create(
+                    conversation=conv,
+                    role=role,
+                    content=content,
+                    tool_name=random.choice(["", "query_shipments", "query_orders", "query_attendance"]),
+                )
 
 
 # Fix missing imports used in this file

@@ -1,7 +1,8 @@
-from rest_framework import mixins, viewsets
-from rest_framework.exceptions import PermissionDenied
+from rest_framework import mixins, viewsets, status
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.throttling import UserRateThrottle
+from rest_framework.response import Response
 
 from .models import (
     ChartOfAccount, JournalEntry, AccountsPayable,
@@ -85,9 +86,22 @@ class AccountsPayableViewSet(
 
     def get_queryset(self):
         qs = self.queryset.select_related("organization", "supplier")
-        if not self.request.user.is_staff:
-            qs = qs.filter(organization__is_active=True)
+        organization_id = self.request.query_params.get("organization_id")
+        if organization_id:
+            qs = qs.filter(organization_id=organization_id)
         return qs
+
+    def create(self, request, *args, **kwargs):
+        organization_id = request.data.get("organization")
+        if not organization_id:
+            raise ValidationError({"organization": "This field is required."})
+        qs = self.get_queryset().filter(organization_id=organization_id)
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def perform_destroy(self, instance):
         if not self.request.user.is_staff:

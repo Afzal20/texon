@@ -1,5 +1,25 @@
 import apiClient from './client'
 
+// ─── Shipments ─────────────────────────────────────────────────────────────
+
+export const getShipments = (params?: Record<string, unknown>) =>
+  apiClient.get('/api/v1/shipments/', { params })
+
+export const getShipment = (id: number) =>
+  apiClient.get(`/api/v1/shipments/${id}/`)
+
+export const createShipment = (data: Record<string, unknown>) =>
+  apiClient.post('/api/v1/shipments/', data)
+
+export const updateShipment = (id: number, data: Record<string, unknown>) =>
+  apiClient.put(`/api/v1/shipments/${id}/`, data)
+
+export const patchShipment = (id: number, data: Record<string, unknown>) =>
+  apiClient.patch(`/api/v1/shipments/${id}/`, data)
+
+export const deleteShipment = (id: number) =>
+  apiClient.delete(`/api/v1/shipments/${id}/`)
+
 // ─── Accounts Payable ────────────────────────────────────────────────────────
 
 export const getAccountsPayable = (params?: Record<string, unknown>) =>
