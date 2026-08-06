@@ -1,12 +1,8 @@
 from django.db import models
-from core.models import Organization
 from buyers.models import Buyer
 
 
 class ComplianceRecord(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="compliance_records"
-    )
     buyer = models.ForeignKey(
         Buyer, on_delete=models.SET_NULL, null=True, blank=True, related_name="compliance_records"
     )

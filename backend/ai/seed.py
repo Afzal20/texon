@@ -9,14 +9,11 @@ django.setup()
 
 from django.contrib.auth import get_user_model
 
-from core.models import Organization
 from ai.models import ConversationLog, MessageLog
 
 User = get_user_model()
 
 print("Seeding ai data...")
-
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
 
 user, created = User.objects.get_or_create(email="admin@texon.com", defaults={"is_staff": True})
 if created:

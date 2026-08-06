@@ -1,18 +1,11 @@
 from django.contrib import admin
 
-from .models import Currency, Location, Organization
-
-
-@admin.register(Organization)
-class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ("name", "code", "phone", "email", "is_active")
-    search_fields = ("name", "code")
-    list_filter = ("is_active",)
+from .models import Currency, Location
 
 
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
-    list_display = ("name", "code", "organization", "city", "country", "is_active")
+    list_display = ("name", "code", "city", "country", "is_active")
     search_fields = ("name", "code")
     list_filter = ("is_active", "country")
 

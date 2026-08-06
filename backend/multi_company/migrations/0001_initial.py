@@ -27,12 +27,11 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('base_currency', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='core.currency')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='group_companies', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Group Company',
                 'verbose_name_plural': 'Group Companies',
-                'unique_together': {('organization', 'code')},
+                'unique_together': {('code',)},
             },
         ),
         migrations.CreateModel(

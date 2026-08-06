@@ -1,11 +1,7 @@
 from django.db import models
-from core.models import Organization
 
 
 class Warehouse(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="warehouses"
-    )
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50)
     location = models.CharField(max_length=255, blank=True)
@@ -16,16 +12,13 @@ class Warehouse(models.Model):
     class Meta:
         verbose_name = "Warehouse"
         verbose_name_plural = "Warehouses"
-        unique_together = ("organization", "code")
+        unique_together = ("code",)
 
     def __str__(self):
         return f"{self.name} ({self.code})"
 
 
 class Fabric(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="fabrics"
-    )
     warehouse = models.ForeignKey(
         Warehouse, on_delete=models.SET_NULL, null=True, blank=True, related_name="fabrics"
     )
@@ -45,16 +38,13 @@ class Fabric(models.Model):
     class Meta:
         verbose_name = "Fabric"
         verbose_name_plural = "Fabrics"
-        unique_together = ("organization", "code")
+        unique_together = ("code",)
 
     def __str__(self):
         return f"{self.name} ({self.code})"
 
 
 class Accessory(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="accessories"
-    )
     warehouse = models.ForeignKey(
         Warehouse, on_delete=models.SET_NULL, null=True, blank=True, related_name="accessories"
     )
@@ -72,16 +62,13 @@ class Accessory(models.Model):
     class Meta:
         verbose_name = "Accessory"
         verbose_name_plural = "Accessories"
-        unique_together = ("organization", "code")
+        unique_together = ("code",)
 
     def __str__(self):
         return f"{self.name} ({self.code})"
 
 
 class Trim(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="trims"
-    )
     warehouse = models.ForeignKey(
         Warehouse, on_delete=models.SET_NULL, null=True, blank=True, related_name="trims"
     )
@@ -98,16 +85,13 @@ class Trim(models.Model):
     class Meta:
         verbose_name = "Trim"
         verbose_name_plural = "Trims"
-        unique_together = ("organization", "code")
+        unique_together = ("code",)
 
     def __str__(self):
         return f"{self.name} ({self.code})"
 
 
 class StockMovement(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="stock_movements"
-    )
     item_type = models.CharField(
         max_length=20,
         choices=[("fabric", "Fabric"), ("accessory", "Accessory"), ("trim", "Trim")],

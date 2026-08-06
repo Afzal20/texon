@@ -30,7 +30,6 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('buyer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='communications', to='buyers.buyer')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='buyer_communications', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Buyer Communication',

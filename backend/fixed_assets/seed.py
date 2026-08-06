@@ -7,19 +7,17 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization, Location
+from core.models import Location
 from fixed_assets.models import AssetCategory, FixedAsset, DepreciationSchedule
 
 print("Seeding fixed_assets data...")
-
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
 
 locations = []
 for name, code in [
     ("Factory Floor 1", "FF1"), ("Factory Floor 2", "FF2"),
 ]:
     loc, _ = Location.objects.get_or_create(
-        organization=org, code=code,
+        code=code,
         defaults={"name": name, "address": "Gazipur Industrial Park", "city": "Gazipur", "country": "Bangladesh"},
     )
     locations.append(loc)
@@ -35,7 +33,7 @@ for name, code, method, life in [
     ("Office Equipment", "OFF", "straight_line", 5),
 ]:
     c, _ = AssetCategory.objects.get_or_create(
-        organization=org, code=code,
+        code=code,
         defaults={"name": name, "description": f"{name} category for factory", "depreciation_method": method,
                   "useful_life_years": life},
     )
@@ -67,7 +65,7 @@ for code, name, cat_i, cost, pdate, salvage, st, assigned, loc_i in [
     annual_dep = Decimal(str(round((cost - salvage) / life, 2)))
     current = cost - annual_dep * elapsed
     a, _ = FixedAsset.objects.get_or_create(
-        organization=org, asset_code=code,
+        asset_code=code,
         defaults={"category": category,
                   "location": locations[loc_i] if loc_i is not None else None,
                   "name": name, "description": f"{name} - {category.name}",

@@ -25,12 +25,11 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='production_lines', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Production Line',
                 'verbose_name_plural': 'Production Lines',
-                'unique_together': {('organization', 'code')},
+                'unique_together': {('code',)},
             },
         ),
         migrations.CreateModel(
@@ -45,7 +44,6 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='production_orders', to='core.organization')),
                 ('production_line', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='production_orders', to='production.productionline')),
                 ('purchase_order', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='production_orders', to='merchandising.purchaseorder')),
                 ('style', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='production_orders', to='merchandising.style')),
@@ -53,7 +51,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Production Order',
                 'verbose_name_plural': 'Production Orders',
-                'unique_together': {('organization', 'order_number')},
+                'unique_together': {('order_number',)},
             },
         ),
         migrations.CreateModel(

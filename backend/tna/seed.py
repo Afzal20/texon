@@ -11,23 +11,20 @@ from datetime import datetime
 
 from django.utils import timezone
 
-from core.models import Organization
 from buyers.models import Buyer
 from merchandising.models import Style, PurchaseOrder
 from tna.models import Task, JobOrder, Timeline, AlarmNotification
 
 print("Seeding tna data...")
 
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
-
-buyer, _ = Buyer.objects.get_or_create(organization=org, code="HM", defaults={"name": "H&M Group", "country": "Sweden"})
+buyer, _ = Buyer.objects.get_or_create(code="HM", defaults={"name": "H&M Group", "country": "Sweden"})
 
 styles = []
 for name, snum in [
     ("Basic Tee", "STY-001"), ("Classic Polo", "STY-002"),
     ("Denim Jacket", "STY-003"), ("Chino Pants", "STY-004"),
 ]:
-    s, _ = Style.objects.get_or_create(organization=org, style_number=snum, defaults={"name": name, "buyer": buyer})
+    s, _ = Style.objects.get_or_create(style_number=snum, defaults={"name": name, "buyer": buyer})
     styles.append(s)
 
 orders = []
@@ -38,7 +35,7 @@ for i, (po_num, qty, unit, total, st) in enumerate([
     ("PO-2404", 7300, "6.40", "46720.00", "confirmed"),
 ]):
     o, _ = PurchaseOrder.objects.get_or_create(
-        organization=org, po_number=po_num,
+        po_number=po_num,
         defaults={"buyer": buyer, "style": styles[i], "order_date": date(2024, 8, 15) + timedelta(days=i * 10),
                   "delivery_date": date(2024, 10, 25) + timedelta(days=i * 10), "quantity": qty,
                   "unit_price": Decimal(unit), "total_value": Decimal(total), "status": st},
@@ -50,7 +47,7 @@ tasks = []
 for i, po in enumerate(orders):
     start = date(2024, 9, 1) + timedelta(days=i * 12)
     root, _ = Task.objects.get_or_create(
-        organization=org, title=f"TNA Monitoring - {po.po_number}", purchase_order=po,
+        title=f"TNA Monitoring - {po.po_number}", purchase_order=po,
         style=po.style, parent_task=None,
         defaults={"description": f"Overall TNA monitoring for {po.po_number}",
                   "assigned_to": "Merchandiser Rafi", "start_date": start,
@@ -67,7 +64,7 @@ for i, po in enumerate(orders):
         ("Packing", 2, "medium", "not_started", 0),
     ]):
         t, _ = Task.objects.get_or_create(
-            organization=org, title=title, purchase_order=po, style=po.style, parent_task=root,
+            title=title, purchase_order=po, style=po.style, parent_task=root,
             defaults={"description": f"{title} milestone for {po.po_number}",
                       "assigned_to": random.choice(["Rafi (Merchandising)", "Imran (Cutting)", "Sabbir (Sewing)", "Nazmul (Finishing)", "Amin (Packing)"]),
                       "start_date": start + timedelta(days=j * 5),
@@ -83,7 +80,7 @@ for idx, task in enumerate(children):
     po_i = idx // 5
     j = idx % 5
     JobOrder.objects.get_or_create(
-        organization=org, job_order_number=f"JO-24{po_i + 1:02d}-{j + 1:02d}",
+        job_order_number=f"JO-24{po_i + 1:02d}-{j + 1:02d}",
         defaults={"task": task, "description": f"Job order for {task.title} on {task.purchase_order.po_number}",
                   "assigned_department": random.choice(["Cutting", "Sewing", "Finishing", "Packing", "Merchandising"]),
                   "assigned_person": task.assigned_to, "start_date": task.start_date, "end_date": task.end_date,
@@ -105,7 +102,7 @@ for i, po in enumerate(orders):
         ("Shipment", 30, "pending", None),
     ]):
         Timeline.objects.get_or_create(
-            organization=org, purchase_order=po, style=po.style, milestone=milestone,
+            purchase_order=po, style=po.style, milestone=milestone,
             defaults={"planned_date": start + timedelta(days=day_off),
                       "actual_date": start + timedelta(days=actual) if actual is not None else None,
                       "status": st, "notes": "Timeline milestone per buyer calendar"},
@@ -125,7 +122,7 @@ for task_i, atype, recipient, ahead, st in [
     task = children[task_i]
     scheduled_at = timezone.make_aware(datetime.combine(task.end_date - timedelta(days=ahead), datetime.min.time()))
     AlarmNotification.objects.get_or_create(
-        organization=org, task=task, alarm_type=atype, recipient=recipient,
+        task=task, alarm_type=atype, recipient=recipient,
         defaults={"message": f"Reminder: {task.title} for {task.purchase_order.po_number} is due soon",
                   "scheduled_at": scheduled_at,
                   "sent_at": scheduled_at if st == "sent" else None, "status": st},

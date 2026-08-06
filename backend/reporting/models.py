@@ -1,11 +1,7 @@
 from django.db import models
-from core.models import Organization
 
 
 class Report(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="reports"
-    )
     title = models.CharField(max_length=255)
     report_type = models.CharField(
         max_length=100,
@@ -40,9 +36,6 @@ class Report(models.Model):
 
 
 class Dashboard(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="dashboards"
-    )
     name = models.CharField(max_length=255)
     dashboard_type = models.CharField(
         max_length=50,

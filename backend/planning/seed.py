@@ -7,23 +7,20 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization
 from buyers.models import Buyer
 from merchandising.models import Style, PurchaseOrder
 from planning.models import Plan
 
 print("Seeding planning data...")
 
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
-
-buyer, _ = Buyer.objects.get_or_create(organization=org, code="HM", defaults={"name": "H&M Group", "country": "Sweden"})
+buyer, _ = Buyer.objects.get_or_create(code="HM", defaults={"name": "H&M Group", "country": "Sweden"})
 
 styles = []
 for name, snum in [
     ("Basic Tee", "STY-001"), ("Classic Polo", "STY-002"),
     ("Denim Jacket", "STY-003"), ("Chino Pants", "STY-004"),
 ]:
-    s, _ = Style.objects.get_or_create(organization=org, style_number=snum, defaults={"name": name, "buyer": buyer})
+    s, _ = Style.objects.get_or_create(style_number=snum, defaults={"name": name, "buyer": buyer})
     styles.append(s)
 
 orders = []
@@ -34,7 +31,7 @@ for i, (po_num, qty, unit, total, st) in enumerate([
     ("PO-2404", 7300, "6.40", "46720.00", "confirmed"),
 ]):
     o, _ = PurchaseOrder.objects.get_or_create(
-        organization=org, po_number=po_num,
+        po_number=po_num,
         defaults={"buyer": buyer, "style": styles[i], "order_date": date(2024, 8, 15) + timedelta(days=i * 10),
                   "delivery_date": date(2024, 10, 25) + timedelta(days=i * 10), "quantity": qty,
                   "unit_price": Decimal(unit), "total_value": Decimal(total), "status": st},
@@ -65,7 +62,7 @@ for ptype, title, sd, ed, details, st, by, style_i, po_i in [
      {"finishing_lines": 4, "packing_lines": 3, "daily_output": 3800}, "completed", "IE Manager", 0, None),
 ]:
     Plan.objects.get_or_create(
-        organization=org, plan_type=ptype, title=title,
+        plan_type=ptype, title=title,
         defaults={"style": styles[style_i], "purchase_order": orders[po_i] if po_i is not None else None,
                   "start_date": date.fromisoformat(sd), "end_date": date.fromisoformat(ed),
                   "details": details, "status": st, "created_by": by,

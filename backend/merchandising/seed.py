@@ -7,7 +7,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization
 from buyers.models import Buyer
 from production.models import ProductionLine
 from merchandising.models import (
@@ -18,21 +17,19 @@ from merchandising.models import (
 
 print("Seeding merchandising data...")
 
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
-
 buyers = []
 for name, code, country in [
     ("H&M Group", "HM", "Sweden"), ("Zara (Inditex)", "ZRA", "Spain"),
     ("Uniqlo (Fast Retailing)", "UNQ", "Japan"), ("Levi Strauss & Co.", "LEV", "USA"),
     ("Nike Inc.", "NKE", "USA"), ("Adidas AG", "ADI", "Germany"),
 ]:
-    b, _ = Buyer.objects.get_or_create(organization=org, code=code, defaults={"name": name, "country": country})
+    b, _ = Buyer.objects.get_or_create(code=code, defaults={"name": name, "country": country})
     buyers.append(b)
 
 styles = []
 for name, snum in [("Basic Tee", "STY-001"), ("Classic Polo", "STY-002"), ("Denim Jacket", "STY-003"), ("Chino Pants", "STY-004"), ("Hoodie", "STY-005"), ("Track Pants", "STY-006")]:
     s, _ = Style.objects.get_or_create(
-        organization=org, style_number=snum,
+        style_number=snum,
         defaults={"name": name, "buyer": buyers[0], "description": "Regular fit, medium weight", "category": "Knitwear"},
     )
     styles.append(s)
@@ -42,7 +39,7 @@ for name, code, loc, cap in [
     ("Line-1", "LN-01", "Unit-1, Floor-3", 500), ("Line-2", "LN-02", "Unit-1, Floor-3", 450),
 ]:
     l, _ = ProductionLine.objects.get_or_create(
-        organization=org, code=code, defaults={"name": name, "location": loc, "capacity": cap}
+        code=code, defaults={"name": name, "location": loc, "capacity": cap}
     )
     lines.append(l)
 
@@ -63,7 +60,7 @@ for i, (buyer_i, style_i, enq_date, status, note) in enumerate([
     (3, 2, "2024-08-22", "received", "Denim jacket with fake fur collar"),
 ]):
     BuyerEnquiry.objects.get_or_create(
-        organization=org, buyer=bi(buyer_i), style=si(style_i), enquiry_date=date.fromisoformat(enq_date),
+        buyer=bi(buyer_i), style=si(style_i), enquiry_date=date.fromisoformat(enq_date),
         defaults={"status": status, "notes": note},
     )
 
@@ -81,7 +78,7 @@ for i, (buyer_i, style_i, po_num, order_date, delivery_date, qty, price, status,
     (3, 2, "PO-24010", "2024-09-15", "2024-12-15", 4000, "9.30", "cancelled", "Cancelled by buyer"),
 ]):
     po, _ = PurchaseOrder.objects.get_or_create(
-        organization=org, po_number=po_num,
+        po_number=po_num,
         defaults={"buyer": bi(buyer_i), "style": si(style_i), "order_date": date.fromisoformat(order_date),
                   "delivery_date": date.fromisoformat(delivery_date), "quantity": qty,
                   "unit_price": Decimal(price), "total_value": Decimal(str(round(qty * float(price), 2))),
@@ -100,7 +97,7 @@ for i, (buyer_i, style_i, sample_type, qty, req_date, deadline, status) in enume
     (1, 0, "photo", 2, "2024-08-22", "2024-09-08", "rejected"),
 ]):
     SampleOrder.objects.get_or_create(
-        organization=org, buyer=bi(buyer_i), style=si(style_i), sample_type=sample_type,
+        buyer=bi(buyer_i), style=si(style_i), sample_type=sample_type,
         request_date=date.fromisoformat(req_date),
         defaults={"quantity": qty, "deadline": date.fromisoformat(deadline), "status": status},
     )
@@ -148,7 +145,7 @@ for i, (buyer_i, asmt_date, forecast, booked, revenue, confidence) in enumerate(
     (5, "2024-08-25", 40000, 8000, 95000, "low"),
 ]):
     BudgetDemandAssessment.objects.get_or_create(
-        organization=org, buyer=bi(buyer_i), assessment_date=date.fromisoformat(asmt_date),
+        buyer=bi(buyer_i), assessment_date=date.fromisoformat(asmt_date),
         defaults={"forecast_quantity": forecast, "booked_quantity": booked,
                   "gap_quantity": forecast - booked, "revenue_estimate": Decimal(str(revenue)),
                   "confidence": confidence, "notes": "Annual buying plan review"},
@@ -164,7 +161,7 @@ for i, (line_i, style_i, operation, current_pph, target_pph, status, desc) in en
     (1, 5, "Side Seam", "230", "270", "pending", "Bundle size reduction to 10 pcs"),
 ]):
     IeSuggestion.objects.get_or_create(
-        organization=org, production_line=lines[line_i], style=si(style_i), operation=operation,
+        production_line=lines[line_i], style=si(style_i), operation=operation,
         current_pph=Decimal(current_pph), target_pph=Decimal(target_pph),
         defaults={"description": desc, "status": status},
     )
@@ -181,7 +178,7 @@ for i, (line_i, operator, skill, level, multi, assessed) in enumerate([
     (1, "Rina Chowdhury", "Overlock Machine", "beginner", False, "2024-08-15"),
 ]):
     SkillInventory.objects.get_or_create(
-        organization=org, operator_name=operator, skill_name=skill,
+        operator_name=operator, skill_name=skill,
         defaults={"production_line": lines[line_i], "skill_level": level,
                   "multi_skill": multi, "last_assessed": date.fromisoformat(assessed)},
     )
@@ -198,7 +195,7 @@ for i, (line_i, style_i, start, hours, cause, status, desc) in enumerate([
     (1, 5, "2024-09-10 14:00", "1.25", "Machine Breakdown", "ongoing", "Feed off the arm motor fault"),
 ]):
     ProductionDowntime.objects.get_or_create(
-        organization=org, production_line=lines[line_i], style=si(style_i),
+        production_line=lines[line_i], style=si(style_i),
         start_datetime=timezone.make_aware(datetime.fromisoformat(start)),
         defaults={"duration_hours": Decimal(hours), "cause": cause, "description": desc, "status": status},
     )
@@ -213,7 +210,7 @@ for i, (process, target, achieved, target_date, status) in enumerate([
     ("Inspection", 5000, 4300, "2024-09-30", "behind"),
 ]):
     ProcessWiseTarget.objects.get_or_create(
-        organization=org, process_name=process, target_date=date.fromisoformat(target_date),
+        process_name=process, target_date=date.fromisoformat(target_date),
         defaults={"target_quantity": target, "achieved_quantity": achieved,
                   "variance": achieved - target, "status": status},
     )

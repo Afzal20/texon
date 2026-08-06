@@ -6,7 +6,6 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from faker import Faker
 
-from core.models import Organization
 from buyers.models import Buyer
 from production.models import ProductionLine
 from hr.models import Employee, Department, Designation
@@ -31,16 +30,6 @@ class Command(BaseCommand):
     help = "Seeds merchandising modules with realistic sample data"
 
     def handle(self, *args, **options):
-        org, _ = Organization.objects.get_or_create(
-            name="Texon Garments Ltd.",
-            defaults={
-                "code": "TEXON",
-                "address": fake.address(),
-                "is_active": True,
-            },
-        )
-        self.stdout.write(f"Organization: {org.name}")
-
         buyer_names = [
             ("H&M", "Sweeden"),
             ("Zara", "Spain"),
@@ -56,7 +45,6 @@ class Command(BaseCommand):
         buyers = []
         for name, country in buyer_names:
             buyer, _ = Buyer.objects.get_or_create(
-                organization=org,
                 name=name,
                 defaults={
                     "code": name[:3].upper(),
@@ -82,7 +70,6 @@ class Command(BaseCommand):
         ]
         for name, loc, cap in line_names:
             line, _ = ProductionLine.objects.get_or_create(
-                organization=org,
                 code=name,
                 defaults={
                     "name": f"Production {name}",
@@ -100,7 +87,6 @@ class Command(BaseCommand):
             "Merchandising", "Quality", "Maintenance",
         ]:
             dept, _ = Department.objects.get_or_create(
-                organization=org,
                 name=dept_name,
                 defaults={"code": dept_name[:3].upper(), "is_active": True},
             )
@@ -121,7 +107,6 @@ class Command(BaseCommand):
         for name_val, allowed_depts in desig_defs:
             dept = departments[random.choice(allowed_depts)]
             desig, _ = Designation.objects.get_or_create(
-                organization=org,
                 name=name_val,
                 department=dept,
                 defaults={
@@ -158,8 +143,7 @@ class Command(BaseCommand):
         desig_names = list(designations.keys())
         for i, (fn, ln) in enumerate(operator_names, 1):
             emp, _ = Employee.objects.get_or_create(
-                organization=org,
-                employee_id=f"EMP{org.id:03d}{i:04d}",
+                employee_id=f"EMP{i:04d}",
                 defaults={
                     "first_name": fn.split()[0],
                     "last_name": ln,
@@ -176,7 +160,7 @@ class Command(BaseCommand):
             employees.append(emp)
         self.stdout.write(f"{len(employees)} employees ready")
 
-        if not Style.objects.filter(organization=org).exists():
+        if not Style.objects.exists():
             style_data = [
                 ("Classic Oxford Shirt", "STY-001", "Shirt"),
                 ("Slim Fit Chinos", "STY-002", "Bottom"),
@@ -197,7 +181,6 @@ class Command(BaseCommand):
             styles = []
             for name, sn, cat in style_data:
                 s = Style.objects.create(
-                    organization=org,
                     buyer=random.choice(buyers),
                     name=name,
                     style_number=sn,
@@ -208,16 +191,15 @@ class Command(BaseCommand):
                 styles.append(s)
             self.stdout.write(f"{len(styles)} styles created")
         else:
-            styles = list(Style.objects.filter(organization=org))
+            styles = list(Style.objects.all())
             self.stdout.write(f"{len(styles)} styles already exist")
 
         status_choices_enquiry = ["received", "under_review", "quoted", "converted", "lost"]
-        if not BuyerEnquiry.objects.filter(organization=org).exists():
+        if not BuyerEnquiry.objects.exists():
             enquiries = []
             for _ in range(30):
                 enquiries.append(
                     BuyerEnquiry(
-                        organization=org,
                         buyer=random.choice(buyers),
                         style=random.choice(styles),
                         enquiry_date=fake.date_between(start_date="-3m", end_date="today"),
@@ -231,17 +213,16 @@ class Command(BaseCommand):
             self.stdout.write("BuyerEnquiry data already exists")
 
         po_statuses = ["draft", "confirmed", "in_production", "shipped", "delivered", "cancelled"]
-        if not PurchaseOrder.objects.filter(organization=org).exists():
+        if not PurchaseOrder.objects.exists():
             pos = []
             for i in range(40):
                 qty = random.randint(500, 50000)
                 unit_price = Decimal(str(round(random.uniform(2.0, 50.0), 2)))
                 pos.append(
                     PurchaseOrder(
-                        organization=org,
                         buyer=random.choice(buyers),
                         style=random.choice(styles),
-                        po_number=f"PO-{org.id:03d}-{i+1:05d}",
+                        po_number=f"PO-{i+1:05d}",
                         order_date=fake.date_between(start_date="-6m", end_date="-1m"),
                         delivery_date=fake.date_between(start_date="-1m", end_date="+3m"),
                         quantity=qty,
@@ -258,12 +239,11 @@ class Command(BaseCommand):
 
         sample_types = ["fit", "pp", "size_set", "pre_production", "photo", "shipping"]
         sample_statuses = ["requested", "in_progress", "submitted", "approved", "rejected"]
-        if not SampleOrder.objects.filter(organization=org).exists():
+        if not SampleOrder.objects.exists():
             samples = []
             for _ in range(35):
                 samples.append(
                     SampleOrder(
-                        organization=org,
                         buyer=random.choice(buyers),
                         style=random.choice(styles),
                         sample_type=random.choice(sample_types),
@@ -328,7 +308,7 @@ class Command(BaseCommand):
             self.stdout.write("DevelopmentMonitoring data already exists")
 
         confidence_levels = ["high", "medium", "low"]
-        if not BudgetDemandAssessment.objects.filter(organization=org).exists():
+        if not BudgetDemandAssessment.objects.exists():
             budgets = []
             for buyer in buyers:
                 for _ in range(random.randint(2, 5)):
@@ -336,7 +316,6 @@ class Command(BaseCommand):
                     bk_qty = random.randint(0, fc_qty)
                     budgets.append(
                         BudgetDemandAssessment(
-                            organization=org,
                             buyer=buyer,
                             assessment_date=fake.date_between(start_date="-6m", end_date="today"),
                             forecast_quantity=fc_qty,
@@ -359,7 +338,7 @@ class Command(BaseCommand):
             "Button Hole", "Button Sew", "Cuff Attach",
             "Yoke Join", "Pocket Set", "Waistband Attach",
         ]
-        if not IeSuggestion.objects.filter(organization=org).exists():
+        if not IeSuggestion.objects.exists():
             suggestions = []
             for line in lines:
                 for _ in range(random.randint(2, 5)):
@@ -367,7 +346,6 @@ class Command(BaseCommand):
                     target = current + Decimal(str(round(random.uniform(2.0, 20.0), 2)))
                     suggestions.append(
                         IeSuggestion(
-                            organization=org,
                             production_line=line,
                             style=random.choice(styles),
                             operation=random.choice(operations),
@@ -389,13 +367,12 @@ class Command(BaseCommand):
             "Double Needle",
         ]
         skill_levels = ["beginner", "intermediate", "expert"]
-        if not SkillInventory.objects.filter(organization=org).exists():
+        if not SkillInventory.objects.exists():
             skills = []
             assigned_employees = set()
             for emp in employees:
                 for _ in range(random.randint(1, 4)):
                     skill_entry = SkillInventory(
-                        organization=org,
                         employee=emp,
                         operator_name=f"{emp.first_name} {emp.last_name}",
                         production_line=random.choice(lines),
@@ -416,7 +393,7 @@ class Command(BaseCommand):
             "Needle Breakage", "Material Shortage", "Maintenance",
             "Operator Absence", "Quality Rework", "Setup Change",
         ]
-        if not ProductionDowntime.objects.filter(organization=org).exists():
+        if not ProductionDowntime.objects.exists():
             downtimes = []
             for line in lines:
                 for _ in range(random.randint(3, 8)):
@@ -426,7 +403,6 @@ class Command(BaseCommand):
                     duration = Decimal(str(round(random.uniform(0.5, 8.0), 2)))
                     downtimes.append(
                         ProductionDowntime(
-                            organization=org,
                             production_line=line,
                             style=random.choice(styles),
                             start_datetime=start,
@@ -447,7 +423,7 @@ class Command(BaseCommand):
             "Inspection", "Ironing", "Packing",
             "Dispatch",
         ]
-        if not ProcessWiseTarget.objects.filter(organization=org).exists():
+        if not ProcessWiseTarget.objects.exists():
             targets = []
             for pname in process_names:
                 for _ in range(random.randint(2, 4)):
@@ -462,7 +438,6 @@ class Command(BaseCommand):
                         status_p = "behind"
                     targets.append(
                         ProcessWiseTarget(
-                            organization=org,
                             process_name=pname,
                             target_quantity=target_qty,
                             achieved_quantity=max(0, achieved),

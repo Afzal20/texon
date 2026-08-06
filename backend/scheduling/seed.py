@@ -7,7 +7,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization
 from buyers.models import Buyer
 from merchandising.models import Style, PurchaseOrder
 from production.models import ProductionLine, ProductionOrder
@@ -15,20 +14,18 @@ from scheduling.models import Schedule
 
 print("Seeding scheduling data...")
 
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
-
 buyers = []
 for name, code, country in [
     ("H&M Group", "HM", "Sweden"), ("Zara (Inditex)", "ZRA", "Spain"),
     ("Uniqlo (Fast Retailing)", "UNQ", "Japan"), ("Levi Strauss & Co.", "LEV", "USA"),
     ("Nike Inc.", "NKE", "USA"), ("Adidas AG", "ADI", "Germany"),
 ]:
-    b, _ = Buyer.objects.get_or_create(organization=org, code=code, defaults={"name": name, "country": country})
+    b, _ = Buyer.objects.get_or_create(code=code, defaults={"name": name, "country": country})
     buyers.append(b)
 
 styles = []
 for name, snum in [("Basic Tee", "STY-001"), ("Classic Polo", "STY-002"), ("Denim Jacket", "STY-003"), ("Chino Pants", "STY-004"), ("Hoodie", "STY-005"), ("Track Pants", "STY-006")]:
-    s, _ = Style.objects.get_or_create(organization=org, style_number=snum, defaults={"name": name, "buyer": buyers[0]})
+    s, _ = Style.objects.get_or_create(style_number=snum, defaults={"name": name, "buyer": buyers[0]})
     styles.append(s)
 
 pos = []
@@ -38,7 +35,7 @@ for po_num, buyer_i, style_i, qty, price in [
     ("PO-2405", 4, 4, 22000, "5.60"), ("PO-2406", 5, 5, 16800, "7.20"),
 ]:
     po, _ = PurchaseOrder.objects.get_or_create(
-        organization=org, po_number=po_num,
+        po_number=po_num,
         defaults={"buyer": buyers[buyer_i], "style": styles[style_i],
                   "order_date": date(2024, 9, 10 + buyer_i), "delivery_date": date(2024, 12, 1),
                   "quantity": qty, "unit_price": Decimal(price),
@@ -52,7 +49,7 @@ for name, code, loc, cap in [
     ("Line 3", "LN-03", "Unit 2, Gazipur", 800), ("Line 4", "LN-04", "Unit 2, Gazipur", 900),
     ("Line 5", "LN-05", "Unit 3, Savar", 1000), ("Line 6", "LN-06", "Unit 3, Savar", 1200),
 ]:
-    ln, _ = ProductionLine.objects.get_or_create(organization=org, code=code, defaults={"name": name, "location": loc, "capacity": cap})
+    ln, _ = ProductionLine.objects.get_or_create(code=code, defaults={"name": name, "location": loc, "capacity": cap})
     lines.append(ln)
 
 prod_orders = []
@@ -66,7 +63,7 @@ for mo_num, po_i, style_i, line_i, qty, start, end, status in [
     ("MO-2407", 0, 0, 2, 6000, "2024-10-15", "2024-10-30", "on_hold"),
 ]:
     mo, _ = ProductionOrder.objects.get_or_create(
-        organization=org, order_number=mo_num,
+        order_number=mo_num,
         defaults={"purchase_order": pos[po_i], "style": styles[style_i], "production_line": lines[line_i],
                   "quantity": qty, "start_date": date.fromisoformat(start), "end_date": date.fromisoformat(end),
                   "status": status},
@@ -92,7 +89,7 @@ for mo_i, line_i, sched_date, start, end, target, status, notes in [
     (4, 5, "2024-10-16", "08:00", "20:00", 1050, "scheduled", "Night shift included"),
 ]:
     Schedule.objects.get_or_create(
-        organization=org, production_order=prod_orders[mo_i], production_line=lines[line_i],
+        production_order=prod_orders[mo_i], production_line=lines[line_i],
         scheduled_date=date.fromisoformat(sched_date),
         defaults={"start_time": start, "end_time": end, "target_quantity": target,
                   "status": status, "notes": notes},

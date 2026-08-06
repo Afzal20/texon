@@ -33,7 +33,6 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='cost_sheets', to='core.organization')),
                 ('style', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='cost_sheets', to='merchandising.style')),
             ],
             options={
@@ -59,7 +58,6 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('buyer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pre_costings', to='buyers.buyer')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pre_costings', to='core.organization')),
                 ('style', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pre_costings', to='merchandising.style')),
             ],
             options={

@@ -26,7 +26,6 @@ class Migration(migrations.Migration):
                 ('unit', models.CharField(blank=True, max_length=50)),
                 ('notes', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='performance_records', to='core.organization')),
                 ('production_line', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='performance_records', to='production.productionline')),
                 ('style', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='performance_records', to='merchandising.style')),
             ],

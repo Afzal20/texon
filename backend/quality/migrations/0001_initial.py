@@ -22,12 +22,11 @@ class Migration(migrations.Migration):
                 ('code', models.CharField(max_length=50)),
                 ('description', models.TextField(blank=True)),
                 ('is_active', models.BooleanField(default=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='defect_categories', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Defect Category',
                 'verbose_name_plural': 'Defect Categories',
-                'unique_together': {('organization', 'code')},
+                'unique_together': {('code',)},
             },
         ),
         migrations.CreateModel(
@@ -66,7 +65,6 @@ class Migration(migrations.Migration):
                 ('inspected_by', models.CharField(max_length=255)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('defect_category', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='quality.defectcategory')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='fabric_inspections', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Fabric Inspection',

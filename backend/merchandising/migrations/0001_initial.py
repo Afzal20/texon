@@ -26,12 +26,11 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('buyer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='styles', to='buyers.buyer')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='styles', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Style',
                 'verbose_name_plural': 'Styles',
-                'unique_together': {('organization', 'style_number')},
+                'unique_together': {('style_number',)},
             },
         ),
         migrations.CreateModel(
@@ -63,7 +62,6 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('buyer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sample_orders', to='buyers.buyer')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sample_orders', to='core.organization')),
                 ('style', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sample_orders', to='merchandising.style')),
             ],
             options={
@@ -100,7 +98,6 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('buyer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='enquiries', to='buyers.buyer')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='buyer_enquiries', to='core.organization')),
                 ('style', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='enquiries', to='merchandising.style')),
             ],
             options={
@@ -123,13 +120,12 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('buyer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='purchase_orders', to='buyers.buyer')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='purchase_orders', to='core.organization')),
                 ('style', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='purchase_orders', to='merchandising.style')),
             ],
             options={
                 'verbose_name': 'Purchase Order',
                 'verbose_name_plural': 'Purchase Orders',
-                'unique_together': {('organization', 'po_number')},
+                'unique_together': {('po_number',)},
             },
         ),
     ]

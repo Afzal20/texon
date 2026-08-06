@@ -7,13 +7,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization
 from buyers.models import Buyer
 from compliance.models import ComplianceRecord
 
 print("Seeding compliance data...")
-
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
 
 buyers = []
 for name, code, country in [
@@ -21,7 +18,7 @@ for name, code, country in [
     ("Uniqlo (Fast Retailing)", "UNQ", "Japan"), ("Levi Strauss & Co.", "LEV", "USA"),
     ("Nike Inc.", "NKE", "USA"), ("Adidas AG", "ADI", "Germany"),
 ]:
-    b, _ = Buyer.objects.get_or_create(organization=org, code=code, defaults={"name": name, "country": country})
+    b, _ = Buyer.objects.get_or_create(code=code, defaults={"name": name, "country": country})
     buyers.append(b)
 
 def bi(i): return buyers[i % len(buyers)]
@@ -50,7 +47,7 @@ for ctype, title, desc, buyer_i, audit_by, audit_date, score, status, findings, 
      "", "", "2024-11-01"),
 ]:
     ComplianceRecord.objects.get_or_create(
-        organization=org, buyer=bi(buyer_i), title=title, audit_date=date.fromisoformat(audit_date),
+        buyer=bi(buyer_i), title=title, audit_date=date.fromisoformat(audit_date),
         defaults={"compliance_type": ctype, "description": desc, "audit_by": audit_by,
                   "score": Decimal(score) if score else None, "status": status,
                   "findings": findings, "corrective_actions": actions,

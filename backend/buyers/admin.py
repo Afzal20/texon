@@ -13,7 +13,7 @@ class BuyerPortfolioInline(admin.StackedInline):
 
 @admin.register(Buyer)
 class BuyerAdmin(admin.ModelAdmin):
-    list_display = ("name", "code", "organization", "country", "is_active")
+    list_display = ("name", "code", "country", "is_active")
     search_fields = ("name", "code", "country")
     list_filter = ("is_active", "country")
     inlines = [BuyerRatingInline, BuyerPortfolioInline]

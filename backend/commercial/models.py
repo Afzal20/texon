@@ -1,13 +1,10 @@
 from django.db import models
-from core.models import Organization, Currency
+from core.models import Currency
 from buyers.models import Buyer
 from procurement.models import Supplier
 
 
 class Shipment(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="commercial_shipments"
-    )
     shipment_number = models.CharField(max_length=100)
     buyer = models.ForeignKey(
         Buyer, on_delete=models.SET_NULL, null=True, blank=True, related_name="commercial_shipments"
@@ -79,16 +76,13 @@ class Shipment(models.Model):
     class Meta:
         verbose_name = "Shipment"
         verbose_name_plural = "Shipments"
-        unique_together = ("organization", "shipment_number")
+        unique_together = ("shipment_number",)
 
     def __str__(self):
         return f"{self.shipment_number} - {self.direction}"
 
 
 class LetterOfCredit(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="lcs"
-    )
     lc_number = models.CharField(max_length=100)
     lc_type = models.CharField(
         max_length=20,
@@ -137,16 +131,13 @@ class LetterOfCredit(models.Model):
     class Meta:
         verbose_name = "Letter of Credit"
         verbose_name_plural = "Letters of Credit"
-        unique_together = ("organization", "lc_number")
+        unique_together = ("lc_number",)
 
     def __str__(self):
         return f"{self.lc_number} - {self.lc_type}"
 
 
 class Invoice(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="commercial_invoices"
-    )
     invoice_number = models.CharField(max_length=100)
     buyer = models.ForeignKey(
         Buyer, on_delete=models.SET_NULL, null=True, blank=True, related_name="commercial_invoices"
@@ -198,16 +189,13 @@ class Invoice(models.Model):
     class Meta:
         verbose_name = "Commercial Invoice"
         verbose_name_plural = "Commercial Invoices"
-        unique_together = ("organization", "invoice_number")
+        unique_together = ("invoice_number",)
 
     def __str__(self):
         return f"{self.invoice_number} - {self.amount}"
 
 
 class BillOfExchange(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="bills_of_exchange"
-    )
     bill_number = models.CharField(max_length=100)
     lc = models.ForeignKey(
         LetterOfCredit, on_delete=models.SET_NULL, null=True, blank=True, related_name="bills_of_exchange"
@@ -244,16 +232,13 @@ class BillOfExchange(models.Model):
     class Meta:
         verbose_name = "Bill of Exchange"
         verbose_name_plural = "Bills of Exchange"
-        unique_together = ("organization", "bill_number")
+        unique_together = ("bill_number",)
 
     def __str__(self):
         return f"{self.bill_number} - {self.amount}"
 
 
 class SupplierDocument(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="supplier_documents"
-    )
     document_number = models.CharField(max_length=100)
     supplier = models.ForeignKey(
         Supplier, on_delete=models.CASCADE, related_name="documents"
@@ -297,16 +282,13 @@ class SupplierDocument(models.Model):
     class Meta:
         verbose_name = "Supplier Document"
         verbose_name_plural = "Supplier Documents"
-        unique_together = ("organization", "document_number")
+        unique_together = ("document_number",)
 
     def __str__(self):
         return f"{self.document_number} - {self.supplier.name}"
 
 
 class Realization(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="realizations"
-    )
     realization_number = models.CharField(max_length=100)
     buyer = models.ForeignKey(
         Buyer, on_delete=models.CASCADE, related_name="realizations"
@@ -353,16 +335,13 @@ class Realization(models.Model):
     class Meta:
         verbose_name = "Realization"
         verbose_name_plural = "Realizations"
-        unique_together = ("organization", "realization_number")
+        unique_together = ("realization_number",)
 
     def __str__(self):
         return f"{self.realization_number} - {self.realized_amount}/{self.expected_amount}"
 
 
 class SODFCTransfer(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="sod_fc_transfers"
-    )
     transfer_number = models.CharField(max_length=100)
     transfer_type = models.CharField(
         max_length=20,
@@ -397,16 +376,13 @@ class SODFCTransfer(models.Model):
     class Meta:
         verbose_name = "SOD/FC Transfer"
         verbose_name_plural = "SOD/FC Transfers"
-        unique_together = ("organization", "transfer_number")
+        unique_together = ("transfer_number",)
 
     def __str__(self):
         return f"{self.transfer_number} - {self.transfer_type}"
 
 
 class Disbursement(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="disbursements"
-    )
     disbursement_number = models.CharField(max_length=100)
     category = models.CharField(
         max_length=100,
@@ -454,7 +430,7 @@ class Disbursement(models.Model):
     class Meta:
         verbose_name = "Disbursement"
         verbose_name_plural = "Disbursements"
-        unique_together = ("organization", "disbursement_number")
+        unique_together = ("disbursement_number",)
 
     def __str__(self):
         return f"{self.disbursement_number} - {self.amount}"

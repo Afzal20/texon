@@ -1,12 +1,8 @@
 from django.db import models
-from core.models import Organization
 from inventory.models import Fabric, Accessory, Trim
 
 
 class Supplier(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="suppliers"
-    )
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50)
     contact_person = models.CharField(max_length=255, blank=True)
@@ -31,16 +27,13 @@ class Supplier(models.Model):
     class Meta:
         verbose_name = "Supplier"
         verbose_name_plural = "Suppliers"
-        unique_together = ("organization", "code")
+        unique_together = ("code",)
 
     def __str__(self):
         return f"{self.name} ({self.code})"
 
 
 class RawMaterialRequisition(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="rm_requisitions"
-    )
     requisition_number = models.CharField(max_length=100)
     item_type = models.CharField(
         max_length=20,
@@ -70,16 +63,13 @@ class RawMaterialRequisition(models.Model):
     class Meta:
         verbose_name = "Raw Material Requisition"
         verbose_name_plural = "Raw Material Requisitions"
-        unique_together = ("organization", "requisition_number")
+        unique_together = ("requisition_number",)
 
     def __str__(self):
         return f"Req {self.requisition_number} - {self.item_type}"
 
 
 class RawMaterialBooking(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="rm_bookings"
-    )
     supplier = models.ForeignKey(
         Supplier, on_delete=models.CASCADE, related_name="bookings"
     )
@@ -112,16 +102,13 @@ class RawMaterialBooking(models.Model):
     class Meta:
         verbose_name = "Raw Material Booking"
         verbose_name_plural = "Raw Material Bookings"
-        unique_together = ("organization", "booking_number")
+        unique_together = ("booking_number",)
 
     def __str__(self):
         return f"Booking {self.booking_number} - {self.supplier.name}"
 
 
 class QuotationAnalysis(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="quotation_analyses"
-    )
     supplier = models.ForeignKey(
         Supplier, on_delete=models.CASCADE, related_name="quotations"
     )

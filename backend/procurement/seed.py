@@ -7,7 +7,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization
 from inventory.models import Fabric, Accessory, Trim
 from procurement.models import (
     Supplier, RawMaterialRequisition, RawMaterialBooking, QuotationAnalysis,
@@ -15,20 +14,18 @@ from procurement.models import (
 
 print("Seeding procurement data...")
 
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
-
 # Base inventory items (in case inventory/seed.py has not been run yet)
-fabrics = list(Fabric.objects.filter(organization=org))
+fabrics = list(Fabric.objects.all())
 if not fabrics:
-    f, _ = Fabric.objects.get_or_create(organization=org, code="FAB-001", defaults={"name": "100% Cotton Single Jersey"})
+    f, _ = Fabric.objects.get_or_create(code="FAB-001", defaults={"name": "100% Cotton Single Jersey"})
     fabrics = [f]
-accessories = list(Accessory.objects.filter(organization=org))
+accessories = list(Accessory.objects.all())
 if not accessories:
-    a, _ = Accessory.objects.get_or_create(organization=org, code="ACC-001", defaults={"name": "Button 18L Black"})
+    a, _ = Accessory.objects.get_or_create(code="ACC-001", defaults={"name": "Button 18L Black"})
     accessories = [a]
-trims = list(Trim.objects.filter(organization=org))
+trims = list(Trim.objects.all())
 if not trims:
-    t, _ = Trim.objects.get_or_create(organization=org, code="TRM-001", defaults={"name": "Sewing Thread White"})
+    t, _ = Trim.objects.get_or_create(code="TRM-001", defaults={"name": "Sewing Thread White"})
     trims = [t]
 
 # ── Suppliers ────────────────────────────────────────────────────────────────
@@ -44,7 +41,7 @@ for name, code, stype, cp, phone in [
     ("Apex Textile Mills", "APX", "fabric", "Farid Ahmed", "+880 1788-990011"),
 ]:
     s, _ = Supplier.objects.get_or_create(
-        organization=org, code=code,
+        code=code,
         defaults={"name": name, "supplier_type": stype, "contact_person": cp, "phone": phone,
                   "email": f"{code.lower()}@example.com", "address": "Gazipur Industrial Park, Dhaka",
                   "rating": Decimal(str(random.choice(["4.50", "4.20", "4.80", "4.10"])))},
@@ -67,7 +64,7 @@ for i, (req_num, item_type, qty, req_date, status, by, approved, purpose) in enu
 ]):
     item = pi(item_type)
     RawMaterialRequisition.objects.get_or_create(
-        organization=org, requisition_number=req_num,
+        requisition_number=req_num,
         defaults={"item_type": item_type, "item_id": item.id, "quantity": Decimal(str(qty)),
                   "required_date": date.fromisoformat(req_date), "purpose": purpose,
                   "status": status, "requested_by": by, "approved_by": approved},
@@ -88,7 +85,7 @@ for i, (bkg_num, supplier_i, item_type, qty, price, bkg_date, expected, status, 
     qty_dec = Decimal(str(qty))
     up = Decimal(price)
     RawMaterialBooking.objects.get_or_create(
-        organization=org, booking_number=bkg_num,
+        booking_number=bkg_num,
         defaults={"supplier": suppliers[supplier_i], "booking_date": date.fromisoformat(bkg_date),
                   "expected_delivery_date": date.fromisoformat(expected),
                   "item_type": item_type, "item_id": item.id, "quantity": qty_dec,
@@ -107,7 +104,7 @@ for i, (supplier_i, item_type, qty, price, del_terms, pay_terms, validity, statu
     (7, "Fabric - Brushed Fleece", 5800, "3.95", "CIF Chittagong", "LC at Sight", "2024-10-10", "pending"),
 ]):
     QuotationAnalysis.objects.get_or_create(
-        organization=org, supplier=suppliers[supplier_i], item_type=item_type,
+        supplier=suppliers[supplier_i], item_type=item_type,
         quantity=Decimal(str(qty)), quoted_price=Decimal(price), validity_date=date.fromisoformat(validity),
         defaults={"delivery_terms": del_terms, "payment_terms": pay_terms, "status": status},
     )

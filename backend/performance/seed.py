@@ -7,7 +7,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization
 from buyers.models import Buyer
 from merchandising.models import Style
 from production.models import ProductionLine
@@ -15,20 +14,18 @@ from performance.models import PerformanceRecord
 
 print("Seeding performance data...")
 
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
-
 buyers = []
 for name, code, country in [
     ("H&M Group", "HM", "Sweden"), ("Zara (Inditex)", "ZRA", "Spain"),
     ("Uniqlo (Fast Retailing)", "UNQ", "Japan"), ("Levi Strauss & Co.", "LEV", "USA"),
     ("Nike Inc.", "NKE", "USA"), ("Adidas AG", "ADI", "Germany"),
 ]:
-    b, _ = Buyer.objects.get_or_create(organization=org, code=code, defaults={"name": name, "country": country})
+    b, _ = Buyer.objects.get_or_create(code=code, defaults={"name": name, "country": country})
     buyers.append(b)
 
 styles = []
 for name, snum in [("Basic Tee", "STY-001"), ("Classic Polo", "STY-002"), ("Denim Jacket", "STY-003"), ("Chino Pants", "STY-004"), ("Hoodie", "STY-005"), ("Track Pants", "STY-006")]:
-    s, _ = Style.objects.get_or_create(organization=org, style_number=snum, defaults={"name": name, "buyer": buyers[0]})
+    s, _ = Style.objects.get_or_create(style_number=snum, defaults={"name": name, "buyer": buyers[0]})
     styles.append(s)
 
 lines = []
@@ -37,7 +34,7 @@ for name, code, loc, cap in [
     ("Line 3", "LN-03", "Unit 2, Gazipur", 800), ("Line 4", "LN-04", "Unit 2, Gazipur", 900),
     ("Line 5", "LN-05", "Unit 3, Savar", 1000), ("Line 6", "LN-06", "Unit 3, Savar", 1200),
 ]:
-    ln, _ = ProductionLine.objects.get_or_create(organization=org, code=code, defaults={"name": name, "location": loc, "capacity": cap})
+    ln, _ = ProductionLine.objects.get_or_create(code=code, defaults={"name": name, "location": loc, "capacity": cap})
     lines.append(ln)
 
 def li(i): return lines[i % len(lines)]
@@ -67,7 +64,7 @@ for line_i, style_i, rec_date, metric, value, target, unit, notes in [
     (5, 5, "2024-10-15", "Absenteeism %", 6.40, 5.00, "%", ""),
 ]:
     PerformanceRecord.objects.get_or_create(
-        organization=org, production_line=li(line_i), record_date=date.fromisoformat(rec_date), metric=metric,
+        production_line=li(line_i), record_date=date.fromisoformat(rec_date), metric=metric,
         defaults={"style": si(style_i), "value": Decimal(str(value)), "target": Decimal(str(target)),
                   "unit": unit, "notes": notes},
     )

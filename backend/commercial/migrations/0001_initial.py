@@ -34,14 +34,13 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('buyer', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='lcs', to='buyers.buyer')),
                 ('currency', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='core.currency')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lcs', to='core.organization')),
                 ('parent_lc', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='child_lcs', to='commercial.letterofcredit')),
                 ('supplier', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='lcs', to='procurement.supplier')),
             ],
             options={
                 'verbose_name': 'Letter of Credit',
                 'verbose_name_plural': 'Letters of Credit',
-                'unique_together': {('organization', 'lc_number')},
+                'unique_together': {('lc_number',)},
             },
         ),
         migrations.CreateModel(
@@ -61,7 +60,6 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('buyer', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercial_invoices', to='buyers.buyer')),
                 ('currency', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='core.currency')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='commercial_invoices', to='core.organization')),
                 ('purchase_order', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercial_invoices', to='orders.order')),
                 ('supplier', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercial_invoices', to='procurement.supplier')),
                 ('lc', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='invoices', to='commercial.letterofcredit')),
@@ -69,7 +67,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Commercial Invoice',
                 'verbose_name_plural': 'Commercial Invoices',
-                'unique_together': {('organization', 'invoice_number')},
+                'unique_together': {('invoice_number',)},
             },
         ),
         migrations.CreateModel(
@@ -100,14 +98,13 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('buyer', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercial_shipments', to='buyers.buyer')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='commercial_shipments', to='core.organization')),
                 ('purchase_order', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='shipments', to='orders.order')),
                 ('supplier', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercial_shipments', to='procurement.supplier')),
             ],
             options={
                 'verbose_name': 'Shipment',
                 'verbose_name_plural': 'Shipments',
-                'unique_together': {('organization', 'shipment_number')},
+                'unique_together': {('shipment_number',)},
             },
         ),
         migrations.CreateModel(
@@ -127,13 +124,12 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('buyer', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='bills_of_exchange', to='buyers.buyer')),
                 ('currency', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='core.currency')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bills_of_exchange', to='core.organization')),
                 ('lc', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='bills_of_exchange', to='commercial.letterofcredit')),
             ],
             options={
                 'verbose_name': 'Bill of Exchange',
                 'verbose_name_plural': 'Bills of Exchange',
-                'unique_together': {('organization', 'bill_number')},
+                'unique_together': {('bill_number',)},
             },
         ),
         migrations.CreateModel(
@@ -154,12 +150,11 @@ class Migration(migrations.Migration):
                 ('buyer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='realizations', to='buyers.buyer')),
                 ('currency', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='core.currency')),
                 ('invoice', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='realizations', to='commercial.invoice')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='realizations', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Realization',
                 'verbose_name_plural': 'Realizations',
-                'unique_together': {('organization', 'realization_number')},
+                'unique_together': {('realization_number',)},
             },
         ),
         migrations.CreateModel(
@@ -177,7 +172,6 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('currency', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='core.currency')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='disbursements', to='core.organization')),
                 ('purchase_order', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='disbursements', to='orders.order')),
                 ('invoice', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='disbursements', to='commercial.invoice')),
                 ('shipment', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='disbursements', to='commercial.shipment')),
@@ -185,7 +179,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Disbursement',
                 'verbose_name_plural': 'Disbursements',
-                'unique_together': {('organization', 'disbursement_number')},
+                'unique_together': {('disbursement_number',)},
             },
         ),
         migrations.CreateModel(
@@ -205,12 +199,11 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('currency', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='core.currency')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sod_fc_transfers', to='core.organization')),
             ],
             options={
                 'verbose_name': 'SOD/FC Transfer',
                 'verbose_name_plural': 'SOD/FC Transfers',
-                'unique_together': {('organization', 'transfer_number')},
+                'unique_together': {('transfer_number',)},
             },
         ),
         migrations.CreateModel(
@@ -227,7 +220,6 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='supplier_documents', to='core.organization')),
                 ('purchase_order', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='supplier_documents', to='orders.order')),
                 ('shipment', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='supplier_documents', to='commercial.shipment')),
                 ('supplier', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='documents', to='procurement.supplier')),
@@ -235,7 +227,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Supplier Document',
                 'verbose_name_plural': 'Supplier Documents',
-                'unique_together': {('organization', 'document_number')},
+                'unique_together': {('document_number',)},
             },
         ),
     ]

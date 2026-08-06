@@ -11,21 +11,18 @@ from datetime import datetime
 
 from django.utils import timezone
 
-from core.models import Organization
 from buyers.models import Buyer
 from merchandising.models import Style, PurchaseOrder
 from crm.models import BuyerCommunication, BuyerProfitability, OrderAmendmentHistory
 
 print("Seeding crm data...")
 
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
-
 buyers = []
 for name, code, country in [
     ("H&M Group", "HM", "Sweden"), ("Zara (Inditex)", "ZRA", "Spain"),
     ("Uniqlo (Fast Retailing)", "UNQ", "Japan"), ("Levi Strauss & Co.", "LEV", "USA"),
 ]:
-    b, _ = Buyer.objects.get_or_create(organization=org, code=code, defaults={"name": name, "country": country})
+    b, _ = Buyer.objects.get_or_create(code=code, defaults={"name": name, "country": country})
     buyers.append(b)
 
 styles = []
@@ -33,7 +30,7 @@ for name, snum in [
     ("Basic Tee", "STY-001"), ("Classic Polo", "STY-002"),
     ("Denim Jacket", "STY-003"), ("Chino Pants", "STY-004"),
 ]:
-    s, _ = Style.objects.get_or_create(organization=org, style_number=snum, defaults={"name": name, "buyer": buyers[0]})
+    s, _ = Style.objects.get_or_create(style_number=snum, defaults={"name": name, "buyer": buyers[0]})
     styles.append(s)
 
 orders = []
@@ -44,7 +41,7 @@ for i, (po_num, qty, unit, total, st) in enumerate([
     ("PO-2404", 7300, "6.40", "46720.00", "confirmed"),
 ]):
     o, _ = PurchaseOrder.objects.get_or_create(
-        organization=org, po_number=po_num,
+        po_number=po_num,
         defaults={"buyer": buyers[i % len(buyers)], "style": styles[i], "order_date": date(2024, 8, 15) + timedelta(days=i * 10),
                   "delivery_date": date(2024, 10, 25) + timedelta(days=i * 10), "quantity": qty,
                   "unit_price": Decimal(unit), "total_value": Decimal(total), "status": st},
@@ -65,7 +62,7 @@ for buyer_i, ctype, subject, person, cdate, fudate, st, by in [
     (3, "video_call", "Quality concern on STY-003", "David Miller", "2024-09-12 10:00", None, "completed", "Quality Team"),
 ]:
     BuyerCommunication.objects.get_or_create(
-        organization=org, buyer=buyers[buyer_i], communication_type=ctype, subject=subject,
+        buyer=buyers[buyer_i], communication_type=ctype, subject=subject,
         defaults={"content": f"{subject} - discussion summary and action points.",
                   "contact_person": person,
                   "communication_date": timezone.make_aware(datetime.fromisoformat(cdate)),

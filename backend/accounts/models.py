@@ -1,13 +1,10 @@
 from django.db import models
-from core.models import Organization, Currency
+from core.models import Currency
 from buyers.models import Buyer
 from procurement.models import Supplier
 
 
 class ChartOfAccount(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="chart_of_accounts"
-    )
     account_code = models.CharField(max_length=50)
     account_name = models.CharField(max_length=255)
     account_type = models.CharField(
@@ -30,27 +27,20 @@ class ChartOfAccount(models.Model):
     class Meta:
         verbose_name = "Chart of Account"
         verbose_name_plural = "Chart of Accounts"
-        unique_together = ("organization", "account_code")
+        unique_together = ("account_code",)
 
     def __str__(self):
         return f"{self.account_code} - {self.account_name}"
 
 
 class JournalEntry(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="journal_entries"
-    )
     entry_number = models.CharField(max_length=100)
     entry_date = models.DateField()
     description = models.TextField(blank=True)
-    account = models.ForeignKey(
-        ChartOfAccount, on_delete=models.CASCADE, related_name="journal_entries"
-    )
+    account = models.ForeignKey(ChartOfAccount, on_delete=models.CASCADE, related_name="journal_entries")
     debit = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     credit = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    currency = models.ForeignKey(
-        Currency, on_delete=models.SET_NULL, null=True, blank=True
-    )
+    currency = models.ForeignKey(Currency, on_delete=models.SET_NULL, null=True, blank=True)
     reference = models.CharField(max_length=100, blank=True)
     created_by = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -64,23 +54,14 @@ class JournalEntry(models.Model):
 
 
 class AccountsPayable(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="accounts_payable"
-    )
-    supplier = models.ForeignKey(
-        Supplier, on_delete=models.CASCADE, related_name="payables"
-    )
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, related_name="payables")
     invoice_number = models.CharField(max_length=100)
     invoice_date = models.DateField()
     due_date = models.DateField()
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     paid_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     balance = models.DecimalField(max_digits=15, decimal_places=2)
-    status = models.CharField(
-        max_length=50,
-        choices=[("pending", "Pending"), ("partial", "Partially Paid"), ("paid", "Paid"), ("overdue", "Overdue")],
-        default="pending",
-    )
+    status = models.CharField(max_length=50,choices=[("pending", "Pending"), ("partial", "Partially Paid"), ("paid", "Paid"), ("overdue", "Overdue")],default="pending",)
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -94,9 +75,6 @@ class AccountsPayable(models.Model):
 
 
 class AccountsReceivable(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="accounts_receivable"
-    )
     buyer = models.ForeignKey(
         Buyer, on_delete=models.CASCADE, related_name="receivables"
     )
@@ -124,9 +102,6 @@ class AccountsReceivable(models.Model):
 
 
 class Expense(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="expenses"
-    )
     cost_center = models.ForeignKey(
         "CostCenter", on_delete=models.SET_NULL, null=True, blank=True, related_name="expenses"
     )
@@ -157,9 +132,6 @@ class Expense(models.Model):
 
 
 class CostCenter(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="cost_centers"
-    )
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50)
     department = models.CharField(max_length=100, blank=True)
@@ -171,7 +143,7 @@ class CostCenter(models.Model):
     class Meta:
         verbose_name = "Cost Center"
         verbose_name_plural = "Cost Centers"
-        unique_together = ("organization", "code")
+        unique_together = ("code",)
 
     def __str__(self):
         return f"{self.name} ({self.code})"

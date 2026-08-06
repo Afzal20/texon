@@ -26,7 +26,6 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='schedules', to='core.organization')),
                 ('production_line', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='schedules', to='production.productionline')),
                 ('production_order', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='schedules', to='production.productionorder')),
             ],

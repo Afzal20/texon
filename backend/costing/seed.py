@@ -7,23 +7,20 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization
 from buyers.models import Buyer
 from merchandising.models import Style
 from costing.models import PreCosting, CostSheet
 
 print("Seeding costing data...")
 
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
-
-buyer, _ = Buyer.objects.get_or_create(organization=org, code="HM", defaults={"name": "H&M Group", "country": "Sweden"})
+buyer, _ = Buyer.objects.get_or_create(code="HM", defaults={"name": "H&M Group", "country": "Sweden"})
 
 styles = []
 for name, snum in [
     ("Basic Tee", "STY-001"), ("Classic Polo", "STY-002"), ("Denim Jacket", "STY-003"),
     ("Chino Pants", "STY-004"), ("Hoodie", "STY-005"), ("Track Pants", "STY-006"),
 ]:
-    s, _ = Style.objects.get_or_create(organization=org, style_number=snum, defaults={"name": name, "buyer": buyer})
+    s, _ = Style.objects.get_or_create(style_number=snum, defaults={"name": name, "buyer": buyer})
     styles.append(s)
 
 # ── Pre Costings ────────────────────────────────────────────────────────────
@@ -37,7 +34,7 @@ for i, (fab, acc, trim, lab, ovh, tgt, mrg, st) in enumerate([
 ]):
     total = Decimal(str(round(fab + acc + trim + lab + ovh, 2)))
     PreCosting.objects.get_or_create(
-        organization=org, buyer=buyer, style=styles[i],
+        buyer=buyer, style=styles[i],
         defaults={"cost_date": date(2024, 8, 10) + timedelta(days=i * 5),
                   "estimated_fabric_cost": Decimal(str(fab)), "estimated_accessory_cost": Decimal(str(acc)),
                   "estimated_trim_cost": Decimal(str(trim)), "estimated_labor_cost": Decimal(str(lab)),
@@ -57,7 +54,7 @@ for i, (fab, acc, trim, lab, ovh, com, sell, mrg, st) in enumerate([
 ]):
     total = Decimal(str(round(fab + acc + trim + lab + ovh + com, 2)))
     CostSheet.objects.get_or_create(
-        organization=org, style=styles[i], cost_date=date(2024, 9, 10) + timedelta(days=i * 5),
+        style=styles[i], cost_date=date(2024, 9, 10) + timedelta(days=i * 5),
         defaults={"fabric_cost": Decimal(str(fab)), "accessory_cost": Decimal(str(acc)),
                   "trim_cost": Decimal(str(trim)), "labor_cost": Decimal(str(lab)),
                   "overhead_cost": Decimal(str(ovh)), "commercial_cost": Decimal(str(com)),

@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization, Currency
+from core.models import Currency
 from buyers.models import Buyer
 from procurement.models import Supplier
 from merchandising.models import Style
@@ -19,7 +19,6 @@ from commercial.models import (
 
 print("Seeding commercial data...")
 
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
 usd, _ = Currency.objects.get_or_create(code="USD", defaults={"name": "US Dollar", "symbol": "$", "exchange_rate": 1.0, "is_base": True})
 
 buyers = []
@@ -28,7 +27,7 @@ for name, code, country in [
     ("Uniqlo (Fast Retailing)", "UNQ", "Japan"), ("Levi Strauss & Co.", "LEV", "USA"),
     ("Nike Inc.", "NKE", "USA"), ("Adidas AG", "ADI", "Germany"),
 ]:
-    b, _ = Buyer.objects.get_or_create(organization=org, code=code, defaults={"name": name, "country": country})
+    b, _ = Buyer.objects.get_or_create(code=code, defaults={"name": name, "country": country})
     buyers.append(b)
 
 suppliers = []
@@ -37,18 +36,18 @@ for name, code, stype in [
     ("YKK Bangladesh", "YKK", "accessory"), ("Pacific Accessories", "PAC", "accessory"),
     ("DBL Group", "DBL", "fabric"), ("Fakir Knitwears", "FKW", "fabric"),
 ]:
-    s, _ = Supplier.objects.get_or_create(organization=org, code=code, defaults={"name": name, "supplier_type": stype})
+    s, _ = Supplier.objects.get_or_create(code=code, defaults={"name": name, "supplier_type": stype})
     suppliers.append(s)
 
 styles = []
 for name, snum in [("Basic Tee", "STY-001"), ("Classic Polo", "STY-002"), ("Denim Jacket", "STY-003"), ("Chino Pants", "STY-004"), ("Hoodie", "STY-005"), ("Track Pants", "STY-006")]:
-    s, _ = Style.objects.get_or_create(organization=org, style_number=snum, defaults={"name": name, "buyer": buyers[0]})
+    s, _ = Style.objects.get_or_create(style_number=snum, defaults={"name": name, "buyer": buyers[0]})
     styles.append(s)
 
 orders = []
 for i, buyer in enumerate(buyers):
     o, _ = Order.objects.get_or_create(
-        organization=org, order_number=f"PO-{84920 + i}",
+        order_number=f"PO-{84920 + i}",
         defaults={"buyer": buyer, "style": styles[i], "order_date": date(2024, 9, 1), "delivery_date": date(2024, 12, 1),
                   "quantity": random.randint(2000, 8000), "unit_price": Decimal("14.50"), "total_value": Decimal("85000"), "status": "confirmed"},
     )
@@ -82,7 +81,7 @@ for lc_num, lc_type, buyer_i, supplier_i, amount, issue, expiry, status in [
     ("LC-8752", "export", 1, 1, 298500, "2024-08-25", "2024-10-20", "amended"),
 ]:
     lc, _ = LetterOfCredit.objects.get_or_create(
-        organization=org, lc_number=lc_num,
+        lc_number=lc_num,
         defaults={"lc_type": lc_type, "buyer": bi(buyer_i), "supplier": si(supplier_i),
                   "amount": Decimal(str(amount)), "currency": usd, "issue_date": date.fromisoformat(issue),
                   "expiry_date": date.fromisoformat(expiry), "bank_name": random.choice(["Citibank", "HSBC", "Standard Chartered"]),
@@ -110,7 +109,7 @@ for shp_num, direction, buyer_i, supplier_i, pol, pod, carrier, container, etd, 
     ("SHP-2372", "import", 2, 2, "Port Klang", "Chittagong", "OOCL", "OOLU8294736", "2024-08-28", "2024-09-22", "delivered", "cleared"),
 ]:
     s, _ = Shipment.objects.get_or_create(
-        organization=org, shipment_number=shp_num,
+        shipment_number=shp_num,
         defaults={"buyer": bi(buyer_i), "supplier": si(supplier_i), "direction": direction, "shipment_type": "sea",
                   "port_of_loading": pol, "port_of_discharge": pod, "container_number": container,
                   "forwarder": random.choice(["DHL Global", "Flexport", "Expeditors"]),
@@ -139,7 +138,7 @@ for inv_num, buyer_i, lc_i, amount, inv_date, status, paid in [
     ("INV-2372", 2, 14, 198400, "2024-09-10", "paid", 198400),
 ]:
     inv, _ = Invoice.objects.get_or_create(
-        organization=org, invoice_number=inv_num,
+        invoice_number=inv_num,
         defaults={"buyer": bi(buyer_i), "supplier": si(buyer_i), "lc": lcs[lc_i],
                   "invoice_date": date.fromisoformat(inv_date), "due_date": date.fromisoformat(inv_date) + timedelta(days=30),
                   "amount": Decimal(str(amount)), "currency": usd, "status": status, "paid_amount": Decimal(str(paid)),
@@ -164,7 +163,7 @@ for boe_num, inv_i, lc_i, amount, bank, issue, maturity, status in [
     ("BDE-2382", 11, 11, 275300, "Standard Chartered", "2024-09-18", "2024-10-18", "negotiated"),
 ]:
     b, _ = BillOfExchange.objects.get_or_create(
-        organization=org, bill_number=boe_num,
+        bill_number=boe_num,
         defaults={"lc": lcs[lc_i], "buyer": invoices[inv_i].buyer, "bank_name": bank,
                   "amount": Decimal(str(amount)), "currency": usd,
                   "issue_date": date.fromisoformat(issue), "maturity_date": date.fromisoformat(maturity), "status": status},
@@ -187,7 +186,7 @@ for rlz_num, inv_i, expected, realized, due, rdate, status, reason, short_amt in
     ("RLZ-2382", 11, 275300, 275300, "2024-10-05", "2024-10-05", "realized", "", 0),
 ]:
     Realization.objects.get_or_create(
-        organization=org, realization_number=rlz_num,
+        realization_number=rlz_num,
         defaults={"buyer": invoices[inv_i].buyer, "invoice": invoices[inv_i],
                   "expected_amount": Decimal(str(expected)), "realized_amount": Decimal(str(realized)), "currency": usd,
                   "due_date": date.fromisoformat(due), "realization_date": date.fromisoformat(rdate) if rdate else None,
@@ -204,7 +203,7 @@ for trf_num, trf_type, bank, amount, trf_date, status in [
     ("TRF-2402", "sod", "HSBC", 318500, "2024-10-05", "acknowledged"),
 ]:
     SODFCTransfer.objects.get_or_create(
-        organization=org, transfer_number=trf_num,
+        transfer_number=trf_num,
         defaults={"transfer_type": trf_type, "bank_name": bank, "amount": Decimal(str(amount)), "currency": usd,
                   "transfer_date": date.fromisoformat(trf_date), "status": status,
                   "acknowledged_by": "Finance Team" if status == "acknowledged" else ""},
@@ -224,7 +223,7 @@ for dis_num, category, amount, dis_date, status in [
     ("DIS-2388", "insurance", 8900, "2024-09-25", "pending_approval"),
 ]:
     Disbursement.objects.get_or_create(
-        organization=org, disbursement_number=dis_num,
+        disbursement_number=dis_num,
         defaults={"category": category, "amount": Decimal(str(amount)), "currency": usd,
                   "disbursement_date": date.fromisoformat(dis_date), "status": status,
                   "approved_by": "Finance Manager" if status == "disbursed" else ""},
@@ -235,7 +234,7 @@ doc_types = ["bill_of_lading", "commercial_invoice", "packing_list", "certificat
 for i, shp in enumerate(shipments[:10]):
     for j, doc_type in enumerate(random.sample(doc_types, k=3)):
         SupplierDocument.objects.get_or_create(
-            organization=org, document_number=f"DOC-{2418 - i}-{j + 1}",
+            document_number=f"DOC-{2418 - i}-{j + 1}",
             defaults={"supplier": shp.supplier, "shipment": shp, "document_type": doc_type,
                       "received_date": shp.eta + timedelta(days=random.randint(0, 3)),
                       "status": random.choice(["accepted", "accepted", "pending"])},

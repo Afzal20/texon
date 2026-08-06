@@ -30,7 +30,6 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tasks', to='core.organization')),
                 ('parent_task', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='sub_tasks', to='tna.task')),
                 ('purchase_order', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='tasks', to='merchandising.purchaseorder')),
                 ('style', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='tasks', to='merchandising.style')),
@@ -51,7 +50,6 @@ class Migration(migrations.Migration):
                 ('sent_at', models.DateTimeField(blank=True, null=True)),
                 ('status', models.CharField(choices=[('scheduled', 'Scheduled'), ('sent', 'Sent'), ('failed', 'Failed')], default='scheduled', max_length=50)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='alarms', to='core.organization')),
                 ('task', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='alarms', to='tna.task')),
             ],
             options={
@@ -70,7 +68,6 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='timelines', to='core.organization')),
                 ('purchase_order', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='timelines', to='merchandising.purchaseorder')),
                 ('style', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='timelines', to='merchandising.style')),
             ],
@@ -93,13 +90,12 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='job_orders', to='core.organization')),
                 ('task', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='job_orders', to='tna.task')),
             ],
             options={
                 'verbose_name': 'Job Order',
                 'verbose_name_plural': 'Job Orders',
-                'unique_together': {('organization', 'job_order_number')},
+                'unique_together': {('job_order_number',)},
             },
         ),
     ]

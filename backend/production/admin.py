@@ -12,7 +12,7 @@ from .models import (
 
 @admin.register(ProductionLine)
 class ProductionLineAdmin(admin.ModelAdmin):
-    list_display = ("name", "code", "organization", "capacity", "is_active")
+    list_display = ("name", "code", "capacity", "is_active")
     search_fields = ("name", "code")
 
 

@@ -31,14 +31,13 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='subcontract_orders', to='core.organization')),
                 ('purchase_order', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='subcontract_orders', to='merchandising.purchaseorder')),
                 ('style', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='subcontract_orders', to='merchandising.style')),
             ],
             options={
                 'verbose_name': 'Subcontract Order',
                 'verbose_name_plural': 'Subcontract Orders',
-                'unique_together': {('organization', 'order_number')},
+                'unique_together': {('order_number',)},
             },
         ),
         migrations.CreateModel(

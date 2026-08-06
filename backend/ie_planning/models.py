@@ -1,12 +1,8 @@
 from django.db import models
-from core.models import Organization
 from merchandising.models import Style, PurchaseOrder
 
 
 class CapacityBooking(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="capacity_bookings"
-    )
     style = models.ForeignKey(
         Style, on_delete=models.CASCADE, related_name="capacity_bookings"
     )
@@ -32,9 +28,6 @@ class CapacityBooking(models.Model):
 
 
 class LinePlan(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="line_plans"
-    )
     style = models.ForeignKey(
         Style, on_delete=models.CASCADE, related_name="line_plans"
     )
@@ -59,9 +52,6 @@ class LinePlan(models.Model):
 
 
 class ProductionPlan(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="production_plans"
-    )
     purchase_order = models.ForeignKey(
         PurchaseOrder, on_delete=models.CASCADE, related_name="production_plans"
     )
@@ -96,9 +86,6 @@ class ProductionPlan(models.Model):
 
 
 class RiskAssessment(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="risk_assessments"
-    )
     style = models.ForeignKey(
         Style, on_delete=models.CASCADE, related_name="risk_assessments"
     )

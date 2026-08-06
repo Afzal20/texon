@@ -1,12 +1,8 @@
 from django.db import models
-from core.models import Organization
 from merchandising.models import Style, PurchaseOrder
 
 
 class Plan(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="plans"
-    )
     style = models.ForeignKey(
         Style, on_delete=models.SET_NULL, null=True, blank=True, related_name="plans"
     )

@@ -23,12 +23,11 @@ class Migration(migrations.Migration):
                 ('depreciation_method', models.CharField(choices=[('straight_line', 'Straight Line'), ('declining', 'Declining Balance'), ('sum_of_years', 'Sum of Years Digits'), ('units_of_production', 'Units of Production')], default='straight_line', max_length=50)),
                 ('useful_life_years', models.PositiveIntegerField(default=5)),
                 ('is_active', models.BooleanField(default=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='asset_categories', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Asset Category',
                 'verbose_name_plural': 'Asset Categories',
-                'unique_together': {('organization', 'code')},
+                'unique_together': {('code',)},
             },
         ),
         migrations.CreateModel(
@@ -50,12 +49,11 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='assets', to='fixed_assets.assetcategory')),
                 ('location', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='fixed_assets', to='core.location')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='fixed_assets', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Fixed Asset',
                 'verbose_name_plural': 'Fixed Assets',
-                'unique_together': {('organization', 'asset_code')},
+                'unique_together': {('asset_code',)},
             },
         ),
         migrations.CreateModel(

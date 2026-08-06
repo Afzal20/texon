@@ -7,15 +7,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization, Location, Currency
+from core.models import Location, Currency
 
 print("Seeding core data...")
-
-org, _ = Organization.objects.get_or_create(
-    code="TEXON",
-    defaults={"name": "Texon RMG Ltd", "address": "House 10, Road 5, Gulshan-1, Dhaka 1212, Bangladesh",
-              "phone": "+880-2-55667788", "email": "info@texon.com", "website": "https://www.texon.com", "is_active": True},
-)
 
 # ── Currencies ──────────────────────────────────────────────────────────────
 for code, name, symbol, rate, is_base in [
@@ -33,11 +27,11 @@ for code, name, city, country, address in [
     ("CGP", "Chittagong Factory", "Chittagong", "Bangladesh", "Plot 45, CEPZ, North Patenga, Chittagong 4223"),
     ("GUL", "Gazipur Industrial Unit", "Gazipur", "Bangladesh", "Kashimpur, Kaliakoir, Gazipur 1750"),
 ]:
-    Location.objects.get_or_create(organization=org, code=code, defaults={"name": name, "address": address, "city": city, "country": country, "is_active": True})
+    Location.objects.get_or_create(code=code, defaults={"name": name, "address": address, "city": city, "country": country, "is_active": True})
 
 # ── Summary ──────────────────────────────────────────────────────────────────
 for model, label in [
-    (Organization, "Organizations"), (Location, "Locations"), (Currency, "Currencies"),
+    (Location, "Locations"), (Currency, "Currencies"),
 ]:
     print(f"  {label}: {model.objects.count()}")
 print("Done!")

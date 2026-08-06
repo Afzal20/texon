@@ -13,7 +13,7 @@ from .models import (
 
 @admin.register(Warehouse)
 class WarehouseAdmin(admin.ModelAdmin):
-    list_display = ("name", "code", "organization", "location", "is_active")
+    list_display = ("name", "code", "location", "is_active")
     search_fields = ("name", "code")
 
 

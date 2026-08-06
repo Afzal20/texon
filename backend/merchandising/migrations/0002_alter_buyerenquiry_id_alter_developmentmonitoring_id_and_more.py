@@ -59,7 +59,6 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('buyer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='budget_demand_assessments', to='buyers.buyer')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='budget_demand_assessments', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Budget Demand Assessment',
@@ -77,7 +76,6 @@ class Migration(migrations.Migration):
                 ('status', models.CharField(choices=[('pending', 'Pending'), ('under_review', 'Under Review'), ('implemented', 'Implemented'), ('rejected', 'Rejected')], default='pending', max_length=50)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='ie_suggestions', to='core.organization')),
                 ('production_line', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='ie_suggestions', to='production.productionline')),
                 ('style', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='ie_suggestions', to='merchandising.style')),
             ],
@@ -99,7 +97,6 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='process_wise_targets', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Process Wise Target',
@@ -117,7 +114,6 @@ class Migration(migrations.Migration):
                 ('status', models.CharField(choices=[('ongoing', 'Ongoing'), ('resolved', 'Resolved')], default='ongoing', max_length=20)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='production_downtimes', to='core.organization')),
                 ('production_line', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='downtimes', to='production.productionline')),
                 ('style', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='downtimes', to='merchandising.style')),
             ],
@@ -139,7 +135,6 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('employee', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='skill_inventories', to='hr.employee')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='skill_inventories', to='core.organization')),
                 ('production_line', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='skill_inventories', to='production.productionline')),
             ],
             options={

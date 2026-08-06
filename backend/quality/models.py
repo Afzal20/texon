@@ -1,13 +1,9 @@
 from django.db import models
-from core.models import Organization
 from merchandising.models import Style
 from production.models import ProductionOrder
 
 
 class DefectCategory(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="defect_categories"
-    )
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50)
     description = models.TextField(blank=True)
@@ -16,16 +12,13 @@ class DefectCategory(models.Model):
     class Meta:
         verbose_name = "Defect Category"
         verbose_name_plural = "Defect Categories"
-        unique_together = ("organization", "code")
+        unique_together = ("code",)
 
     def __str__(self):
         return self.name
 
 
 class FabricInspection(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="fabric_inspections"
-    )
     fabric_received_from = models.CharField(max_length=255)
     supplier = models.CharField(max_length=255, blank=True)
     inspection_date = models.DateField()

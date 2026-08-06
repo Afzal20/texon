@@ -28,12 +28,11 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='suppliers', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Supplier',
                 'verbose_name_plural': 'Suppliers',
-                'unique_together': {('organization', 'code')},
+                'unique_together': {('code',)},
             },
         ),
         migrations.CreateModel(
@@ -50,7 +49,6 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='quotation_analyses', to='core.organization')),
                 ('supplier', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='quotations', to='procurement.supplier')),
             ],
             options={
@@ -73,12 +71,11 @@ class Migration(migrations.Migration):
                 ('approved_by', models.CharField(blank=True, max_length=255)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='rm_requisitions', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Raw Material Requisition',
                 'verbose_name_plural': 'Raw Material Requisitions',
-                'unique_together': {('organization', 'requisition_number')},
+                'unique_together': {('requisition_number',)},
             },
         ),
         migrations.CreateModel(
@@ -97,13 +94,12 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='rm_bookings', to='core.organization')),
                 ('supplier', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bookings', to='procurement.supplier')),
             ],
             options={
                 'verbose_name': 'Raw Material Booking',
                 'verbose_name_plural': 'Raw Material Bookings',
-                'unique_together': {('organization', 'booking_number')},
+                'unique_together': {('booking_number',)},
             },
         ),
     ]

@@ -24,7 +24,6 @@ class Migration(migrations.Migration):
                 ('created_by', models.CharField(max_length=255)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='dashboards', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Dashboard',
@@ -43,7 +42,6 @@ class Migration(migrations.Migration):
                 ('file', models.FileField(blank=True, null=True, upload_to='reports/')),
                 ('status', models.CharField(choices=[('generating', 'Generating'), ('ready', 'Ready'), ('failed', 'Failed')], default='generating', max_length=50)),
                 ('notes', models.TextField(blank=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reports', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Report',

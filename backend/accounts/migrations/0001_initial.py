@@ -29,7 +29,6 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='accounts_payable', to='core.organization')),
                 ('supplier', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='payables', to='procurement.supplier')),
             ],
             options={
@@ -52,7 +51,6 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('buyer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='receivables', to='buyers.buyer')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='accounts_receivable', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Accounts Receivable',
@@ -69,13 +67,12 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='chart_of_accounts', to='core.organization')),
                 ('parent', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='children', to='accounts.chartofaccount')),
             ],
             options={
                 'verbose_name': 'Chart of Account',
                 'verbose_name_plural': 'Chart of Accounts',
-                'unique_together': {('organization', 'account_code')},
+                'unique_together': {('account_code',)},
             },
         ),
         migrations.CreateModel(
@@ -89,12 +86,11 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='cost_centers', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Cost Center',
                 'verbose_name_plural': 'Cost Centers',
-                'unique_together': {('organization', 'code')},
+                'unique_together': {('code',)},
             },
         ),
         migrations.CreateModel(
@@ -113,7 +109,6 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('cost_center', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='expenses', to='accounts.costcenter')),
                 ('currency', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='core.currency')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='expenses', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Expense',
@@ -134,7 +129,6 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('account', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='journal_entries', to='accounts.chartofaccount')),
                 ('currency', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='core.currency')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='journal_entries', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Journal Entry',

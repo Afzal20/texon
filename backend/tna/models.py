@@ -1,12 +1,8 @@
 from django.db import models
-from core.models import Organization
 from merchandising.models import Style, PurchaseOrder
 
 
 class Task(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="tasks"
-    )
     parent_task = models.ForeignKey(
         "self", on_delete=models.SET_NULL, null=True, blank=True, related_name="sub_tasks"
     )
@@ -52,9 +48,6 @@ class Task(models.Model):
 
 
 class JobOrder(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="job_orders"
-    )
     task = models.ForeignKey(
         Task, on_delete=models.CASCADE, related_name="job_orders"
     )
@@ -81,16 +74,13 @@ class JobOrder(models.Model):
     class Meta:
         verbose_name = "Job Order"
         verbose_name_plural = "Job Orders"
-        unique_together = ("organization", "job_order_number")
+        unique_together = ("job_order_number",)
 
     def __str__(self):
         return f"JO {self.job_order_number} - {self.task.title}"
 
 
 class Timeline(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="timelines"
-    )
     purchase_order = models.ForeignKey(
         PurchaseOrder, on_delete=models.CASCADE, related_name="timelines"
     )
@@ -118,9 +108,6 @@ class Timeline(models.Model):
 
 
 class AlarmNotification(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="alarms"
-    )
     task = models.ForeignKey(
         Task, on_delete=models.SET_NULL, null=True, blank=True, related_name="alarms"
     )

@@ -1,12 +1,8 @@
 from django.db import models
-from core.models import Organization
 from buyers.models import Buyer
 
 
 class Style(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="styles"
-    )
     buyer = models.ForeignKey(
         Buyer, on_delete=models.CASCADE, related_name="styles"
     )
@@ -21,16 +17,13 @@ class Style(models.Model):
     class Meta:
         verbose_name = "Style"
         verbose_name_plural = "Styles"
-        unique_together = ("organization", "style_number")
+        unique_together = ("style_number",)
 
     def __str__(self):
         return f"{self.style_number} - {self.name}"
 
 
 class BuyerEnquiry(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="buyer_enquiries"
-    )
     buyer = models.ForeignKey(
         Buyer, on_delete=models.CASCADE, related_name="enquiries"
     )
@@ -62,9 +55,6 @@ class BuyerEnquiry(models.Model):
 
 
 class PurchaseOrder(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="purchase_orders"
-    )
     buyer = models.ForeignKey(
         Buyer, on_delete=models.CASCADE, related_name="purchase_orders"
     )
@@ -96,16 +86,13 @@ class PurchaseOrder(models.Model):
     class Meta:
         verbose_name = "Purchase Order"
         verbose_name_plural = "Purchase Orders"
-        unique_together = ("organization", "po_number")
+        unique_together = ("po_number",)
 
     def __str__(self):
         return f"PO {self.po_number} - {self.buyer.name}"
 
 
 class SampleOrder(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="sample_orders"
-    )
     buyer = models.ForeignKey(
         Buyer, on_delete=models.CASCADE, related_name="sample_orders"
     )
@@ -193,9 +180,6 @@ class DevelopmentMonitoring(models.Model):
 
 
 class BudgetDemandAssessment(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="budget_demand_assessments"
-    )
     buyer = models.ForeignKey(
         Buyer, on_delete=models.CASCADE, related_name="budget_demand_assessments"
     )
@@ -222,9 +206,6 @@ class BudgetDemandAssessment(models.Model):
 
 
 class IeSuggestion(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="ie_suggestions"
-    )
     production_line = models.ForeignKey(
         "production.ProductionLine", on_delete=models.SET_NULL, null=True, blank=True, related_name="ie_suggestions"
     )
@@ -257,9 +238,6 @@ class IeSuggestion(models.Model):
 
 
 class SkillInventory(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="skill_inventories"
-    )
     employee = models.ForeignKey(
         "hr.Employee", on_delete=models.SET_NULL, null=True, blank=True, related_name="skill_inventories"
     )
@@ -289,9 +267,6 @@ class SkillInventory(models.Model):
 
 
 class ProductionDowntime(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="production_downtimes"
-    )
     production_line = models.ForeignKey(
         "production.ProductionLine", on_delete=models.SET_NULL, null=True, blank=True, related_name="downtimes"
     )
@@ -319,9 +294,6 @@ class ProductionDowntime(models.Model):
 
 
 class ProcessWiseTarget(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="process_wise_targets"
-    )
     process_name = models.CharField(max_length=255)
     target_quantity = models.PositiveIntegerField()
     achieved_quantity = models.PositiveIntegerField(default=0)

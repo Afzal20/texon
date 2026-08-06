@@ -7,14 +7,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization
 from buyers.models import Buyer
 from merchandising.models import Style, PurchaseOrder
 from subcontract.models import SubcontractOrder, SubcontractTracking
 
 print("Seeding subcontract data...")
-
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
 
 buyers = []
 for name, code, country in [
@@ -22,12 +19,12 @@ for name, code, country in [
     ("Uniqlo (Fast Retailing)", "UNQ", "Japan"), ("Levi Strauss & Co.", "LEV", "USA"),
     ("Nike Inc.", "NKE", "USA"), ("Adidas AG", "ADI", "Germany"),
 ]:
-    b, _ = Buyer.objects.get_or_create(organization=org, code=code, defaults={"name": name, "country": country})
+    b, _ = Buyer.objects.get_or_create(code=code, defaults={"name": name, "country": country})
     buyers.append(b)
 
 styles = []
 for name, snum in [("Basic Tee", "STY-001"), ("Classic Polo", "STY-002"), ("Denim Jacket", "STY-003"), ("Chino Pants", "STY-004"), ("Hoodie", "STY-005"), ("Track Pants", "STY-006")]:
-    s, _ = Style.objects.get_or_create(organization=org, style_number=snum, defaults={"name": name, "buyer": buyers[0]})
+    s, _ = Style.objects.get_or_create(style_number=snum, defaults={"name": name, "buyer": buyers[0]})
     styles.append(s)
 
 pos = []
@@ -37,7 +34,7 @@ for po_num, buyer_i, style_i, qty, price in [
     ("PO-2405", 4, 4, 22000, "5.60"), ("PO-2406", 5, 5, 16800, "7.20"),
 ]:
     po, _ = PurchaseOrder.objects.get_or_create(
-        organization=org, po_number=po_num,
+        po_number=po_num,
         defaults={"buyer": buyers[buyer_i], "style": styles[style_i],
                   "order_date": date(2024, 9, 10 + buyer_i), "delivery_date": date(2024, 12, 1),
                   "quantity": qty, "unit_price": Decimal(price),
@@ -58,7 +55,7 @@ for sc_num, style_i, po_i, sub_name, process, qty, rate, total, start, expected,
     ("SC-2408", 2, 2, "Mirpur Garments Finishing", "finishing", 9500, "6.00", "57000.00", "2024-10-16", "2024-10-24", None, "pending"),
 ]:
     sc, _ = SubcontractOrder.objects.get_or_create(
-        organization=org, order_number=sc_num,
+        order_number=sc_num,
         defaults={"style": styles[style_i], "purchase_order": pos[po_i], "subcontractor_name": sub_name,
                   "process": process, "quantity": qty, "rate": Decimal(rate), "total_value": Decimal(total),
                   "start_date": date.fromisoformat(start), "expected_completion": date.fromisoformat(expected),

@@ -1,13 +1,9 @@
 from django.db import models
-from core.models import Organization
 from buyers.models import Buyer
 from merchandising.models import Style
 
 
 class PreCosting(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="pre_costings"
-    )
     buyer = models.ForeignKey(
         Buyer, on_delete=models.CASCADE, related_name="pre_costings"
     )
@@ -41,9 +37,6 @@ class PreCosting(models.Model):
 
 
 class CostSheet(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="cost_sheets"
-    )
     style = models.ForeignKey(
         Style, on_delete=models.CASCADE, related_name="cost_sheets"
     )

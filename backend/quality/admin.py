@@ -12,7 +12,7 @@ from .models import (
 
 @admin.register(DefectCategory)
 class DefectCategoryAdmin(admin.ModelAdmin):
-    list_display = ("name", "code", "organization", "is_active")
+    list_display = ("name", "code", "is_active")
     search_fields = ("name", "code")
 
 

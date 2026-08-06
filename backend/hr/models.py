@@ -1,11 +1,8 @@
 from django.db import models
-from core.models import Organization, Location
+from core.models import Location
 
 
 class Department(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="departments"
-    )
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50)
     description = models.TextField(blank=True)
@@ -16,16 +13,13 @@ class Department(models.Model):
     class Meta:
         verbose_name = "Department"
         verbose_name_plural = "Departments"
-        unique_together = ("organization", "code")
+        unique_together = ("code",)
 
     def __str__(self):
         return self.name
 
 
 class Designation(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="designations"
-    )
     department = models.ForeignKey(
         Department, on_delete=models.CASCADE, related_name="designations"
     )
@@ -39,16 +33,13 @@ class Designation(models.Model):
     class Meta:
         verbose_name = "Designation"
         verbose_name_plural = "Designations"
-        unique_together = ("organization", "code")
+        unique_together = ("code",)
 
     def __str__(self):
         return f"{self.name} - {self.department.name}"
 
 
 class Employee(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="employees"
-    )
     department = models.ForeignKey(
         Department, on_delete=models.SET_NULL, null=True, blank=True, related_name="employees"
     )
@@ -98,7 +89,7 @@ class Employee(models.Model):
     class Meta:
         verbose_name = "Employee"
         verbose_name_plural = "Employees"
-        unique_together = ("organization", "employee_id")
+        unique_together = ("employee_id",)
 
     def __str__(self):
         return f"{self.employee_id} - {self.first_name} {self.last_name}"
@@ -199,9 +190,6 @@ class Overtime(models.Model):
 
 
 class SalarySheet(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="salary_sheets"
-    )
     employee = models.ForeignKey(
         Employee, on_delete=models.CASCADE, related_name="salary_sheets"
     )

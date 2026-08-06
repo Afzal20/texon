@@ -1,13 +1,9 @@
 from django.db import models
-from core.models import Organization
 from buyers.models import Buyer
 from merchandising.models import Style
 
 
 class Order(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="orders"
-    )
     buyer = models.ForeignKey(
         Buyer, on_delete=models.CASCADE, related_name="orders"
     )
@@ -44,7 +40,7 @@ class Order(models.Model):
     class Meta:
         verbose_name = "Order"
         verbose_name_plural = "Orders"
-        unique_together = ("organization", "order_number")
+        unique_together = ("order_number",)
 
     def __str__(self):
         return f"Order {self.order_number} - {self.buyer.name}"

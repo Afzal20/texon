@@ -26,7 +26,6 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='capacity_bookings', to='core.organization')),
                 ('style', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='capacity_bookings', to='merchandising.style')),
             ],
             options={
@@ -45,7 +44,6 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='line_plans', to='core.organization')),
                 ('style', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='line_plans', to='merchandising.style')),
             ],
             options={
@@ -65,7 +63,6 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='production_plans', to='core.organization')),
                 ('purchase_order', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='production_plans', to='merchandising.purchaseorder')),
                 ('style', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='production_plans', to='merchandising.style')),
             ],
@@ -85,7 +82,6 @@ class Migration(migrations.Migration):
                 ('status', models.CharField(choices=[('open', 'Open'), ('mitigated', 'Mitigated'), ('closed', 'Closed')], default='open', max_length=50)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='risk_assessments', to='core.organization')),
                 ('style', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='risk_assessments', to='merchandising.style')),
             ],
             options={

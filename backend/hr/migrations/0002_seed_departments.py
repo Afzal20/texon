@@ -14,14 +14,10 @@ DEPARTMENTS = [
 
 
 def seed_departments(apps, schema_editor):
-    Organization = apps.get_model("core", "Organization")
     Department = apps.get_model("hr", "Department")
-    org, _ = Organization.objects.get_or_create(
-        code="DEFAULT", defaults={"name": "Default Organization"}
-    )
     for dept in DEPARTMENTS:
         Department.objects.get_or_create(
-            organization=org, code=dept["code"], defaults={"name": dept["name"]}
+            code=dept["code"], defaults={"name": dept["name"]}
         )
 
 

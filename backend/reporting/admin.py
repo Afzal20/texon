@@ -11,5 +11,5 @@ class ReportAdmin(admin.ModelAdmin):
 
 @admin.register(Dashboard)
 class DashboardAdmin(admin.ModelAdmin):
-    list_display = ("name", "dashboard_type", "organization", "is_default", "created_by")
+    list_display = ("name", "dashboard_type", "is_default", "created_by")
     list_filter = ("dashboard_type", "is_default")

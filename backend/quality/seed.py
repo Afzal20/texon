@@ -7,7 +7,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization
 from buyers.models import Buyer
 from merchandising.models import Style, PurchaseOrder
 from production.models import ProductionOrder
@@ -18,20 +17,18 @@ from quality.models import (
 
 print("Seeding quality data...")
 
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
-
 buyers = []
 for name, code, country in [
     ("H&M Group", "HM", "Sweden"), ("Zara (Inditex)", "ZRA", "Spain"),
     ("Uniqlo (Fast Retailing)", "UNQ", "Japan"), ("Levi Strauss & Co.", "LEV", "USA"),
     ("Nike Inc.", "NKE", "USA"), ("Adidas AG", "ADI", "Germany"),
 ]:
-    b, _ = Buyer.objects.get_or_create(organization=org, code=code, defaults={"name": name, "country": country})
+    b, _ = Buyer.objects.get_or_create(code=code, defaults={"name": name, "country": country})
     buyers.append(b)
 
 styles = []
 for name, snum in [("Basic Tee", "STY-001"), ("Classic Polo", "STY-002"), ("Denim Jacket", "STY-003"), ("Chino Pants", "STY-004"), ("Hoodie", "STY-005"), ("Track Pants", "STY-006")]:
-    s, _ = Style.objects.get_or_create(organization=org, style_number=snum, defaults={"name": name, "buyer": buyers[0]})
+    s, _ = Style.objects.get_or_create(style_number=snum, defaults={"name": name, "buyer": buyers[0]})
     styles.append(s)
 
 pos = []
@@ -41,7 +38,7 @@ for po_num, buyer_i, style_i, qty, price in [
     ("PO-2405", 4, 4, 22000, "5.60"), ("PO-2406", 5, 5, 16800, "7.20"),
 ]:
     po, _ = PurchaseOrder.objects.get_or_create(
-        organization=org, po_number=po_num,
+        po_number=po_num,
         defaults={"buyer": buyers[buyer_i], "style": styles[style_i],
                   "order_date": date(2024, 9, 10 + buyer_i), "delivery_date": date(2024, 12, 1),
                   "quantity": qty, "unit_price": Decimal(price),
@@ -60,7 +57,7 @@ for mo_num, po_i, style_i, qty, start, end, status in [
     ("MO-2408", 3, 3, 6000, "2024-10-18", "2024-11-08", "pending"),
 ]:
     mo, _ = ProductionOrder.objects.get_or_create(
-        organization=org, order_number=mo_num,
+        order_number=mo_num,
         defaults={"purchase_order": pos[po_i], "style": styles[style_i], "quantity": qty,
                   "start_date": date.fromisoformat(start), "end_date": date.fromisoformat(end), "status": status},
     )
@@ -80,7 +77,7 @@ for name, code, desc in [
     ("Label Defect", "DEF-LD", "Wrong, missing or misplaced care/main label"),
     ("Misprint", "DEF-MP", "Faded, smudged or misaligned print"),
 ]:
-    d, _ = DefectCategory.objects.get_or_create(organization=org, code=code, defaults={"name": name, "description": desc})
+    d, _ = DefectCategory.objects.get_or_create(code=code, defaults={"name": name, "description": desc})
     defects.append(d)
 
 def dc(i): return defects[i % len(defects)]
@@ -96,7 +93,7 @@ for supplier, date_iso, total, rejected, def_i, status in [
 ]:
     passed = Decimal(str(total - rejected))
     FabricInspection.objects.get_or_create(
-        organization=org, fabric_received_from=supplier, inspection_date=date.fromisoformat(date_iso),
+        fabric_received_from=supplier, inspection_date=date.fromisoformat(date_iso),
         defaults={"supplier": supplier, "total_quantity": Decimal(str(total)), "inspected_quantity": Decimal(str(total)),
                   "passed_quantity": passed, "rejected_quantity": Decimal(str(rejected)),
                   "defect_category": dc(def_i), "status": status,

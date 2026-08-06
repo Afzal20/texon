@@ -7,14 +7,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization
 from inventory.models import (
     Warehouse, Fabric, Accessory, Trim, StockMovement, ShadeApproval, PhysicalInventory,
 )
 
 print("Seeding inventory data...")
-
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
 
 # ── Warehouses ───────────────────────────────────────────────────────────────
 warehouses = []
@@ -24,7 +21,7 @@ for name, code, loc in [
     ("Finish Goods Store", "FGS", "Unit-2, Savar"),
 ]:
     w, _ = Warehouse.objects.get_or_create(
-        organization=org, code=code, defaults={"name": name, "location": loc}
+        code=code, defaults={"name": name, "location": loc}
     )
     warehouses.append(w)
 
@@ -43,7 +40,7 @@ for name, code, comp, color, qty, price in [
     ("Twill 100% Cotton", "FAB-010", "100% Cotton", "Khaki", 3700, "3.60"),
 ]:
     f, _ = Fabric.objects.get_or_create(
-        organization=org, code=code,
+        code=code,
         defaults={"name": name, "warehouse": warehouses[0], "color": color, "composition": comp,
                   "width": Decimal("58.00"), "quantity": qty, "unit": "meters",
                   "threshold_quantity": random.randint(800, 2000), "unit_price": Decimal(price)},
@@ -65,7 +62,7 @@ for name, code, cat, qty, price in [
     ("Main Label Woven", "ACC-010", "Label", 90000, "0.08"),
 ]:
     a, _ = Accessory.objects.get_or_create(
-        organization=org, code=code,
+        code=code,
         defaults={"name": name, "warehouse": warehouses[1], "category": cat, "quantity": qty,
                   "unit": "pcs", "threshold_quantity": random.randint(2000, 8000),
                   "unit_price": Decimal(price)},
@@ -83,7 +80,7 @@ for name, code, qty, price in [
     ("Tape 5mm Grosgrain", "TRM-006", 800, "0.45"),
 ]:
     t, _ = Trim.objects.get_or_create(
-        organization=org, code=code,
+        code=code,
         defaults={"name": name, "warehouse": warehouses[1], "quantity": qty,
                   "unit": "rolls", "threshold_quantity": random.randint(50, 200),
                   "unit_price": Decimal(price)},
@@ -107,7 +104,7 @@ pools = {"fabric": fabrics, "accessory": accessories, "trim": trims}
 for ref, item_type, frm_i, to_i, mtype, qty, note in movements:
     item = random.choice(pools[item_type])
     StockMovement.objects.get_or_create(
-        organization=org, reference_number=ref,
+        reference_number=ref,
         defaults={"item_type": item_type, "item_id": item.id,
                   "from_warehouse": warehouses[frm_i], "to_warehouse": warehouses[to_i],
                   "movement_type": mtype, "quantity": Decimal(str(qty)),

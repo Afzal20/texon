@@ -1,13 +1,9 @@
 from django.db import models
-from core.models import Organization
 from merchandising.models import Style
 from production.models import ProductionLine
 
 
 class PerformanceRecord(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="performance_records"
-    )
     style = models.ForeignKey(
         Style, on_delete=models.SET_NULL, null=True, blank=True, related_name="performance_records"
     )

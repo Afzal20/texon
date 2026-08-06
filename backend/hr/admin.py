@@ -14,8 +14,8 @@ from .models import (
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ("name", "code", "organization", "is_active", "created_at")
-    list_filter = ("is_active", "organization")
+    list_display = ("name", "code", "is_active", "created_at")
+    list_filter = ("is_active",)
     search_fields = ("name", "code")
     readonly_fields = ("created_at", "updated_at")
 
@@ -67,7 +67,7 @@ class OvertimeAdmin(admin.ModelAdmin):
 @admin.register(SalarySheet)
 class SalarySheetAdmin(admin.ModelAdmin):
     list_display = ("employee", "month", "basic_salary", "allowances", "deductions", "net_salary", "status", "payment_date")
-    list_filter = ("status", "month", "organization")
+    list_filter = ("status", "month")
     search_fields = ("employee__employee_id", "employee__first_name", "employee__last_name")
     readonly_fields = ("created_at", "updated_at")
 

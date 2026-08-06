@@ -31,13 +31,12 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('buyer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='orders', to='buyers.buyer')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='orders', to='core.organization')),
                 ('style', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='orders', to='merchandising.style')),
             ],
             options={
                 'verbose_name': 'Order',
                 'verbose_name_plural': 'Orders',
-                'unique_together': {('organization', 'order_number')},
+                'unique_together': {('order_number',)},
             },
         ),
     ]

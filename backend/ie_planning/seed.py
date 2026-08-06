@@ -7,7 +7,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization
 from buyers.models import Buyer
 from merchandising.models import Style, PurchaseOrder
 from ie_planning.models import (
@@ -16,16 +15,14 @@ from ie_planning.models import (
 
 print("Seeding ie_planning data...")
 
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
-
-buyer, _ = Buyer.objects.get_or_create(organization=org, code="HM", defaults={"name": "H&M Group", "country": "Sweden"})
+buyer, _ = Buyer.objects.get_or_create(code="HM", defaults={"name": "H&M Group", "country": "Sweden"})
 
 styles = []
 for name, snum in [
     ("Basic Tee", "STY-001"), ("Classic Polo", "STY-002"),
     ("Denim Jacket", "STY-003"), ("Chino Pants", "STY-004"),
 ]:
-    s, _ = Style.objects.get_or_create(organization=org, style_number=snum, defaults={"name": name, "buyer": buyer})
+    s, _ = Style.objects.get_or_create(style_number=snum, defaults={"name": name, "buyer": buyer})
     styles.append(s)
 
 orders = []
@@ -36,7 +33,7 @@ for i, (po_num, qty, unit, total, st) in enumerate([
     ("PO-2404", 7300, "6.40", "46720.00", "confirmed"),
 ]):
     o, _ = PurchaseOrder.objects.get_or_create(
-        organization=org, po_number=po_num,
+        po_number=po_num,
         defaults={"buyer": buyer, "style": styles[i], "order_date": date(2024, 8, 15) + timedelta(days=i * 10),
                   "delivery_date": date(2024, 10, 25) + timedelta(days=i * 10), "quantity": qty,
                   "unit_price": Decimal(unit), "total_value": Decimal(total), "status": st},
@@ -57,7 +54,7 @@ for style_i, line, cap, days, bdate, st in [
     (2, "Line-6", 450, 10, "2024-09-25", "allocated"),
 ]:
     CapacityBooking.objects.get_or_create(
-        organization=org, style=styles[style_i], line=line, booking_date=date.fromisoformat(bdate),
+        style=styles[style_i], line=line, booking_date=date.fromisoformat(bdate),
         defaults={"capacity_per_day": cap, "allocated_days": days, "status": st,
                   "notes": "IE capacity booking for sewing floor"},
     )
@@ -76,7 +73,7 @@ for style_i, line, pdate, target, st in [
     (2, "Line-6", "2024-10-20", 450, "completed"),
 ]:
     LinePlan.objects.get_or_create(
-        organization=org, style=styles[style_i], line=line, plan_date=date.fromisoformat(pdate),
+        style=styles[style_i], line=line, plan_date=date.fromisoformat(pdate),
         defaults={"target_quantity": target, "status": st,
                   "notes": "Daily line plan issued by IE department"},
     )
@@ -89,7 +86,7 @@ for i, (po, sdate, edate, target, st) in enumerate([
     (3, "2024-09-25", "2024-10-22", 730, "draft"),
 ]):
     ProductionPlan.objects.get_or_create(
-        organization=org, purchase_order=orders[i], style=orders[i].style,
+        purchase_order=orders[i], style=orders[i].style,
         defaults={"planned_start_date": date.fromisoformat(sdate), "planned_end_date": date.fromisoformat(edate),
                   "daily_target": target, "total_quantity": orders[i].quantity, "status": st,
                   "notes": f"Production plan for {orders[i].po_number}"},
@@ -105,7 +102,7 @@ for style_i, risk, sev, lik, mit, st in [
     (1, "Utility Disruption", "low", "medium", "Install backup generator for sewing floor", "closed"),
 ]:
     RiskAssessment.objects.get_or_create(
-        organization=org, style=styles[style_i], risk_type=risk, severity=sev, likelihood=lik,
+        style=styles[style_i], risk_type=risk, severity=sev, likelihood=lik,
         defaults={"mitigation_plan": mit, "status": st},
     )
 

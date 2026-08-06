@@ -1,11 +1,8 @@
 from django.db import models
-from core.models import Organization, Location
+from core.models import Location
 
 
 class AssetCategory(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="asset_categories"
-    )
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50)
     description = models.TextField(blank=True)
@@ -25,16 +22,13 @@ class AssetCategory(models.Model):
     class Meta:
         verbose_name = "Asset Category"
         verbose_name_plural = "Asset Categories"
-        unique_together = ("organization", "code")
+        unique_together = ("code",)
 
     def __str__(self):
         return self.name
 
 
 class FixedAsset(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="fixed_assets"
-    )
     category = models.ForeignKey(
         AssetCategory, on_delete=models.CASCADE, related_name="assets"
     )
@@ -67,7 +61,7 @@ class FixedAsset(models.Model):
     class Meta:
         verbose_name = "Fixed Asset"
         verbose_name_plural = "Fixed Assets"
-        unique_together = ("organization", "asset_code")
+        unique_together = ("asset_code",)
 
     def __str__(self):
         return f"{self.asset_code} - {self.name}"

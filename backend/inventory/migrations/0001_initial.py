@@ -29,7 +29,6 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='fabrics', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Fabric',
@@ -64,12 +63,11 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='warehouses', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Warehouse',
                 'verbose_name_plural': 'Warehouses',
-                'unique_together': {('organization', 'code')},
+                'unique_together': {('code',)},
             },
         ),
         migrations.CreateModel(
@@ -84,7 +82,6 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True)),
                 ('created_by', models.CharField(max_length=255)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stock_movements', to='core.organization')),
                 ('from_warehouse', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='outgoing_movements', to='inventory.warehouse')),
                 ('to_warehouse', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='incoming_movements', to='inventory.warehouse')),
             ],
@@ -128,18 +125,17 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='trims', to='core.organization')),
                 ('warehouse', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='trims', to='inventory.warehouse')),
             ],
             options={
                 'verbose_name': 'Trim',
                 'verbose_name_plural': 'Trims',
-                'unique_together': {('organization', 'code')},
+                'unique_together': {('code',)},
             },
         ),
         migrations.AlterUniqueTogether(
             name='fabric',
-            unique_together={('organization', 'code')},
+            unique_together={('code',)},
         ),
         migrations.CreateModel(
             name='Accessory',
@@ -155,13 +151,12 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='accessories', to='core.organization')),
                 ('warehouse', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='accessories', to='inventory.warehouse')),
             ],
             options={
                 'verbose_name': 'Accessory',
                 'verbose_name_plural': 'Accessories',
-                'unique_together': {('organization', 'code')},
+                'unique_together': {('code',)},
             },
         ),
     ]

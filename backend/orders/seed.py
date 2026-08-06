@@ -7,14 +7,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization
 from buyers.models import Buyer
 from merchandising.models import Style
 from orders.models import Order
 
 print("Seeding orders data...")
-
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
 
 buyers = []
 for name, code, country in [
@@ -22,12 +19,12 @@ for name, code, country in [
     ("Uniqlo (Fast Retailing)", "UNQ", "Japan"), ("Levi Strauss & Co.", "LEV", "USA"),
     ("Nike Inc.", "NKE", "USA"), ("Adidas AG", "ADI", "Germany"),
 ]:
-    b, _ = Buyer.objects.get_or_create(organization=org, code=code, defaults={"name": name, "country": country})
+    b, _ = Buyer.objects.get_or_create(code=code, defaults={"name": name, "country": country})
     buyers.append(b)
 
 styles = []
 for name, snum in [("Basic Tee", "STY-001"), ("Classic Polo", "STY-002"), ("Denim Jacket", "STY-003"), ("Chino Pants", "STY-004"), ("Hoodie", "STY-005"), ("Track Pants", "STY-006")]:
-    s, _ = Style.objects.get_or_create(organization=org, style_number=snum, defaults={"name": name, "buyer": buyers[0]})
+    s, _ = Style.objects.get_or_create(style_number=snum, defaults={"name": name, "buyer": buyers[0]})
     styles.append(s)
 
 def bi(i): return buyers[i % len(buyers)]
@@ -47,7 +44,7 @@ for i, (buyer_i, style_i, order_num, order_date, delivery_date, qty, price, stat
     (3, 2, "PO-85009", "2024-08-27", "2024-11-15", 4000, "9.30", "cancelled", "low", "Cancelled by buyer"),
 ]):
     o, _ = Order.objects.get_or_create(
-        organization=org, order_number=order_num,
+        order_number=order_num,
         defaults={"buyer": bi(buyer_i), "style": si(style_i), "order_date": date.fromisoformat(order_date),
                   "delivery_date": date.fromisoformat(delivery_date), "quantity": qty,
                   "unit_price": Decimal(price), "total_value": Decimal(str(round(qty * float(price), 2))),

@@ -7,16 +7,15 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization, Location
+from core.models import Location
 from hr.models import Department, Designation, Employee, Attendance, Leave, Overtime, SalarySheet, Bonus
 from authentication.models import User
 
 print("Seeding hr data...")
 
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
-dac, _ = Location.objects.get_or_create(organization=org, code="DAC", defaults={"name": "Dhaka Head Office", "city": "Dhaka", "country": "Bangladesh"})
-cgp, _ = Location.objects.get_or_create(organization=org, code="CGP", defaults={"name": "Chittagong Factory", "city": "Chittagong", "country": "Bangladesh"})
-gul, _ = Location.objects.get_or_create(organization=org, code="GUL", defaults={"name": "Gazipur Industrial Unit", "city": "Gazipur", "country": "Bangladesh"})
+dac, _ = Location.objects.get_or_create(code="DAC", defaults={"name": "Dhaka Head Office", "city": "Dhaka", "country": "Bangladesh"})
+cgp, _ = Location.objects.get_or_create(code="CGP", defaults={"name": "Chittagong Factory", "city": "Chittagong", "country": "Bangladesh"})
+gul, _ = Location.objects.get_or_create(code="GUL", defaults={"name": "Gazipur Industrial Unit", "city": "Gazipur", "country": "Bangladesh"})
 locations = {"DAC": dac, "CGP": cgp, "GUL": gul}
 
 # ── Departments ─────────────────────────────────────────────────────────────
@@ -34,7 +33,7 @@ for code, name, desc in [
     ("FNS", "Finishing", "Finishing, packing and final inspection"),
     ("CMP", "Compliance", "Social, environmental and safety compliance"),
 ]:
-    d, _ = Department.objects.get_or_create(organization=org, code=code, defaults={"name": name, "description": desc})
+    d, _ = Department.objects.get_or_create(code=code, defaults={"name": name, "description": desc})
     departments[code] = d
 
 # ── Designations ────────────────────────────────────────────────────────────
@@ -66,7 +65,7 @@ for dep_code, code, name, desc in [
     ("CMP", "CMP-OFF", "Compliance Officer", "Audits and compliance checks"),
 ]:
     ds, _ = Designation.objects.get_or_create(
-        organization=org, code=code,
+        code=code,
         defaults={"department": departments[dep_code], "name": name, "description": desc},
     )
     designations[code] = ds
@@ -94,7 +93,7 @@ for emp_id, first, last, dep, desig, loc, phone, dob, doj, etype, gender, status
     ("EMP-0018", "Jubayer", "Ahmed", "IEP", "IEP-OFF", "GUL", "+8801811000018", "1997-11-02", "2023-02-01", "probation", "male", "inactive"),
 ]:
     e, _ = Employee.objects.get_or_create(
-        organization=org, employee_id=emp_id,
+        employee_id=emp_id,
         defaults={"department": departments[dep], "designation": designations[desig], "location": locations[loc],
                   "first_name": first, "last_name": last, "email": f"{first.lower()}.{last.lower()}@texon.com",
                   "phone": phone, "date_of_birth": date.fromisoformat(dob), "date_of_joining": date.fromisoformat(doj),
@@ -182,7 +181,7 @@ for emp_id, basic, allow, deduct, ot, bonus, status in [
     e = emp(emp_id)
     net = basic + allow + ot + bonus - deduct
     SalarySheet.objects.get_or_create(
-        organization=org, employee=e, month="2024-11",
+        employee=e, month="2024-11",
         defaults={"basic_salary": Decimal(str(basic)), "allowances": Decimal(str(allow)), "deductions": Decimal(str(deduct)),
                   "overtime_amount": Decimal(str(ot)), "bonus_amount": Decimal(str(bonus)), "net_salary": Decimal(str(net)),
                   "status": status, "payment_date": date(2024, 12, 1) if status == "paid" else None, "notes": ""},

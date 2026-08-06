@@ -23,12 +23,11 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='departments', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Department',
                 'verbose_name_plural': 'Departments',
-                'unique_together': {('organization', 'code')},
+                'unique_together': {('code',)},
             },
         ),
         migrations.CreateModel(
@@ -42,12 +41,11 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('department', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='designations', to='hr.department')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='designations', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Designation',
                 'verbose_name_plural': 'Designations',
-                'unique_together': {('organization', 'code')},
+                'unique_together': {('code',)},
             },
         ),
         migrations.CreateModel(
@@ -70,12 +68,11 @@ class Migration(migrations.Migration):
                 ('department', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='employees', to='hr.department')),
                 ('designation', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='employees', to='hr.designation')),
                 ('location', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='employees', to='core.location')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='employees', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Employee',
                 'verbose_name_plural': 'Employees',
-                'unique_together': {('organization', 'employee_id')},
+                'unique_together': {('employee_id',)},
             },
         ),
         migrations.CreateModel(
@@ -152,7 +149,6 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('employee', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='salary_sheets', to='hr.employee')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='salary_sheets', to='core.organization')),
             ],
             options={
                 'verbose_name': 'Salary Sheet',

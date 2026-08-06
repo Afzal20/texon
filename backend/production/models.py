@@ -1,12 +1,8 @@
 from django.db import models
-from core.models import Organization
 from merchandising.models import Style, PurchaseOrder
 
 
 class ProductionLine(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="production_lines"
-    )
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=50)
     location = models.CharField(max_length=255, blank=True)
@@ -18,16 +14,13 @@ class ProductionLine(models.Model):
     class Meta:
         verbose_name = "Production Line"
         verbose_name_plural = "Production Lines"
-        unique_together = ("organization", "code")
+        unique_together = ("code",)
 
     def __str__(self):
         return f"{self.name} ({self.code})"
 
 
 class ProductionOrder(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="production_orders"
-    )
     purchase_order = models.ForeignKey(
         PurchaseOrder, on_delete=models.CASCADE, related_name="production_orders"
     )
@@ -60,7 +53,7 @@ class ProductionOrder(models.Model):
     class Meta:
         verbose_name = "Production Order"
         verbose_name_plural = "Production Orders"
-        unique_together = ("organization", "order_number")
+        unique_together = ("order_number",)
 
     def __str__(self):
         return f"PO {self.order_number} - {self.style.style_number}"

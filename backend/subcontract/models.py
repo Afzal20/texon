@@ -1,12 +1,8 @@
 from django.db import models
-from core.models import Organization
 from merchandising.models import Style, PurchaseOrder
 
 
 class SubcontractOrder(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="subcontract_orders"
-    )
     style = models.ForeignKey(
         Style, on_delete=models.CASCADE, related_name="subcontract_orders"
     )
@@ -51,7 +47,7 @@ class SubcontractOrder(models.Model):
     class Meta:
         verbose_name = "Subcontract Order"
         verbose_name_plural = "Subcontract Orders"
-        unique_together = ("organization", "order_number")
+        unique_together = ("order_number",)
 
     def __str__(self):
         return f"Subcontract {self.order_number} - {self.subcontractor_name}"

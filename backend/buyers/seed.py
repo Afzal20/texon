@@ -7,12 +7,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization
 from buyers.models import Buyer, BuyerRating, BuyerPortfolio
 
 print("Seeding buyers data...")
-
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
 
 # ── Buyers ──────────────────────────────────────────────────────────────────
 buyers = []
@@ -31,7 +28,7 @@ for code, name, country, contact, email, phone, active in [
     ("HSP", "Hush Puppies (Wolverine)", "USA", "Tom Harris", "buying@wolverine.com", "+1-616-866-5500", True),
 ]:
     b, _ = Buyer.objects.get_or_create(
-        organization=org, code=code,
+        code=code,
         defaults={"name": name, "country": country, "contact_person": contact,
                   "email": email, "phone": phone, "is_active": active},
     )

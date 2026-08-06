@@ -7,7 +7,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization
 from buyers.models import Buyer
 from merchandising.models import Style, PurchaseOrder
 from production.models import (
@@ -17,20 +16,18 @@ from production.models import (
 
 print("Seeding production data...")
 
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
-
 buyers = []
 for name, code, country in [
     ("H&M Group", "HM", "Sweden"), ("Zara (Inditex)", "ZRA", "Spain"),
     ("Uniqlo (Fast Retailing)", "UNQ", "Japan"), ("Levi Strauss & Co.", "LEV", "USA"),
     ("Nike Inc.", "NKE", "USA"), ("Adidas AG", "ADI", "Germany"),
 ]:
-    b, _ = Buyer.objects.get_or_create(organization=org, code=code, defaults={"name": name, "country": country})
+    b, _ = Buyer.objects.get_or_create(code=code, defaults={"name": name, "country": country})
     buyers.append(b)
 
 styles = []
 for name, snum in [("Basic Tee", "STY-001"), ("Classic Polo", "STY-002"), ("Denim Jacket", "STY-003"), ("Chino Pants", "STY-004"), ("Hoodie", "STY-005"), ("Track Pants", "STY-006")]:
-    s, _ = Style.objects.get_or_create(organization=org, style_number=snum, defaults={"name": name, "buyer": buyers[0]})
+    s, _ = Style.objects.get_or_create(style_number=snum, defaults={"name": name, "buyer": buyers[0]})
     styles.append(s)
 
 pos = []
@@ -43,7 +40,7 @@ for po_num, buyer_i, style_i, qty, price, status in [
     ("PO-2406", 5, 5, 16800, "7.20", "confirmed"),
 ]:
     po, _ = PurchaseOrder.objects.get_or_create(
-        organization=org, po_number=po_num,
+        po_number=po_num,
         defaults={"buyer": buyers[buyer_i], "style": styles[style_i],
                   "order_date": date(2024, 9, 10 + buyer_i), "delivery_date": date(2024, 12, 1),
                   "quantity": qty, "unit_price": Decimal(price),
@@ -58,7 +55,7 @@ for name, code, loc, cap in [
     ("Line 3", "LN-03", "Unit 2, Gazipur", 800), ("Line 4", "LN-04", "Unit 2, Gazipur", 900),
     ("Line 5", "LN-05", "Unit 3, Savar", 1000), ("Line 6", "LN-06", "Unit 3, Savar", 1200),
 ]:
-    ln, _ = ProductionLine.objects.get_or_create(organization=org, code=code, defaults={"name": name, "location": loc, "capacity": cap})
+    ln, _ = ProductionLine.objects.get_or_create(code=code, defaults={"name": name, "location": loc, "capacity": cap})
     lines.append(ln)
 
 # ── Production Orders ────────────────────────────────────────────────────────
@@ -74,7 +71,7 @@ for mo_num, po_i, style_i, line_i, qty, start, end, status in [
     ("MO-2408", 3, 3, 1, 6000, "2024-10-18", "2024-11-08", "pending"),
 ]:
     mo, _ = ProductionOrder.objects.get_or_create(
-        organization=org, order_number=mo_num,
+        order_number=mo_num,
         defaults={"purchase_order": pos[po_i], "style": styles[style_i], "production_line": lines[line_i],
                   "quantity": qty, "start_date": date.fromisoformat(start), "end_date": date.fromisoformat(end),
                   "status": status, "notes": "Allocated via production planning" if status == "in_progress" else ""},

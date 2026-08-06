@@ -7,23 +7,22 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization, Location, Currency
+from core.models import Location, Currency
 from multi_company.models import GroupCompany, MultiCompany, LocationBasedOperation
 
 print("Seeding multi_company data...")
 
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
 usd, _ = Currency.objects.get_or_create(code="USD", defaults={"name": "US Dollar", "symbol": "$", "exchange_rate": 1.0, "is_base": True})
 bdt, _ = Currency.objects.get_or_create(code="BDT", defaults={"name": "Bangladeshi Taka", "symbol": "Tk", "exchange_rate": 110.0, "is_base": False})
 eur, _ = Currency.objects.get_or_create(code="EUR", defaults={"name": "Euro", "symbol": "EUR", "exchange_rate": 0.92, "is_base": False})
 
-dac, _ = Location.objects.get_or_create(organization=org, code="DAC", defaults={"name": "Dhaka Head Office", "city": "Dhaka", "country": "Bangladesh"})
-cgp, _ = Location.objects.get_or_create(organization=org, code="CGP", defaults={"name": "Chittagong Factory", "city": "Chittagong", "country": "Bangladesh"})
-gul, _ = Location.objects.get_or_create(organization=org, code="GUL", defaults={"name": "Gazipur Industrial Unit", "city": "Gazipur", "country": "Bangladesh"})
+dac, _ = Location.objects.get_or_create(code="DAC", defaults={"name": "Dhaka Head Office", "city": "Dhaka", "country": "Bangladesh"})
+cgp, _ = Location.objects.get_or_create(code="CGP", defaults={"name": "Chittagong Factory", "city": "Chittagong", "country": "Bangladesh"})
+gul, _ = Location.objects.get_or_create(code="GUL", defaults={"name": "Gazipur Industrial Unit", "city": "Gazipur", "country": "Bangladesh"})
 
 # ── Group Companies ─────────────────────────────────────────────────────────
 tgh, _ = GroupCompany.objects.get_or_create(
-    organization=org, code="TGH",
+    code="TGH",
     defaults={"name": "Texon Group Holdings Ltd", "registration_number": "C-148273", "tax_id": "BD-4821930",
               "address": "House 10, Road 5, Gulshan-1, Dhaka 1212, Bangladesh",
               "country": "Bangladesh", "base_currency": bdt, "is_active": True},
@@ -56,7 +55,7 @@ for mc_code, loc_code, op_type in [
     ("TXR", "GUL", "showroom"),
 ]:
     LocationBasedOperation.objects.get_or_create(
-        multi_company=companies[mc_code], location=Location.objects.get(organization=org, code=loc_code),
+        multi_company=companies[mc_code], location=Location.objects.get(code=loc_code),
         defaults={"operation_type": op_type, "is_active": True},
     )
 

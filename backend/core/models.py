@@ -1,31 +1,9 @@
 from django.db import models
 
 
-class Organization(models.Model):
+class Location(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50, unique=True)
-    address = models.TextField(blank=True)
-    phone = models.CharField(max_length=50, blank=True)
-    email = models.EmailField(blank=True)
-    website = models.URLField(blank=True)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Organization"
-        verbose_name_plural = "Organizations"
-
-    def __str__(self):
-        return self.name
-
-
-class Location(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="locations"
-    )
-    name = models.CharField(max_length=255)
-    code = models.CharField(max_length=50)
     address = models.TextField(blank=True)
     city = models.CharField(max_length=100, blank=True)
     country = models.CharField(max_length=100, blank=True)
@@ -36,10 +14,9 @@ class Location(models.Model):
     class Meta:
         verbose_name = "Location"
         verbose_name_plural = "Locations"
-        unique_together = ("organization", "code")
 
     def __str__(self):
-        return f"{self.name} ({self.organization.name})"
+        return self.name
 
 
 class Currency(models.Model):

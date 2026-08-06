@@ -38,8 +38,6 @@ fake = Faker()
 Faker.seed(42)
 random.seed(42)
 
-ORG_ID = 1
-
 
 def weighted_choice(items: list[tuple]) -> str:
     """Pick from [(value, weight), ...]"""
@@ -165,7 +163,7 @@ class Command(BaseCommand):
             return
         for name, code in [("Dhaka Factory", "DAC"), ("Chittagong Port Warehouse", "CGP"), ("Gulshan Office", "GUL")]:
             Location.objects.create(
-                organization_id=ORG_ID, name=name, code=code,
+                name=name, code=code,
                 city=fake.city(), country="Bangladesh",
             )
 
@@ -190,7 +188,7 @@ class Command(BaseCommand):
             for idx, name in enumerate(roles.get(dept_id, ["Staff"]), 1):
                 code = f"D{dept_id:02d}{idx:02d}"
                 Designation.objects.create(
-                    organization_id=ORG_ID, department_id=dept_id,
+                    department_id=dept_id,
                     name=name, code=code,
                 )
 
@@ -204,7 +202,6 @@ class Command(BaseCommand):
             last = fake.last_name()
             eid = f"EMP{1000 + i}"
             Employee.objects.create(
-                organization_id=ORG_ID,
                 department_id=random.choice(list(range(1, 10))),
                 designation_id=random.choice(desig_ids),
                 location_id=random.choice([1, 2, 3]),
@@ -235,7 +232,7 @@ class Command(BaseCommand):
         ]
         for name, code, country in names:
             buyer = Buyer.objects.create(
-                organization_id=ORG_ID, name=name, code=code,
+                name=name, code=code,
                 country=country, contact_person=fake.name(),
                 email=f"procurement@{code.lower()}.com",
             )
@@ -259,7 +256,6 @@ class Command(BaseCommand):
         for i in range(1, 31):
             cat = random.choice(categories)
             Style.objects.create(
-                organization_id=ORG_ID,
                 buyer_id=random.choice(buyer_ids),
                 name=f"{cat} - {fake.word().title()}",
                 style_number=f"STY{2024}{i:03d}",
@@ -276,7 +272,6 @@ class Command(BaseCommand):
         for i in range(1, 16):
             name = fake.company()[:50]
             Supplier.objects.create(
-                organization_id=ORG_ID,
                 name=name,
                 code=f"SUP{i:03d}",
                 contact_person=fake.name(),
@@ -300,7 +295,7 @@ class Command(BaseCommand):
             qty = random.randint(500, 50000)
             up = self._dec(3, 50)
             po = PurchaseOrder.objects.create(
-                organization_id=ORG_ID, buyer_id=buyer_id, style_id=style_id,
+                buyer_id=buyer_id, style_id=style_id,
                 po_number=f"PO{2025}{i:03d}",
                 order_date=self._past_date(365),
                 delivery_date=self._future_date(30) if i < 40 else self._past_date(30),
@@ -315,7 +310,7 @@ class Command(BaseCommand):
         # Enquiries
         for i in range(20):
             BuyerEnquiry.objects.create(
-                organization_id=ORG_ID, buyer_id=random.choice(buyer_ids),
+                buyer_id=random.choice(buyer_ids),
                 style_id=random.choice(style_ids),
                 enquiry_date=self._past_date(200),
                 status=random.choice(["received", "under_review", "quoted", "converted", "lost"]),
@@ -325,7 +320,7 @@ class Command(BaseCommand):
         # Sample Orders
         for i in range(25):
             SampleOrder.objects.create(
-                organization_id=ORG_ID, buyer_id=random.choice(buyer_ids),
+                buyer_id=random.choice(buyer_ids),
                 style_id=random.choice(style_ids),
                 sample_type=random.choice(["fit", "pp", "size_set", "pre_production", "photo", "shipping"]),
                 quantity=random.randint(2, 50),
@@ -363,7 +358,7 @@ class Command(BaseCommand):
 
         for i in range(15):
             CapacityBooking.objects.create(
-                organization_id=ORG_ID, style_id=random.choice(style_ids),
+                style_id=random.choice(style_ids),
                 line=random.choice(lines),
                 capacity_per_day=random.randint(800, 3000),
                 booking_date=self._past_date(180),
@@ -372,7 +367,7 @@ class Command(BaseCommand):
             )
         for i in range(12):
             LinePlan.objects.create(
-                organization_id=ORG_ID, style_id=random.choice(style_ids),
+                style_id=random.choice(style_ids),
                 line=random.choice(lines), plan_date=self._past_date(90),
                 target_quantity=random.randint(2000, 50000),
                 status=random.choice(["planned", "running", "completed"]),
@@ -381,7 +376,7 @@ class Command(BaseCommand):
             sid = random.choice(style_ids)
             pid = random.choice(po_ids) if po_ids else None
             ProductionPlan.objects.create(
-                organization_id=ORG_ID, purchase_order_id=pid,
+                purchase_order_id=pid,
                 style_id=sid, planned_start_date=self._past_date(60),
                 planned_end_date=self._future_date(15),
                 daily_target=random.randint(500, 3000),
@@ -392,7 +387,7 @@ class Command(BaseCommand):
         risk_types = ["Fabric Delay", "Labor Shortage", "Machine Breakdown", "Quality Issue", "Power Outage"]
         for i in range(10):
             RiskAssessment.objects.create(
-                organization_id=ORG_ID, style_id=random.choice(style_ids),
+                style_id=random.choice(style_ids),
                 risk_type=random.choice(risk_types),
                 severity=random.choice(["low", "medium", "high", "critical"]),
                 likelihood=random.choice(["low", "medium", "high"]),
@@ -416,7 +411,6 @@ class Command(BaseCommand):
             return
         for i in range(1, 11):
             ProductionLine.objects.create(
-                organization_id=ORG_ID,
                 name=f"Line-{i}",
                 code=f"L{i:02d}",
                 location=f"Floor-{(i - 1) // 5 + 1}",
@@ -430,9 +424,9 @@ class Command(BaseCommand):
         if Warehouse.objects.exists():
             return
 
-        w1 = Warehouse.objects.create(organization_id=ORG_ID, name="Main Fabric Store", code="WH-FAB", location="Floor-1")
-        w2 = Warehouse.objects.create(organization_id=ORG_ID, name="Accessory Store", code="WH-ACC", location="Floor-2")
-        w3 = Warehouse.objects.create(organization_id=ORG_ID, name="Trim Store", code="WH-TRM", location="Floor-2")
+        w1 = Warehouse.objects.create(name="Main Fabric Store", code="WH-FAB", location="Floor-1")
+        w2 = Warehouse.objects.create(name="Accessory Store", code="WH-ACC", location="Floor-2")
+        w3 = Warehouse.objects.create(name="Trim Store", code="WH-TRM", location="Floor-2")
         wh_ids = [w1.id, w2.id, w3.id]
 
         fabrics = [
@@ -454,7 +448,7 @@ class Command(BaseCommand):
         ]
         for name, code, comp, color, qty in fabrics:
             Fabric.objects.create(
-                organization_id=ORG_ID, warehouse_id=w1.id,
+                warehouse_id=w1.id,
                 name=name, code=code, color=color,
                 composition=comp, width=self._dec(44, 60),
                 quantity=qty, unit="meters",
@@ -474,7 +468,7 @@ class Command(BaseCommand):
         ]
         for name, code, cat, qty in accessories:
             Accessory.objects.create(
-                organization_id=ORG_ID, warehouse_id=w2.id,
+                warehouse_id=w2.id,
                 name=name, code=code, category=cat, quantity=qty,
                 unit="pcs", threshold_quantity=random.randint(500, 3000),
                 unit_price=self._dec(0.01, 0.5, 2),
@@ -487,7 +481,7 @@ class Command(BaseCommand):
         ]
         for name, code, qty in trims:
             Trim.objects.create(
-                organization_id=ORG_ID, warehouse_id=w3.id,
+                warehouse_id=w3.id,
                 name=name, code=code, quantity=qty * 100,
                 unit="rolls", threshold_quantity=random.randint(5, 20),
                 unit_price=self._dec(0.5, 3, 2),
@@ -505,7 +499,6 @@ class Command(BaseCommand):
 
         for i in range(20):
             StockMovement.objects.create(
-                organization_id=ORG_ID,
                 item_type=random.choice(["fabric", "accessory", "trim"]),
                 item_id=random.choice(fabric_ids + [1, 2, 3, 4, 5]),
                 from_warehouse_id=random.choice(wh_ids),
@@ -531,7 +524,6 @@ class Command(BaseCommand):
 
         for i in range(1, 21):
             RawMaterialRequisition.objects.create(
-                organization_id=ORG_ID,
                 requisition_number=f"REQ{i:04d}",
                 item_type=random.choice(["fabric", "accessory", "trim"]),
                 item_id=random.randint(1, 15),
@@ -546,7 +538,6 @@ class Command(BaseCommand):
             qty = random.randint(1000, 50000)
             up = self._dec(1, 10)
             RawMaterialBooking.objects.create(
-                organization_id=ORG_ID,
                 supplier_id=random.choice(supplier_ids),
                 booking_number=f"BK{i:04d}",
                 booking_date=self._past_date(120),
@@ -566,7 +557,6 @@ class Command(BaseCommand):
         supplier_ids = list(Supplier.objects.values_list("id", flat=True))
         for i in range(1, 21):
             QuotationAnalysis.objects.create(
-                organization_id=ORG_ID,
                 supplier_id=random.choice(supplier_ids),
                 item_type=random.choice(["Fabric - 100% Cotton", "Polyester", "Buttons", "Zippers", "Labels", "Threads"]),
                 quantity=random.randint(500, 30000),
@@ -592,7 +582,7 @@ class Command(BaseCommand):
         ]
         for name, code in defects:
             DefectCategory.objects.create(
-                organization_id=ORG_ID, name=name, code=code,
+                name=name, code=code,
                 description=fake.text(max_nb_chars=80),
             )
 
@@ -609,7 +599,6 @@ class Command(BaseCommand):
             purchased_order_id = random.choice(po_ids) if po_ids else None
             style_id = random.choice(style_ids)
             order = ProductionOrder.objects.create(
-                organization_id=ORG_ID,
                 purchase_order_id=purchased_order_id,
                 style_id=style_id,
                 production_line_id=random.choice(line_ids) if random.random() > 0.3 else None,
@@ -672,7 +661,6 @@ class Command(BaseCommand):
 
         for i in range(20):
             FabricInspection.objects.create(
-                organization_id=ORG_ID,
                 fabric_received_from=fake.company()[:50],
                 supplier=fake.company()[:50],
                 inspection_date=self._past_date(120),
@@ -748,7 +736,6 @@ class Command(BaseCommand):
             qty = random.randint(2000, 30000)
             rate = self._dec(0.5, 5)
             order = SubcontractOrder.objects.create(
-                organization_id=ORG_ID,
                 style_id=random.choice(style_ids),
                 purchase_order_id=random.choice(po_ids) if random.random() > 0.3 else None,
                 order_number=f"SUB{i:04d}",
@@ -792,7 +779,7 @@ class Command(BaseCommand):
         ]
         for name, code, dept in centers:
             CostCenter.objects.create(
-                organization_id=ORG_ID, name=name, code=code,
+                name=name, code=code,
                 department=dept, budget=self._dec(50000, 5000000, 2),
             )
 
@@ -815,7 +802,7 @@ class Command(BaseCommand):
         for code, name, atype in accounts:
             parent = parent_map.get(atype) if atype in ["expense", "revenue"] else None
             acc = ChartOfAccount.objects.create(
-                organization_id=ORG_ID, account_code=code,
+                account_code=code,
                 account_name=name, account_type=atype,
                 parent_id=parent,
             )
@@ -834,7 +821,6 @@ class Command(BaseCommand):
             amount = self._dec(5000, 500000)
             paid = self._dec(0, float(amount))
             AccountsPayable.objects.create(
-                organization_id=ORG_ID,
                 supplier_id=random.choice(supplier_ids),
                 invoice_number=f"AP-INV-{i:04d}",
                 invoice_date=self._past_date(120),
@@ -846,7 +832,6 @@ class Command(BaseCommand):
             amount = self._dec(10000, 1000000)
             recv = self._dec(0, float(amount))
             AccountsReceivable.objects.create(
-                organization_id=ORG_ID,
                 buyer_id=random.choice(buyer_ids),
                 invoice_number=f"AR-INV-{i:04d}",
                 invoice_date=self._past_date(120),
@@ -856,7 +841,6 @@ class Command(BaseCommand):
             )
         for i in range(1, 31):
             Expense.objects.create(
-                organization_id=ORG_ID,
                 cost_center_id=random.choice(cc_ids) if random.random() > 0.3 else None,
                 expense_date=self._past_date(120),
                 category=random.choice(["utilities", "salary", "rent", "maintenance", "travel", "office", "raw_material"]),
@@ -867,7 +851,6 @@ class Command(BaseCommand):
             )
         for i in range(1, 41):
             JournalEntry.objects.create(
-                organization_id=ORG_ID,
                 entry_number=f"JE{i:04d}",
                 entry_date=self._past_date(120),
                 description=fake.text(max_nb_chars=100),
@@ -889,7 +872,7 @@ class Command(BaseCommand):
 
         for i in range(1, 13):
             LetterOfCredit.objects.create(
-                organization_id=ORG_ID, buyer_id=random.choice(buyer_ids),
+                buyer_id=random.choice(buyer_ids),
                 supplier_id=random.choice(supplier_ids),
                 lc_number=f"LC{2025}{i:04d}",
                 lc_type=random.choice(["export", "import", "btb"]),
@@ -903,7 +886,6 @@ class Command(BaseCommand):
             )
         for i in range(1, 16):
             Shipment.objects.create(
-                organization_id=ORG_ID,
                 purchase_order_id=random.choice(order_ids),
                 buyer_id=random.choice(buyer_ids),
                 supplier_id=random.choice(supplier_ids),
@@ -927,7 +909,6 @@ class Command(BaseCommand):
         for i in range(1, 16):
             amount = self._dec(10000, 500000)
             Invoice.objects.create(
-                organization_id=ORG_ID,
                 purchase_order_id=random.choice(order_ids),
                 buyer_id=random.choice(buyer_ids),
                 supplier_id=random.choice(supplier_ids),
@@ -942,7 +923,7 @@ class Command(BaseCommand):
             )
         for i in range(1, 11):
             BillOfExchange.objects.create(
-                organization_id=ORG_ID, buyer_id=random.choice(buyer_ids),
+                buyer_id=random.choice(buyer_ids),
                 bill_number=f"BOE{i:04d}",
                 bank_name=random.choice(["HSBC", "Standard Chartered", "City Bank"]),
                 issue_date=self._past_date(120),
@@ -961,7 +942,7 @@ class Command(BaseCommand):
 
         for i in range(30):
             BuyerCommunication.objects.create(
-                organization_id=ORG_ID, buyer_id=random.choice(buyer_ids),
+                buyer_id=random.choice(buyer_ids),
                 communication_type=random.choice(["email", "phone", "meeting", "site_visit", "video_call"]),
                 subject=fake.sentence()[:50],
                 content=fake.text(max_nb_chars=200),
@@ -1052,7 +1033,7 @@ class Command(BaseCommand):
                 net = base + allowances + ot + bonus - deductions
                 month_d = date.today() - timedelta(days=offset * 30)
                 SalarySheet.objects.create(
-                    organization_id=ORG_ID, employee_id=eid,
+                    employee_id=eid,
                     month=month_d.strftime("%Y-%m"),
                     basic_salary=base, allowances=allowances,
                     deductions=deductions, overtime_amount=ot,
@@ -1087,7 +1068,7 @@ class Command(BaseCommand):
         ]
         for name, code, dep_method, life in cats_data:
             AssetCategory.objects.create(
-                organization_id=ORG_ID, name=name, code=code,
+                name=name, code=code,
                 description=fake.text(max_nb_chars=80),
                 depreciation_method=dep_method, useful_life_years=life,
             )
@@ -1107,7 +1088,6 @@ class Command(BaseCommand):
             sv = Decimal(str(round(cost * 0.05)))
             dep = Decimal(str(round(cost * 0.1)))
             asset = FixedAsset.objects.create(
-                organization_id=ORG_ID,
                 category_id=random.choice(cat_ids),
                 location_id=random.choice([1, 2, 3]),
                 asset_code=code, name=name,
@@ -1149,7 +1129,6 @@ class Command(BaseCommand):
             sd = self._past_date(120)
             ed = sd + timedelta(days=random.randint(15, 60))
             task = Task.objects.create(
-                organization_id=ORG_ID,
                 purchase_order_id=pid,
                 style_id=sid,
                 title=f"Production TNA - {fake.word().title()}",
@@ -1165,7 +1144,7 @@ class Command(BaseCommand):
 
             for j in range(random.randint(0, 3)):
                 JobOrder.objects.create(
-                    organization_id=ORG_ID, task_id=task.id,
+                    task_id=task.id,
                     job_order_number=f"JO{2025}{i:03d}-{j}",
                     description=fake.text(max_nb_chars=80),
                     assigned_department=random.choice(["Cutting", "Sewing", "Finishing", "QC"]),
@@ -1178,7 +1157,6 @@ class Command(BaseCommand):
             for milestone in random.sample(milestones, random.randint(2, 5)):
                 pd = self._past_date(120)
                 Timeline.objects.create(
-                    organization_id=ORG_ID,
                     purchase_order_id=pid if pid else 1,
                     style_id=sid,
                     milestone=milestone,
@@ -1196,7 +1174,6 @@ class Command(BaseCommand):
             task_id = random.choice(task_ids) if task_ids else None
             scheduled = timezone.now() + timedelta(days=random.randint(-10, 15))
             AlarmNotification.objects.create(
-                organization_id=ORG_ID,
                 task_id=task_id,
                 alarm_type=random.choice(["sms", "email", "in_app"]),
                 recipient=fake.email(),
@@ -1214,7 +1191,6 @@ class Command(BaseCommand):
 
         for i in range(1, 26):
             Order.objects.create(
-                organization_id=ORG_ID,
                 buyer_id=random.choice(buyer_ids),
                 style_id=random.choice(style_ids),
                 order_number=f"ORD{i:04d}",
@@ -1235,7 +1211,6 @@ class Command(BaseCommand):
         types = ["social", "environmental", "quality", "safety", "ethical"]
         for i in range(20):
             ComplianceRecord.objects.create(
-                organization_id=ORG_ID,
                 buyer_id=random.choice(buyer_ids),
                 compliance_type=random.choice(types),
                 title=fake.catch_phrase()[:50],
@@ -1252,7 +1227,6 @@ class Command(BaseCommand):
 
         for i in range(1, 11):
             Report.objects.create(
-                organization_id=ORG_ID,
                 title=fake.catch_phrase()[:50],
                 report_type=random.choice(["production", "quality", "financial", "inventory", "hr", "custom"]),
                 generated_by=fake.name(),
@@ -1260,7 +1234,6 @@ class Command(BaseCommand):
 
         for i in range(1, 7):
             Dashboard.objects.create(
-                organization_id=ORG_ID,
                 name=fake.catch_phrase()[:50],
                 dashboard_type=random.choice(["production", "quality", "financial", "management"]),
                 created_by=fake.name(),
@@ -1278,7 +1251,6 @@ class Command(BaseCommand):
         metrics = ["efficiency", "output", "defect_rate", "downtime"]
         for i in range(30):
             PerformanceRecord.objects.create(
-                organization_id=ORG_ID,
                 style_id=random.choice(style_ids),
                 production_line_id=random.choice(line_ids),
                 record_date=self._past_date(90),
@@ -1296,7 +1268,6 @@ class Command(BaseCommand):
         po_ids = list(PurchaseOrder.objects.values_list("id", flat=True))
         for i in range(1, 13):
             Plan.objects.create(
-                organization_id=ORG_ID,
                 style_id=random.choice(style_ids),
                 purchase_order_id=random.choice(po_ids) if random.random() > 0.3 else None,
                 plan_type=random.choice(["production", "capacity", "material", "shipment"]),
@@ -1318,7 +1289,6 @@ class Command(BaseCommand):
         for i in range(1, 16):
             sched_date = self._past_date(90)
             Schedule.objects.create(
-                organization_id=ORG_ID,
                 production_order_id=random.choice(prod_ids) if prod_ids else None,
                 production_line_id=random.choice(line_ids) if line_ids else None,
                 scheduled_date=sched_date,
@@ -1343,7 +1313,6 @@ class Command(BaseCommand):
             total = fc + ac + tc + lc + oc + cc
             sp = total * self._dec(1.1, 1.3)
             PreCosting.objects.create(
-                organization_id=ORG_ID,
                 buyer_id=random.choice(list(Buyer.objects.values_list("id", flat=True))),
                 style_id=sid,
                 cost_date=self._past_date(200),
@@ -1358,7 +1327,6 @@ class Command(BaseCommand):
                 status=random.choice(["draft", "approved", "revised"]),
             )
             CostSheet.objects.create(
-                organization_id=ORG_ID,
                 style_id=sid,
                 cost_date=self._past_date(100),
                 fabric_cost=fc,
@@ -1385,7 +1353,6 @@ class Command(BaseCommand):
         ]
         for i, (name, code, country) in enumerate(companies):
             gc = GroupCompany.objects.create(
-                organization_id=ORG_ID,
                 name=name, code=code,
                 registration_number=f"REG{2020 + i}{i:03d}",
                 country=country,

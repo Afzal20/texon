@@ -1,11 +1,7 @@
 from django.db import models
-from core.models import Organization
 
 
 class Buyer(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="buyers"
-    )
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50)
     country = models.CharField(max_length=100)
@@ -20,7 +16,7 @@ class Buyer(models.Model):
     class Meta:
         verbose_name = "Buyer"
         verbose_name_plural = "Buyers"
-        unique_together = ("organization", "code")
+        unique_together = ("code",)
 
     def __str__(self):
         return f"{self.name} ({self.code})"

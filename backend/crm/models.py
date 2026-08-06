@@ -1,13 +1,9 @@
 from django.db import models
-from core.models import Organization
 from buyers.models import Buyer
 from merchandising.models import PurchaseOrder
 
 
 class BuyerCommunication(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="buyer_communications"
-    )
     buyer = models.ForeignKey(
         Buyer, on_delete=models.CASCADE, related_name="communications"
     )

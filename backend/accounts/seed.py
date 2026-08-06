@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization, Currency
+from core.models import Currency
 from buyers.models import Buyer
 from procurement.models import Supplier
 from accounts.models import (
@@ -16,7 +16,6 @@ from accounts.models import (
 
 print("Seeding accounts data...")
 
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
 usd, _ = Currency.objects.get_or_create(code="USD", defaults={"name": "US Dollar", "symbol": "$", "exchange_rate": 1.0, "is_base": True})
 
 buyers = []
@@ -25,7 +24,7 @@ for name, code, country in [
     ("Uniqlo (Fast Retailing)", "UNQ", "Japan"), ("Levi Strauss & Co.", "LEV", "USA"),
     ("Nike Inc.", "NKE", "USA"), ("Adidas AG", "ADI", "Germany"),
 ]:
-    b, _ = Buyer.objects.get_or_create(organization=org, code=code, defaults={"name": name, "country": country})
+    b, _ = Buyer.objects.get_or_create(code=code, defaults={"name": name, "country": country})
     buyers.append(b)
 
 suppliers = []
@@ -34,7 +33,7 @@ for name, code, stype in [
     ("YKK Bangladesh", "YKK", "accessory"), ("Pacific Accessories", "PAC", "accessory"),
     ("DBL Group", "DBL", "fabric"), ("Fakir Knitwears", "FKW", "fabric"),
 ]:
-    s, _ = Supplier.objects.get_or_create(organization=org, code=code, defaults={"name": name, "supplier_type": stype})
+    s, _ = Supplier.objects.get_or_create(code=code, defaults={"name": name, "supplier_type": stype})
     suppliers.append(s)
 
 # ── Chart of Accounts ───────────────────────────────────────────────────────
@@ -47,11 +46,11 @@ for code, name, atype in [
     ("5101", "Cost of Goods Sold", "expense"), ("5201", "Operating Expenses", "expense"),
 ]:
     ChartOfAccount.objects.get_or_create(
-        organization=org, account_code=code,
+        account_code=code,
         defaults={"account_name": name, "account_type": atype},
     )
 
-coa = {a.account_code: a for a in ChartOfAccount.objects.filter(organization=org)}
+coa = {a.account_code: a for a in ChartOfAccount.objects.all()}
 
 # ── Cost Centers ────────────────────────────────────────────────────────────
 for name, code, dept, budget in [
@@ -60,11 +59,11 @@ for name, code, dept, budget in [
     ("Merchandising", "CC-MER", "Merchandising", 600000), ("HR & Admin", "CC-HRA", "HR & Admin", 800000),
 ]:
     CostCenter.objects.get_or_create(
-        organization=org, code=code,
+        code=code,
         defaults={"name": name, "department": dept, "budget": Decimal(str(budget))},
     )
 
-cost_centers = {c.code: c for c in CostCenter.objects.filter(organization=org)}
+cost_centers = {c.code: c for c in CostCenter.objects.all()}
 
 # ── Journal Entries ─────────────────────────────────────────────────────────
 for num, edate, acct_code, debit, credit, ref, by, desc in [
@@ -85,7 +84,7 @@ for num, edate, acct_code, debit, credit, ref, by, desc in [
     ("JE-0015", "2024-09-20", "2201", 15000, 0, "SAL-ADVANCE", "Finance Team", "Salary advance accrual"),
 ]:
     JournalEntry.objects.get_or_create(
-        organization=org, entry_number=num,
+        entry_number=num,
         defaults={"entry_date": date.fromisoformat(edate), "description": desc,
                   "account": coa[acct_code], "debit": Decimal(str(debit)), "credit": Decimal(str(credit)),
                   "currency": usd, "reference": ref, "created_by": by},
@@ -105,7 +104,7 @@ for inv_num, sup_i, idate, due, amount, paid, status, notes in [
     ("AP-SUP-2410", 3, "2024-10-12", "2024-11-26", 54200, 25000, "partial", "Accessory invoice PAC-2410"),
 ]:
     AccountsPayable.objects.get_or_create(
-        organization=org, invoice_number=inv_num,
+        invoice_number=inv_num,
         defaults={"supplier": suppliers[sup_i], "invoice_date": date.fromisoformat(idate),
                   "due_date": date.fromisoformat(due), "amount": Decimal(str(amount)),
                   "paid_amount": Decimal(str(paid)), "balance": Decimal(str(amount - paid)),
@@ -126,7 +125,7 @@ for inv_num, buyer_i, idate, due, amount, received, status, notes in [
     ("AR-INV-2410", 3, "2024-09-22", "2024-10-22", 54980, 0, "overdue", "Invoice INV-2388"),
 ]:
     AccountsReceivable.objects.get_or_create(
-        organization=org, invoice_number=inv_num,
+        invoice_number=inv_num,
         defaults={"buyer": buyers[buyer_i], "invoice_date": date.fromisoformat(idate),
                   "due_date": date.fromisoformat(due), "amount": Decimal(str(amount)),
                   "received_amount": Decimal(str(received)), "balance": Decimal(str(amount - received)),
@@ -149,7 +148,7 @@ for cc_code, edate, category, desc, amount, status, by in [
     ("CC-MER", "2024-09-15", "Maintenance", "Laptop repair - merchandising", 6700, "rejected", "Merchandising Dept"),
 ]:
     Expense.objects.get_or_create(
-        organization=org, cost_center=cost_centers[cc_code], expense_date=date.fromisoformat(edate),
+        cost_center=cost_centers[cc_code], expense_date=date.fromisoformat(edate),
         category=category, amount=Decimal(str(amount)),
         defaults={"description": desc, "currency": usd,
                   "approved_by": "Finance Manager" if status == "approved" else "",

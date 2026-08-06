@@ -17,7 +17,7 @@ from .models import (
 
 @admin.register(Style)
 class StyleAdmin(admin.ModelAdmin):
-    list_display = ("style_number", "name", "buyer", "organization", "category", "is_active")
+    list_display = ("style_number", "name", "buyer", "category", "is_active")
     search_fields = ("style_number", "name")
     list_filter = ("is_active", "category")
 

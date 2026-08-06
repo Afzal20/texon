@@ -1,11 +1,8 @@
 from django.db import models
-from core.models import Organization, Currency
+from core.models import Currency
 
 
 class GroupCompany(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="group_companies"
-    )
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50)
     registration_number = models.CharField(max_length=100, blank=True)
@@ -22,7 +19,7 @@ class GroupCompany(models.Model):
     class Meta:
         verbose_name = "Group Company"
         verbose_name_plural = "Group Companies"
-        unique_together = ("organization", "code")
+        unique_together = ("code",)
 
     def __str__(self):
         return f"{self.name} ({self.code})"

@@ -7,12 +7,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
-from core.models import Organization
 from reporting.models import Report, Dashboard
 
 print("Seeding reporting data...")
-
-org, _ = Organization.objects.get_or_create(code="TEXON", defaults={"name": "Texon RMG Ltd", "is_active": True})
 
 # ── Reports ─────────────────────────────────────────────────────────────────
 for title, rtype, params, by, st, notes in [
@@ -34,7 +31,7 @@ for title, rtype, params, by, st, notes in [
      "Commercial Department", "failed", "Insufficient data for chart export"),
 ]:
     Report.objects.get_or_create(
-        organization=org, title=title,
+        title=title,
         defaults={"report_type": rtype, "parameters": params, "generated_by": by,
                   "status": st, "notes": notes},
     )
@@ -51,7 +48,7 @@ for name, dtype, config, is_default, by in [
      {"widgets": ["cash_flow", "receivables_aging", "payables_aging"]}, False, "Finance Manager"),
 ]:
     Dashboard.objects.get_or_create(
-        organization=org, name=name,
+        name=name,
         defaults={"dashboard_type": dtype, "config": config, "is_default": is_default, "created_by": by},
     )
 

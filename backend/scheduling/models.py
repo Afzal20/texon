@@ -1,12 +1,8 @@
 from django.db import models
-from core.models import Organization
 from production.models import ProductionLine, ProductionOrder
 
 
 class Schedule(models.Model):
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="schedules"
-    )
     production_order = models.ForeignKey(
         ProductionOrder, on_delete=models.CASCADE, related_name="schedules"
     )
