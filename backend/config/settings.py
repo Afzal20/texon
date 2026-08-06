@@ -73,6 +73,14 @@ INSTALLED_APPS = [
     'planning',
     'scheduling',
     'rbac',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.github',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
 ]
 
 MIDDLEWARE = [
@@ -84,6 +92,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -276,4 +285,41 @@ AI_LLM_CONFIG = {
         "temperature": config("AI_TEMPERATURE", default=0.0, cast=float),
         "max_tokens": config("AI_MAX_TOKENS", default=4096, cast=int),
     },
+}
+
+# dj-rest-auth and allauth settings
+SITE_ID = 1
+
+REST_USE_JWT = True
+
+ACCOUNT_USER_MODEL = 'authentication.User'
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+REST_AUTH = {
+    'USE_JWT': True,
+    'JWT_AUTH_COOKIE': 'jwt-auth',
+    'JWT_AUTH_REFRESH_COOKIE': 'jwt-refresh-token',
+    'TOKEN_MODEL': None,
+}
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+    },
+    'github': {
+        'SCOPE': [
+            'user',
+            'read:user',
+            'user:email',
+        ],
+    }
 }
