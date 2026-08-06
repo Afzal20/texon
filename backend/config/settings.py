@@ -72,7 +72,6 @@ INSTALLED_APPS = [
     'performance',
     'planning',
     'scheduling',
-    'ai',
     'rbac',
 ]
 
