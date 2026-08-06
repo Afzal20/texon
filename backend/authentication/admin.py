@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import OTP, User
+from .models import OTP, User, SocialAuthCallbackUrl
 
 
 @admin.register(User)
@@ -27,3 +27,9 @@ class UserAdmin(BaseUserAdmin):
 class OTPAdmin(admin.ModelAdmin):
     list_display = ("user", "code", "purpose", "is_used", "expires_at", "created_at")
     list_filter = ("purpose", "is_used")
+
+
+@admin.register(SocialAuthCallbackUrl)
+class SocialAuthCallbackUrlAdmin(admin.ModelAdmin):
+    list_display = ("provider", "callback_url")
+    search_fields = ("provider",)

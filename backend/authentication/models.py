@@ -48,3 +48,19 @@ class OTP(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.purpose} - {self.code}"
+
+
+class SocialAuthCallbackUrl(models.Model):
+    provider = models.CharField(
+        max_length=50,
+        choices=[("google", "Google"), ("github", "GitHub")],
+        unique=True
+    )
+    callback_url = models.URLField(max_length=255)
+
+    class Meta:
+        verbose_name = "Social Auth Callback URL"
+        verbose_name_plural = "Social Auth Callback URLs"
+
+    def __str__(self):
+        return f"{self.get_provider_display()} - {self.callback_url}"
