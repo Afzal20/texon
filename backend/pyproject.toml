@@ -8,6 +8,7 @@ dependencies = [
     "django-allauth[socialaccount]>=65.18.0",
     "django>=6.0.7",
     "django-cors-headers>=4.9.0",
+    "django-crispy-forms>=2.4.0",
     "django-filter>=26.1",
     "djangorestframework>=3.17.1",
     "djangorestframework-simplejwt>=5.5.1",
@@ -16,6 +17,7 @@ dependencies = [
     "openai>=2.46.0",
     "python-decouple>=3.8",
     "requests>=2.34.2",
+    "django-unfold>=0.103.0",
 ]
 
 [dependency-groups]

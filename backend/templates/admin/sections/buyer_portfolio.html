@@ -1,0 +1,18 @@
+{% if portfolio %}
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div>
+            <span class="text-xs uppercase text-subtle">Active orders</span>
+            <span class="mt-1 block text-2xl font-semibold text-important">{{ portfolio.active_orders }}</span>
+        </div>
+        <div>
+            <span class="text-xs uppercase text-subtle">Total units</span>
+            <span class="mt-1 block text-2xl font-semibold text-important">{{ portfolio.total_units }}</span>
+        </div>
+        <div>
+            <span class="text-xs uppercase text-subtle">Total value</span>
+            <span class="mt-1 block text-2xl font-semibold text-important">${{ portfolio.total_value }}</span>
+        </div>
+    </div>
+{% else %}
+    <p class="text-sm text-subtle">No portfolio data. {{ order_count }} orders in total.</p>
+{% endif %}

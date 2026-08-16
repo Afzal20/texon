@@ -1,0 +1,134 @@
+{% extends "admin/base_site.html" %}
+
+{% load unfold %}
+
+{% block content %}
+
+    {% component "unfold/components/container.html" %}
+
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {% component "unfold/components/card.html" with title="Buyers" %}
+                <div class="flex items-center justify-between">
+                    <span class="text-4xl font-semibold text-important">{{ dashboard_stats.buyers }}</span>
+                    <span class="text-sm text-emerald-500">+{{ dashboard_stats.active_buyers }} active</span>
+                </div>
+            {% endcomponent %}
+
+            {% component "unfold/components/card.html" with title="Total orders" %}
+                <div class="flex items-center justify-between">
+                    <span class="text-4xl font-semibold text-important">{{ dashboard_stats.orders }}</span>
+                    <span class="text-sm text-emerald-500">{{ dashboard_stats.open_orders }} open</span>
+                </div>
+            {% endcomponent %}
+
+            {% component "unfold/components/card.html" with title="Units produced" %}
+                <div class="flex items-center justify-between">
+                    <span class="text-4xl font-semibold text-important">{{ dashboard_stats.units }}</span>
+                </div>
+            {% endcomponent %}
+
+            {% component "unfold/components/card.html" with title="Revenue" %}
+                <div class="flex items-center justify-between">
+                    <span class="text-4xl font-semibold text-important">${{ dashboard_stats.revenue }}</span>
+                </div>
+            {% endcomponent %}
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 mt-6 lg:grid-cols-2">
+            {% component "unfold/components/card.html" with title="Orders per month" %}
+                {% component "unfold/components/chart/line.html" with data=dashboard_chart height=280 %}{% endcomponent %}
+            {% endcomponent %}
+
+            {% component "unfold/components/card.html" with title="Order status breakdown" %}
+                {% component "unfold/components/progress.html" with title="Pending" description=dashboard_status.pending value=dashboard_status_pct.pending progress_class="bg-amber-500" %}{% endcomponent %}
+                {% component "unfold/components/progress.html" with title="Confirmed" description=dashboard_status.confirmed value=dashboard_status_pct.confirmed progress_class="bg-sky-500" %}{% endcomponent %}
+                {% component "unfold/components/progress.html" with title="In production" description=dashboard_status.in_production value=dashboard_status_pct.in_production progress_class="bg-violet-500" %}{% endcomponent %}
+                {% component "unfold/components/progress.html" with title="Shipped" description=dashboard_status.shipped value=dashboard_status_pct.shipped progress_class="bg-teal-500" %}{% endcomponent %}
+                {% component "unfold/components/progress.html" with title="Delivered" description=dashboard_status.delivered value=dashboard_status_pct.delivered progress_class="bg-emerald-500" %}{% endcomponent %}
+            {% endcomponent %}
+        </div>
+
+        <div class="mt-6">
+            {% component "unfold/components/card.html" with title="Applications" %}
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                    {% for app in app_grid %}
+                        <div class="rounded-default border border-base-200 p-4 dark:border-base-800">
+                            <a href="{{ app.url }}" class="mb-3 flex items-center gap-3">
+                                <span class="material-symbols-outlined flex h-9 w-9 items-center justify-center rounded-lg text-lg text-white" style="background-color: {{ app.color }}">
+                                    {{ app.icon }}
+                                </span>
+                                <h3 class="font-semibold text-important">{{ app.name }}</h3>
+                            </a>
+                            <ul class="flex flex-col gap-1.5">
+                                {% for model in app.models %}
+                                    <li class="flex items-center justify-between">
+                                        {% if model.admin_url %}
+                                            <a href="{{ model.admin_url }}" class="hover:text-primary-600 dark:hover:text-primary-500">
+                                                {{ model.name }}
+                                            </a>
+                                        {% else %}
+                                            <span>{{ model.name }}</span>
+                                        {% endif %}
+                                        <span class="flex items-center gap-2 text-base-400">
+                                            {% if model.add_url %}
+                                                <a href="{{ model.add_url }}" class="hover:text-primary-600" title="Add">
+                                                    <span class="material-symbols-outlined text-lg">add</span>
+                                                </a>
+                                            {% endif %}
+                                            {% if model.admin_url %}
+                                                <a href="{{ model.admin_url }}" class="hover:text-primary-600" title="Change">
+                                                    <span class="material-symbols-outlined text-lg">edit_square</span>
+                                                </a>
+                                            {% endif %}
+                                        </span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% empty %}
+                        <p class="text-sm text-subtle">You don't have permission to view or edit anything.</p>
+                    {% endfor %}
+                </div>
+            {% endcomponent %}
+        </div>
+
+        <div class="mt-6">
+            {% component "unfold/components/card.html" with title="Recent orders" %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-base-200 text-left text-xs uppercase text-subtle dark:border-base-800">
+                                <th class="py-2 pr-4 font-medium">Order</th>
+                                <th class="py-2 pr-4 font-medium">Buyer</th>
+                                <th class="py-2 pr-4 font-medium">Order date</th>
+                                <th class="py-2 pr-4 font-medium">Quantity</th>
+                                <th class="py-2 pr-4 font-medium">Total value</th>
+                                <th class="py-2 font-medium">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                                <tr class="border-b border-base-100 last:border-0 dark:border-base-800">
+                                    <td class="py-2.5 pr-4 font-medium">{{ order.order_number }}</td>
+                                    <td class="py-2.5 pr-4">{{ order.buyer.name }}</td>
+                                    <td class="py-2.5 pr-4">{{ order.order_date }}</td>
+                                    <td class="py-2.5 pr-4">{{ order.quantity }}</td>
+                                    <td class="py-2.5 pr-4">${{ order.total_value }}</td>
+                                    <td class="py-2.5">
+                                        {% component "unfold/helpers/label.html" with text=order.get_status_display %}{% endcomponent %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="py-4 text-center text-subtle">No orders yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endcomponent %}
+        </div>
+
+    {% endcomponent %}
+
+{% endblock %}

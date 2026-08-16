@@ -50,7 +50,9 @@ dependencies = [
     { name = "django" },
     { name = "django-allauth", extra = ["socialaccount"] },
     { name = "django-cors-headers" },
+    { name = "django-crispy-forms" },
     { name = "django-filter" },
+    { name = "django-unfold" },
     { name = "djangorestframework" },
     { name = "djangorestframework-simplejwt" },
     { name = "drf-spectacular" },
@@ -72,7 +74,9 @@ requires-dist = [
     { name = "django", specifier = ">=6.0.7" },
     { name = "django-allauth", extras = ["socialaccount"], specifier = ">=65.18.0" },
     { name = "django-cors-headers", specifier = ">=4.9.0" },
+    { name = "django-crispy-forms", specifier = ">=2.4.0" },
     { name = "django-filter", specifier = ">=26.1" },
+    { name = "django-unfold", specifier = ">=0.103.0" },
     { name = "djangorestframework", specifier = ">=3.17.1" },
     { name = "djangorestframework-simplejwt", specifier = ">=5.5.1" },
     { name = "drf-spectacular", specifier = ">=0.30.0" },
@@ -332,6 +336,18 @@ wheels = [
 ]
 
 [[package]]
+name = "django-crispy-forms"
+version = "2.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/bc/f5/b79e3ed7cae871d5d71bf3448d627e1fabab769358bb90808bec056556fe/django_crispy_forms-2.7.tar.gz", hash = "sha256:4c59bed60417375cba26cebb2c67ab350b655934670270b1c89dbcd7e60f1b4c", size = 1097842 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1f/44/50335d09c4deb70affee0c54feef07ba458df015e32e45490615d9dc5b6b/django_crispy_forms-2.7-py3-none-any.whl", hash = "sha256:42a7ecb05ac3fd050d006dfe7aeceb7f318c30e5b5124ff619e2be252f36f096", size = 31478 },
+]
+
+[[package]]
 name = "django-filter"
 version = "26.1"
 source = { registry = "https://pypi.org/simple" }
@@ -341,6 +357,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/cb/3e/563965173d4cbb5fc308087e7b3d11a115b7b67273d093622480b1e31f78/django_filter-26.1.tar.gz", hash = "sha256:66ea04031b068c77c86e1ac26ced7a3f8f13ce797f5795751707e3deefc58054", size = 144299 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/1f/01/afffed1e3c4540fb75bf550a18b6176a9f6371b5f3e52b69a28995b6480c/django_filter-26.1-py3-none-any.whl", hash = "sha256:7d98ef2899218e6242619b532cb1b95af14e09dfcf74844aecb550ad27b59ff2", size = 94069 },
+]
+
+[[package]]
+name = "django-unfold"
+version = "0.103.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/93/9e/4f6721d2354dfe937192582eba74020ebe25a6e0242381afa2389dde6c55/django_unfold-0.103.0.tar.gz", hash = "sha256:8ab0f1204148f28fca961d159823afc91e7ecbd7df5f4c32f8442a4e453b2273", size = 1125894 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d4/93/b1657a7da69d7dc20b4bf6776eee5ffaaffe22415ad39a1276e0d3ba7e98/django_unfold-0.103.0-py3-none-any.whl", hash = "sha256:161cd07cf644a0c64ba6bbd7ff2202a9c2b5a20734df6dd749d667f50bd8a8ba", size = 1253971 },
 ]
 
 [[package]]

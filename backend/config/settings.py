@@ -14,6 +14,8 @@ from datetime import timedelta
 from pathlib import Path
 
 from decouple import Csv, config
+from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -34,7 +36,7 @@ ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*", cast=Csv())
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    # 'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -48,6 +50,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'drf_spectacular_sidecar',
     'django_filters',
+    'crispy_forms',
     'authentication',
     'core',
     'buyers',
@@ -83,10 +86,25 @@ INSTALLED_APPS = [
     'dj_rest_auth.registration',
 ]
 
+INSTALLED_APPS += [
+    "unfold",  # before django.contrib.admin
+    "unfold.contrib.filters",  # optional, if special filters are needed
+    "unfold.contrib.forms",  # optional, if special form elements are needed
+    "unfold.contrib.inlines",  # optional, if special inlines are needed
+    "unfold.contrib.import_export",  # optional, if django-import-export package is used
+    "unfold.contrib.guardian",  # optional, if django-guardian package is used
+    "unfold.contrib.simple_history",  # optional, if django-simple-history package is used
+    "unfold.contrib.location_field",  # optional, if django-location-field package is used
+    "unfold.contrib.constance",  # optional, if django-constance package is used
+    "unfold.contrib.hijack",  # optional, if django-hijack package is used
+    "config.apps.TexonAdminConfig",  # required - custom AdminSite (unfold)
+]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -100,7 +118,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -150,11 +168,188 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
+LANGUAGES = [
+    ("en", _("English")),
+    ("bn", _("Bengali")),
+]
+
+LOCALE_PATHS = [BASE_DIR / "locale"]
+
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
 USE_TZ = True
+
+# django-crispy-forms - Unfold template pack
+# https://django-crispy-forms.readthedocs.io/
+CRISPY_ALLOWED_TEMPLATE_PACKS = ("bootstrap5", "unfold_crispy")
+CRISPY_TEMPLATE_PACK = "unfold_crispy"
+
+# django-unfold configuration
+# https://unfoldadmin.com/docs/configuration/
+
+
+def _changelist_tab(link, query=""):
+    return lambda request: str(link) + query
+
+
+UNFOLD = {
+    "SITE_TITLE": "Texon RMG ERP",
+    "SITE_HEADER": "Texon",
+    "SITE_SUBHEADER": "RMG ERP Backoffice",
+    "SITE_VERSION": "1.0.0",
+    "SITE_SYMBOL": "factory",
+    "SITE_URL": "/admin/",
+    # Site dropdown - switch between multiple admin sites
+    "SITE_DROPDOWN": [
+        {"title": _("Backoffice"), "link": reverse_lazy("admin:index")},
+        {"title": _("Operations"), "link": reverse_lazy("operations:index")},
+    ],
+    # Command palette
+    "COMMAND": {
+        "search_models": True,
+        "show_history": True,
+        "search_callback": "core.admin_search.search_callback",
+    },
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": False,
+    "SHOW_BACK_BUTTON": True,
+    # Multi-language switcher
+    "SHOW_LANGUAGES": True,
+    "LANGUAGE_FLAGS": {
+        "en": "🇬🇧",
+        "bn": "🇧🇩",
+    },
+    "LANGUAGES": {
+        "navigation": [
+            {"title": _("English"), "name_local": "English", "link": "/", "code": "en"},
+            {"title": _("Bengali"), "name_local": "বাংলা", "link": "/", "code": "bn"},
+        ],
+    },
+    "ENVIRONMENT": "development" if DEBUG else "production",
+    "ENVIRONMENT_TITLE_PREFIX": "DEV",
+    # Dashboard - custom index page (core/dashboard.py)
+    "DASHBOARD_CALLBACK": "core.dashboard.dashboard_callback",
+    "COLORS": {
+        "primary": {
+            "50": "oklch(98.4% .018 155.826)",
+            "100": "oklch(96.8% .045 155.086)",
+            "200": "oklch(93.5% .089 154.878)",
+            "300": "oklch(88.7% .132 154.843)",
+            "400": "oklch(81.4% .173 155.384)",
+            "500": "oklch(73.6% .203 155.908)",
+            "600": "oklch(64.2% .215 156.478)",
+            "700": "oklch(52.4% .187 156.943)",
+            "800": "oklch(42.7% .156 157.19)",
+            "900": "oklch(37.9% .124 157.218)",
+            "950": "oklch(25.2% .087 157.364)",
+        },
+    },
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": True,
+        "navigation": [
+            {
+                "title": _("Operations"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Orders"),
+                        "icon": "receipt_long",
+                        "link": reverse_lazy("admin:orders_order_changelist"),
+                    },
+                    {
+                        "title": _("Buyers"),
+                        "icon": "handshake",
+                        "link": reverse_lazy("admin:buyers_buyer_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": _("People"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Users"),
+                        "icon": "person",
+                        "link": reverse_lazy("admin:authentication_user_changelist"),
+                    },
+                    {
+                        "title": _("Groups"),
+                        "icon": "group",
+                        "link": reverse_lazy("admin:auth_group_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": _("Pages"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Reports"),
+                        "icon": "monitoring",
+                        "link": reverse_lazy("admin:reports"),
+                    },
+                    {
+                        "title": _("Crispy Form Demo"),
+                        "icon": "dynamic_form",
+                        "link": reverse_lazy("admin:crispy-demo"),
+                    },
+                ],
+            },
+        ],
+    },
+    # Changelist tabs - quick filters on the Order changelist
+    "TABS": [
+        {
+            "models": ["orders.order"],
+            "items": [
+                {
+                    "title": _("All orders"),
+                    "link": reverse_lazy("admin:orders_order_changelist"),
+                },
+                {
+                    "title": _("Pending"),
+                    "link": _changelist_tab(reverse_lazy("admin:orders_order_changelist"), "?status__exact=pending"),
+                },
+                {
+                    "title": _("Confirmed"),
+                    "link": _changelist_tab(reverse_lazy("admin:orders_order_changelist"), "?status__exact=confirmed"),
+                },
+                {
+                    "title": _("In production"),
+                    "link": _changelist_tab(reverse_lazy("admin:orders_order_changelist"), "?status__exact=in_production"),
+                },
+                {
+                    "title": _("Shipped"),
+                    "link": _changelist_tab(reverse_lazy("admin:orders_order_changelist"), "?status__exact=shipped"),
+                },
+                {
+                    "title": _("Delivered"),
+                    "link": _changelist_tab(reverse_lazy("admin:orders_order_changelist"), "?status__exact=delivered"),
+                },
+            ],
+        },
+    ],
+    "ACCOUNT": {
+        "navigation": [
+            {"title": _("Profile"), "link": reverse_lazy("admin:index")},
+            {
+                "title": _("Logout"),
+                "link": reverse_lazy("admin:logout"),
+            },
+        ],
+    },
+    "LOGIN": {
+        "redirect_after": "/admin/",
+    },
+    "STYLES": [],
+    "SCRIPTS": [],
+}
 
 
 # Static files (CSS, JavaScript, Images)

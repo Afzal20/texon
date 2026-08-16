@@ -10,6 +10,7 @@ class Buyer(models.Model):
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=50, blank=True)
     is_active = models.BooleanField(default=True)
+    sequence = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -17,6 +18,7 @@ class Buyer(models.Model):
         verbose_name = "Buyer"
         verbose_name_plural = "Buyers"
         unique_together = ("code",)
+        ordering = ("sequence",)
 
     def __str__(self):
         return f"{self.name} ({self.code})"

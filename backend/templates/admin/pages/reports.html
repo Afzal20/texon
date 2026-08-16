@@ -1,0 +1,35 @@
+{% extends "admin/base_site.html" %}
+
+{% load unfold %}
+
+{% block content %}
+
+    {% component "unfold/components/container.html" %}
+
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h1 class="text-xl font-semibold text-important">{{ title }}</h1>
+                <p class="mt-1 text-sm text-subtle">Custom admin page registered on the TexonAdminSite.</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {% for key, item in stats.items %}
+                {% component "unfold/components/card.html" with title=key|capfirst %}
+                    <div class="flex items-center justify-between">
+                        <span class="text-4xl font-semibold text-important">{{ item.count }}</span>
+                        <span class="text-sm text-emerald-500">{{ item.delta }}</span>
+                    </div>
+                {% endcomponent %}
+            {% endfor %}
+        </div>
+
+        <div class="mt-6">
+            {% component "unfold/components/card.html" with title="Orders vs deliveries" %}
+                {% component "unfold/components/chart/line.html" with data=chart_data height=320 %}{% endcomponent %}
+            {% endcomponent %}
+        </div>
+
+    {% endcomponent %}
+
+{% endblock %}
