@@ -1,176 +1,56 @@
-import apiClient from './client'
+import { gqlList, gqlGet, gqlCreate, gqlUpdate, gqlDelete } from "./graphql"
 
-// ─── Buyers ──────────────────────────────────────────────────────────────────
-
-export const getBuyers = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/buyers/', { params })
-
-export const getBuyer = (id: number) =>
-  apiClient.get(`/api/v1/buyers/${id}/`)
-
-export const createBuyer = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/buyers/', data)
-
-export const updateBuyer = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/buyers/${id}/`, data)
-
-export const patchBuyer = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/buyers/${id}/`, data)
-
-export const deleteBuyer = (id: number) =>
-  apiClient.delete(`/api/v1/buyers/${id}/`)
-
-// ─── Buyer Enquiries ─────────────────────────────────────────────────────────
-
-export const getBuyerEnquiries = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/buyer-enquiries/', { params })
-
-export const getBuyerEnquiry = (id: number) =>
-  apiClient.get(`/api/v1/buyer-enquiries/${id}/`)
-
-export const createBuyerEnquiry = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/buyer-enquiries/', data)
-
-export const updateBuyerEnquiry = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/buyer-enquiries/${id}/`, data)
-
-export const patchBuyerEnquiry = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/buyer-enquiries/${id}/`, data)
-
-export const deleteBuyerEnquiry = (id: number) =>
-  apiClient.delete(`/api/v1/buyer-enquiries/${id}/`)
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
-
-export const getStyles = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/styles/', { params })
-
-export const getStyle = (id: number) =>
-  apiClient.get(`/api/v1/styles/${id}/`)
-
-export const createStyle = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/styles/', data)
-
-export const updateStyle = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/styles/${id}/`, data)
-
-export const patchStyle = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/styles/${id}/`, data)
-
-export const deleteStyle = (id: number) =>
-  apiClient.delete(`/api/v1/styles/${id}/`)
-
-// ─── SMV Records ────────────────────────────────────────────────────────────
-
-export const getSMVRecords = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/smv-records/', { params })
-
-export const getSMVRecord = (id: number) =>
-  apiClient.get(`/api/v1/smv-records/${id}/`)
-
-export const createSMVRecord = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/smv-records/', data)
-
-export const updateSMVRecord = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/smv-records/${id}/`, data)
-
-export const patchSMVRecord = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/smv-records/${id}/`, data)
-
-export const deleteSMVRecord = (id: number) =>
-  apiClient.delete(`/api/v1/smv-records/${id}/`)
-
-// ─── Budget Demand Assessments ─────────────────────────────────────────────────
-export const getBudgetDemandAssessments = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/budget-demand-assessments/', { params })
-
-export const getBudgetDemandAssessment = (id: number) =>
-  apiClient.get(`/api/v1/budget-demand-assessments/${id}/`)
-
-export const createBudgetDemandAssessment = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/budget-demand-assessments/', data)
-
-export const updateBudgetDemandAssessment = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/budget-demand-assessments/${id}/`, data)
-
-export const patchBudgetDemandAssessment = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/budget-demand-assessments/${id}/`, data)
-
-export const deleteBudgetDemandAssessment = (id: number) =>
-  apiClient.delete(`/api/v1/budget-demand-assessments/${id}/`)
-
-// ─── IE Suggestions ────────────────────────────────────────────────────────────
-export const getIeSuggestions = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/ie-suggestions/', { params })
-
-export const getIeSuggestion = (id: number) =>
-  apiClient.get(`/api/v1/ie-suggestions/${id}/`)
-
-export const createIeSuggestion = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/ie-suggestions/', data)
-
-export const updateIeSuggestion = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/ie-suggestions/${id}/`, data)
-
-export const patchIeSuggestion = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/ie-suggestions/${id}/`, data)
-
-export const deleteIeSuggestion = (id: number) =>
-  apiClient.delete(`/api/v1/ie-suggestions/${id}/`)
-
-// ─── Skill Inventories ─────────────────────────────────────────────────────────
-export const getSkillInventories = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/skill-inventories/', { params })
-
-export const getSkillInventory = (id: number) =>
-  apiClient.get(`/api/v1/skill-inventories/${id}/`)
-
-export const createSkillInventory = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/skill-inventories/', data)
-
-export const updateSkillInventory = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/skill-inventories/${id}/`, data)
-
-export const patchSkillInventory = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/skill-inventories/${id}/`, data)
-
-export const deleteSkillInventory = (id: number) =>
-  apiClient.delete(`/api/v1/skill-inventories/${id}/`)
-
-// ─── Production Downtimes ──────────────────────────────────────────────────────
-export const getProductionDowntimes = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/production-downtimes/', { params })
-
-export const getProductionDowntime = (id: number) =>
-  apiClient.get(`/api/v1/production-downtimes/${id}/`)
-
-export const createProductionDowntime = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/production-downtimes/', data)
-
-export const updateProductionDowntime = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/production-downtimes/${id}/`, data)
-
-export const patchProductionDowntime = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/production-downtimes/${id}/`, data)
-
-export const deleteProductionDowntime = (id: number) =>
-  apiClient.delete(`/api/v1/production-downtimes/${id}/`)
-
-// ─── Process Wise Targets ──────────────────────────────────────────────────────
-export const getProcessWiseTargets = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/process-wise-targets/', { params })
-
-export const getProcessWiseTarget = (id: number) =>
-  apiClient.get(`/api/v1/process-wise-targets/${id}/`)
-
-export const createProcessWiseTarget = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/process-wise-targets/', data)
-
-export const updateProcessWiseTarget = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/process-wise-targets/${id}/`, data)
-
-export const patchProcessWiseTarget = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/process-wise-targets/${id}/`, data)
-
-export const deleteProcessWiseTarget = (id: number) =>
-  apiClient.delete(`/api/v1/process-wise-targets/${id}/`)
+export const getBuyers = (params?: Record<string, unknown>) => gqlList("buyers", "Buyer", params)
+export const getBuyer = (id: number) => gqlGet("buyers", "Buyer", id)
+export const createBuyer = (data: Record<string, unknown>) => gqlCreate("buyers", "Buyer", data)
+export const updateBuyer = (id: number, data: Record<string, unknown>) => gqlUpdate("buyers", "Buyer", id, data)
+export const patchBuyer = (id: number, data: Record<string, unknown>) => gqlUpdate("buyers", "Buyer", id, data)
+export const deleteBuyer = (id: number) => gqlDelete("buyers", "Buyer", id)
+export const getBuyerEnquiries = (params?: Record<string, unknown>) => gqlList("merchandising", "BuyerEnquiry", params)
+export const getBuyerEnquiry = (id: number) => gqlGet("merchandising", "BuyerEnquiry", id)
+export const createBuyerEnquiry = (data: Record<string, unknown>) => gqlCreate("merchandising", "BuyerEnquiry", data)
+export const updateBuyerEnquiry = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "BuyerEnquiry", id, data)
+export const patchBuyerEnquiry = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "BuyerEnquiry", id, data)
+export const deleteBuyerEnquiry = (id: number) => gqlDelete("merchandising", "BuyerEnquiry", id)
+export const getStyles = (params?: Record<string, unknown>) => gqlList("merchandising", "Style", params)
+export const getStyle = (id: number) => gqlGet("merchandising", "Style", id)
+export const createStyle = (data: Record<string, unknown>) => gqlCreate("merchandising", "Style", data)
+export const updateStyle = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "Style", id, data)
+export const patchStyle = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "Style", id, data)
+export const deleteStyle = (id: number) => gqlDelete("merchandising", "Style", id)
+export const getSMVRecords = (params?: Record<string, unknown>) => gqlList("merchandising", "SMVRecord", params)
+export const getSMVRecord = (id: number) => gqlGet("merchandising", "SMVRecord", id)
+export const createSMVRecord = (data: Record<string, unknown>) => gqlCreate("merchandising", "SMVRecord", data)
+export const updateSMVRecord = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "SMVRecord", id, data)
+export const patchSMVRecord = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "SMVRecord", id, data)
+export const deleteSMVRecord = (id: number) => gqlDelete("merchandising", "SMVRecord", id)
+export const getBudgetDemandAssessments = (params?: Record<string, unknown>) => gqlList("merchandising", "BudgetDemandAssessment", params)
+export const getBudgetDemandAssessment = (id: number) => gqlGet("merchandising", "BudgetDemandAssessment", id)
+export const createBudgetDemandAssessment = (data: Record<string, unknown>) => gqlCreate("merchandising", "BudgetDemandAssessment", data)
+export const updateBudgetDemandAssessment = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "BudgetDemandAssessment", id, data)
+export const patchBudgetDemandAssessment = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "BudgetDemandAssessment", id, data)
+export const deleteBudgetDemandAssessment = (id: number) => gqlDelete("merchandising", "BudgetDemandAssessment", id)
+export const getIeSuggestions = (params?: Record<string, unknown>) => gqlList("merchandising", "IeSuggestion", params)
+export const getIeSuggestion = (id: number) => gqlGet("merchandising", "IeSuggestion", id)
+export const createIeSuggestion = (data: Record<string, unknown>) => gqlCreate("merchandising", "IeSuggestion", data)
+export const updateIeSuggestion = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "IeSuggestion", id, data)
+export const patchIeSuggestion = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "IeSuggestion", id, data)
+export const deleteIeSuggestion = (id: number) => gqlDelete("merchandising", "IeSuggestion", id)
+export const getSkillInventories = (params?: Record<string, unknown>) => gqlList("merchandising", "SkillInventory", params)
+export const getSkillInventory = (id: number) => gqlGet("merchandising", "SkillInventory", id)
+export const createSkillInventory = (data: Record<string, unknown>) => gqlCreate("merchandising", "SkillInventory", data)
+export const updateSkillInventory = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "SkillInventory", id, data)
+export const patchSkillInventory = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "SkillInventory", id, data)
+export const deleteSkillInventory = (id: number) => gqlDelete("merchandising", "SkillInventory", id)
+export const getProductionDowntimes = (params?: Record<string, unknown>) => gqlList("merchandising", "ProductionDowntime", params)
+export const getProductionDowntime = (id: number) => gqlGet("merchandising", "ProductionDowntime", id)
+export const createProductionDowntime = (data: Record<string, unknown>) => gqlCreate("merchandising", "ProductionDowntime", data)
+export const updateProductionDowntime = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "ProductionDowntime", id, data)
+export const patchProductionDowntime = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "ProductionDowntime", id, data)
+export const deleteProductionDowntime = (id: number) => gqlDelete("merchandising", "ProductionDowntime", id)
+export const getProcessWiseTargets = (params?: Record<string, unknown>) => gqlList("merchandising", "ProcessWiseTarget", params)
+export const getProcessWiseTarget = (id: number) => gqlGet("merchandising", "ProcessWiseTarget", id)
+export const createProcessWiseTarget = (data: Record<string, unknown>) => gqlCreate("merchandising", "ProcessWiseTarget", data)
+export const updateProcessWiseTarget = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "ProcessWiseTarget", id, data)
+export const patchProcessWiseTarget = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "ProcessWiseTarget", id, data)
+export const deleteProcessWiseTarget = (id: number) => gqlDelete("merchandising", "ProcessWiseTarget", id)

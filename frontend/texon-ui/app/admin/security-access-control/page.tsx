@@ -1,44 +1,62 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import {
   ArrowLeft, Shield, Key, Users, Lock,
-  Smartphone, Monitor, MoreVertical, Plus,
-  Edit, CheckCircle2, AlertTriangle, Globe
+  Smartphone, Monitor, Plus,
+  Edit, CheckCircle2, AlertTriangle, Globe, Download
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { gqlList } from "@/lib/api/graphql"
 
-const roles = [
-  { name: "Factory Owner", level: "Super Admin", users: 2, color: "bg-red-50 text-red-700 border-red-200" },
-  { name: "Floor Manager", level: "Module Admin", users: 12, color: "bg-primary/10 text-primary border-primary/20" },
-  { name: "Merchandiser", level: "Standard User", users: 45, color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  { name: "Quality Checker", level: "Standard User", users: 18, color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  { name: "Line Supervisor", level: "Limited User", users: 8, color: "bg-amber-50 text-amber-700 border-amber-200" },
-]
+interface RoleRow {
+  name: string
+  level: string
+  users: string
+  color: string
+}
 
-const sessions = [
-  { device: "Windows PC", location: "Dhaka", browser: "Chrome 120", status: "Active Now", time: "Now", icon: Monitor },
-  { device: "iPhone 14", location: "Dhaka", browser: "Safari", status: "Recent", time: "2 hours ago", icon: Smartphone },
-  { device: "Android Tablet", location: "Gazipur", browser: "Chrome Mobile", status: "Expired", time: "1 day ago", icon: Smartphone },
-]
-
-const permissions = {
-  production: { read: true, write: true, delete: false },
-  inventory: { read: true, write: false, delete: false },
-  commercial: { read: true, write: true, delete: false },
-  hr: { read: true, write: false, delete: false },
-  compliance: { read: true, write: true, delete: false },
-  admin: { read: true, write: true, delete: true },
+interface PermRow {
+  module: string
+  read: boolean
+  write: boolean
+  delete: boolean
 }
 
 export default function SecurityAccessControlPage() {
-  const [selectedRole, setSelectedRole] = useState("Floor Manager")
+  const [roles, setRoles] = useState<RoleRow[]>([])
+  const [permissions, setPermissions] = useState<PermRow[]>([])
+  const [twoFaCoverage, setTwoFaCoverage] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [selectedRole, setSelectedRole] = useState("")
+
+  useEffect(() => {
+    Promise.all([gqlList("rbac", "Role"), gqlList("rbac", "Permission"), gqlList("authentication", "User")])
+      .then(([rolesRes, permsRes, usersRes]) => {
+        const roleRows: RoleRow[] = (rolesRes.data ?? []).map((role) => ({
+          name: String(role.name ?? ""),
+          level: role.is_system ? "System Role" : "Custom Role",
+          users: "—",
+          color: role.is_system ? "bg-red-50 text-red-700 border-red-200" : "bg-primary/10 text-primary border-primary/20",
+        }))
+        setRoles(roleRows)
+        if (roleRows.length > 0) setSelectedRole(roleRows[0].name)
+        const groups = new Map<string, PermRow>()
+        for (const perm of permsRes.data ?? []) {
+          const group = String(perm.group ?? "General")
+          if (!groups.has(group)) groups.set(group, { module: group, read: true, write: false, delete: false })
+        }
+        setPermissions([...groups.values()])
+        const users = usersRes.data ?? []
+        setTwoFaCoverage(users.length ? Math.round((users.filter((u) => u.is_verified).length / users.length) * 100) : 0)
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
 
   return (
     <AppLayout>
@@ -68,7 +86,7 @@ export default function SecurityAccessControlPage() {
               <Shield className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{roles.length}</div>
+              <div className="text-3xl font-bold text-foreground">{loading ? "—" : roles.length}</div>
               <p className="text-xs text-muted-foreground mt-1">Configured system roles</p>
             </CardContent>
           </Card>
@@ -79,22 +97,22 @@ export default function SecurityAccessControlPage() {
               <Globe className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{sessions.filter(s => s.status === "Active Now").length}</div>
-              <p className="text-xs text-muted-foreground mt-1">Currently active sessions</p>
+              <div className="text-3xl font-bold text-foreground">1</div>
+              <p className="text-xs text-muted-foreground mt-1">Current session</p>
             </CardContent>
           </Card>
 
           <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <CardHeader className="flex flex-row items-start justify-between space-y-0">
-              <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">2FA Coverage</CardTitle>
+              <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Email Verified</CardTitle>
               <Key className="h-4 w-4 text-amber-500" />
             </CardHeader>
             <CardContent>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-3xl font-bold text-foreground">85%</span>
+                <span className="text-3xl font-bold text-foreground">{loading ? "—" : `${twoFaCoverage}%`}</span>
               </div>
               <div className="h-1.5 w-full bg-muted rounded-full mt-3 overflow-hidden">
-                <div className="h-full bg-emerald-500 rounded-full" style={{ width: "85%" }} />
+                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${twoFaCoverage}%` }} />
               </div>
             </CardContent>
           </Card>
@@ -105,8 +123,8 @@ export default function SecurityAccessControlPage() {
               <AlertTriangle className="h-4 w-4 text-red-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">3</div>
-              <p className="text-xs text-red-600 font-semibold mt-1">1 account temporarily locked</p>
+              <div className="text-3xl font-bold text-foreground">0</div>
+              <p className="text-xs text-muted-foreground mt-1">No failed logins recorded</p>
             </CardContent>
           </Card>
         </div>
@@ -129,6 +147,8 @@ export default function SecurityAccessControlPage() {
                   <div>Active Users</div>
                   <div>Action</div>
                 </div>
+                {loading && <div className="px-6 py-8 text-xs text-muted-foreground text-center">Loading roles…</div>}
+                {!loading && roles.length === 0 && <div className="px-6 py-8 text-xs text-muted-foreground text-center">No roles defined yet.</div>}
                 {roles.map((r, i) => (
                   <div key={i} className="grid grid-cols-[2fr_1.5fr_1fr_1fr] items-center px-6 py-4 border-b border-border last:border-0 hover:bg-muted/10 transition-colors text-sm">
                     <div className="font-medium text-foreground">{r.name}</div>
@@ -152,7 +172,7 @@ export default function SecurityAccessControlPage() {
             <Card className="bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
               <CardHeader className="flex flex-row items-center justify-between border-b border-border">
                 <CardTitle className="text-base font-semibold">
-                  Permissions Matrix: <span className="text-primary">{selectedRole}</span>
+                  Permissions Matrix: <span className="text-primary">{selectedRole || "System Role"}</span>
                 </CardTitle>
                 <Button variant="ghost" size="sm" className="text-xs text-primary" onClick={() => toast.info("Permissions reset to default")}>
                   Reset to Default
@@ -165,9 +185,11 @@ export default function SecurityAccessControlPage() {
                   <div className="text-center">Write Access</div>
                   <div className="text-center">Delete Access</div>
                 </div>
-                {Object.entries(permissions).map(([module, perms], i) => (
+                {loading && <div className="px-6 py-8 text-xs text-muted-foreground text-center">Loading permissions…</div>}
+                {!loading && permissions.length === 0 && <div className="px-6 py-8 text-xs text-muted-foreground text-center">No permissions defined yet.</div>}
+                {permissions.map((perms, i) => (
                   <div key={i} className="grid grid-cols-[1.5fr_1fr_1fr_1fr] items-center px-6 py-4 border-b border-border last:border-0 hover:bg-muted/10 transition-colors text-sm">
-                    <div className="font-medium text-foreground capitalize">{module.replace(/([A-Z])/g, " $1").trim()}</div>
+                    <div className="font-medium text-foreground">{perms.module}</div>
                     <div className="flex justify-center">
                       <input type="checkbox" checked={perms.read} className="h-4 w-4 rounded border-border text-primary focus:ring-primary/20" readOnly />
                     </div>
@@ -198,107 +220,41 @@ export default function SecurityAccessControlPage() {
                     <div className="text-sm font-medium text-foreground">WhatsApp/SMS 2FA</div>
                     <p className="text-xs text-muted-foreground mt-0.5">Secure login via mobile code</p>
                   </div>
-                  <div className="h-6 w-11 rounded-full bg-primary relative cursor-pointer">
-                    <div className="absolute right-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform" />
+                  <div onClick={() => toast.success("2FA toggled")} className="w-11 h-6 bg-primary rounded-full relative cursor-pointer">
+                    <div className="absolute top-1 right-1 w-4 h-4 bg-white rounded-full shadow-sm" />
                   </div>
                 </div>
                 <div className="flex items-center justify-between p-3 border border-border rounded-lg">
                   <div>
-                    <div className="text-sm font-medium text-foreground">Authenticator App</div>
-                    <p className="text-xs text-muted-foreground mt-0.5">Use Google Authenticator or similar</p>
+                    <div className="text-sm font-medium text-foreground">Email Verification</div>
+                    <p className="text-xs text-muted-foreground mt-0.5">{twoFaCoverage}% of users verified</p>
                   </div>
-                  <div className="h-6 w-11 rounded-full bg-muted relative cursor-pointer">
-                    <div className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform" />
-                  </div>
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Active Sessions */}
+            <Card className="bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <CardHeader className="border-b border-border">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Monitor className="h-4 w-4 text-primary" /> Active Sessions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 pt-4">
                 <div className="flex items-center justify-between p-3 border border-border rounded-lg">
-                  <div>
-                    <div className="text-sm font-medium text-foreground">Backup Codes</div>
-                    <p className="text-xs text-muted-foreground mt-0.5">Generate one-time recovery codes</p>
+                  <div className="flex items-center gap-2.5">
+                    <Smartphone className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-foreground/80">Current session</span>
                   </div>
-                  <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => toast.success("Backup codes generated")}>
-                    Generate
-                  </Button>
+                  <span className="text-xs font-semibold text-primary">Active Now</span>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Session Management */}
-            <Card className="bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
-              <CardHeader className="border-b border-border">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Monitor className="h-4 w-4 text-primary" /> Session Management
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 pt-4">
-                {sessions.map((s, i) => {
-                  const Icon = s.icon
-                  return (
-                    <div key={i} className="flex items-center gap-3 p-3 border border-border rounded-lg hover:bg-muted/10 transition-colors">
-                      <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-foreground">{s.device}</span>
-                          <span className="text-xs text-muted-foreground">— {s.location}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">{s.browser}</p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className={cn("text-xs font-semibold", s.status === "Active Now" ? "text-emerald-600" : s.status === "Recent" ? "text-muted-foreground" : "text-red-500")}>
-                          {s.status}
-                        </span>
-                        <p className="text-[10px] text-muted-foreground">{s.time}</p>
-                      </div>
-                    </div>
-                  )
-                })}
-                <Button variant="outline" size="sm" className="w-full text-xs h-8 mt-2" onClick={() => toast.success("All other sessions terminated")}>
-                  Terminate All Other Sessions
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Login History */}
-            <Card className="bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
-              <CardHeader className="border-b border-border">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-primary" /> Recent Login Attempts
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 pt-4">
-                {[
-                  { user: "Rafiqul Islam", status: "Success", time: "2 hours ago", ip: "192.168.1.45", color: "text-emerald-600" },
-                  { user: "Salma Begum", status: "Success", time: "1 hour ago", ip: "192.168.1.82", color: "text-emerald-600" },
-                  { user: "Unknown", status: "Failed", time: "3 hours ago", ip: "45.33.12.8", color: "text-red-600" },
-                  { user: "Abdul Karim", status: "Success", time: "4 hours ago", ip: "192.168.1.91", color: "text-emerald-600" },
-                ].map((l, i) => (
-                  <div key={i} className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <span className={cn("w-1.5 h-1.5 rounded-full", l.status === "Success" ? "bg-emerald-500" : "bg-red-500")} />
-                      <span className="font-medium text-foreground">{l.user}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-muted-foreground">
-                      <span className="font-mono">{l.ip}</span>
-                      <span className={cn("font-semibold", l.color)}>{l.status}</span>
-                      <span>{l.time}</span>
-                    </div>
-                  </div>
-                ))}
+                <p className="text-xs text-muted-foreground px-1">Device history is not tracked on the backend.</p>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
     </AppLayout>
-  )
-}
-
-function Download({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" x2="12" y1="15" y2="3" />
-    </svg>
   )
 }

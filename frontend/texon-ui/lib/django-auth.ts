@@ -87,10 +87,15 @@ export async function loginWithDjango(
 export async function registerUser(
   payload: RegisterPayload,
 ): Promise<RegisterResponse> {
-  const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/register/`, {
+  const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/registration/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      ...payload,
+      username: payload.email,
+      password1: payload.password,
+      password2: payload.password,
+    }),
   })
 
   if (!res.ok) {
@@ -104,7 +109,10 @@ export async function registerUser(
 
   const result: RegisterResponse = await res.json()
   storeTokens(result.access, result.refresh)
+
+  console.log("Registered user:", result.user)
   return result
+
 }
 
 export async function refreshDjangoToken(): Promise<string | null> {
@@ -112,7 +120,7 @@ export async function refreshDjangoToken(): Promise<string | null> {
   if (!refresh) return null
 
   try {
-    const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/refresh/`, {
+    const res = await fetch(`${DJANGO_API_URL}/api/users/api/token/refresh/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refresh }),
@@ -123,9 +131,13 @@ export async function refreshDjangoToken(): Promise<string | null> {
       return null
     }
 
-    const data: { access: string } = await res.json()
+    const data: { access: string; refresh?: string } = await res.json()
     localStorage.setItem(TOKEN_KEY, data.access)
     document.cookie = `${TOKEN_KEY}=${data.access}; path=/; max-age=86400; SameSite=Lax`
+    if (data.refresh) {
+      localStorage.setItem(REFRESH_KEY, data.refresh)
+      document.cookie = `${REFRESH_KEY}=${data.refresh}; path=/; max-age=86400; SameSite=Lax`
+    }
     return data.access
   } catch {
     clearTokens()
@@ -151,7 +163,7 @@ export async function fetchMe(): Promise<DjangoUser> {
   const token = await getValidAccessToken()
   if (!token) throw new Error("Not authenticated")
 
-  const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/me/`, {
+  const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/user/`, {
     headers: { Authorization: `Bearer ${token}` },
   })
 
@@ -160,11 +172,20 @@ export async function fetchMe(): Promise<DjangoUser> {
     throw new Error("Failed to fetch user")
   }
 
-  return res.json()
+  const data: Record<string, unknown> = await res.json()
+  return {
+    id: Number(data.pk ?? data.id ?? 0),
+    email: String(data.email ?? ""),
+    first_name: String(data.first_name ?? ""),
+    last_name: String(data.last_name ?? ""),
+    phone: String(data.phone ?? ""),
+    is_verified: Boolean(data.is_verified ?? false),
+    date_joined: String(data.date_joined ?? ""),
+  }
 }
 
 export async function forgotPassword(email: string): Promise<void> {
-  const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/forgot-password/`, {
+  const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/password/reset/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email }),
@@ -181,10 +202,15 @@ export async function resetPassword(
   otp: string,
   password: string,
 ): Promise<void> {
-  const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/reset-password/`, {
+  const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/password/reset/confirm/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, otp, password }),
+    body: JSON.stringify({
+      uid: email,
+      token: otp,
+      new_password1: password,
+      new_password2: password,
+    }),
   })
 
   if (!res.ok) {
@@ -200,13 +226,17 @@ export async function updatePassword(
   const token = await getValidAccessToken()
   if (!token) throw new Error("Not authenticated")
 
-  const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/update-password/`, {
+  const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/password/change/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+    body: JSON.stringify({
+      old_password: currentPassword,
+      new_password1: newPassword,
+      new_password2: newPassword,
+    }),
   })
 
   if (!res.ok) {

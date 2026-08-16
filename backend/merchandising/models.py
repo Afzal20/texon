@@ -2,9 +2,26 @@ from django.db import models
 from buyers.models import Buyer
 
 
+class Season(models.Model):
+    name = models.CharField(max_length=100)
+    year = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Season"
+        verbose_name_plural = "Seasons"
+        unique_together = ("name", "year")
+
+    def __str__(self):
+        return f"{self.name} {self.year}"
+
+
 class Style(models.Model):
     buyer = models.ForeignKey(
         Buyer, on_delete=models.CASCADE, related_name="styles"
+    )
+    season = models.ForeignKey(
+        Season, on_delete=models.SET_NULL, null=True, blank=True, related_name="styles"
     )
     name = models.CharField(max_length=255)
     style_number = models.CharField(max_length=100)
@@ -90,6 +107,38 @@ class PurchaseOrder(models.Model):
 
     def __str__(self):
         return f"PO {self.po_number} - {self.buyer.name}"
+
+
+class OrderItem(models.Model):
+    purchase_order = models.ForeignKey(
+        PurchaseOrder, on_delete=models.CASCADE, related_name="items"
+    )
+    color = models.CharField(max_length=100)
+    size = models.CharField(max_length=50)
+    qty = models.PositiveIntegerField()
+
+    class Meta:
+        verbose_name = "Order Item"
+        verbose_name_plural = "Order Items"
+
+    def __str__(self):
+        return f"{self.purchase_order.po_number} - {self.color}/{self.size} x {self.qty}"
+
+
+class OrderStageLog(models.Model):
+    purchase_order = models.ForeignKey(
+        PurchaseOrder, on_delete=models.CASCADE, related_name="stage_logs"
+    )
+    stage = models.CharField(max_length=50)
+    changed_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Order Stage Log"
+        verbose_name_plural = "Order Stage Logs"
+
+    def __str__(self):
+        return f"{self.purchase_order.po_number} -> {self.stage}"
 
 
 class SampleOrder(models.Model):

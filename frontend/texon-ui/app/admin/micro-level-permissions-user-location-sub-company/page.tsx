@@ -1,40 +1,27 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import {
   ArrowLeft, Users, MapPin, Building2, Search,
-  Plus, Edit, CheckCircle2, XCircle, ChevronDown,
-  ChevronRight, Shield, Filter, MoreVertical
+  Plus, Edit, ChevronDown,
+  ChevronRight, Shield
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { gqlList, type GqlRow } from "@/lib/api/graphql"
 
-const locations = [
-  { name: "Unit A – Wovens", code: "UAW", status: "Active", users: 120 },
-  { name: "Unit B – Knits", code: "UBK", status: "Active", users: 95 },
-  { name: "Unit C – Denim", code: "UCD", status: "Active", users: 80 },
-  { name: "Head Office", code: "HO", status: "Active", users: 35 },
-]
-
-const subCompanies = [
-  { name: "Texon Industrial Ltd.", code: "TIL", locations: 3, status: "Active" },
-  { name: "Elite Fashion Wear", code: "EFW", locations: 1, status: "Active" },
-  { name: "Dhaka Textile Co.", code: "DTC", locations: 2, status: "Inactive" },
-]
-
-const userPermissions = [
-  { name: "Rafiqul Islam", role: "Floor Manager", location: "Unit A – Wovens", subCompany: "Texon Industrial Ltd.", modules: ["Production", "Inventory", "Order Management"], access: "Full", status: "Active" },
-  { name: "Salma Begum", role: "Quality Checker", location: "Unit A – Wovens", subCompany: "Texon Industrial Ltd.", modules: ["Quality", "Compliance"], access: "Standard", status: "Active" },
-  { name: "Kamal Hossain", role: "Store Manager", location: "Unit B – Knits", subCompany: "Texon Industrial Ltd.", modules: ["Inventory"], access: "Standard", status: "Active" },
-  { name: "Nusrat Jahan", role: "Merchandiser", location: "Head Office", subCompany: "Texon Industrial Ltd.", modules: ["Order Management", "Commercial"], access: "Standard", status: "Active" },
-  { name: "Abdul Karim", role: "Line Supervisor", location: "Unit C – Denim", subCompany: "Elite Fashion Wear", modules: ["Production"], access: "Limited", status: "Active" },
-  { name: "Anisur Rahman", role: "IE Engineer", location: "Unit A – Wovens", subCompany: "Texon Industrial Ltd.", modules: ["Production", "IE & Planning"], access: "Standard", status: "Active" },
-]
+interface UserRow {
+  name: string
+  role: string
+  location: string
+  subCompany: string
+  modules: string[]
+  access: string
+}
 
 const accessColors: Record<string, string> = {
   "Full": "bg-primary/10 text-primary border-primary/20",
@@ -44,10 +31,57 @@ const accessColors: Record<string, string> = {
 }
 
 export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
+  const [users, setUsers] = useState<UserRow[]>([])
+  const [locations, setLocations] = useState<{ name: string; code: string; users: string; status: string }[]>([])
+  const [subCompanies, setSubCompanies] = useState<{ name: string; code: string; locations: string; status: string }[]>([])
+  const [loading, setLoading] = useState(true)
   const [expandedSection, setExpandedSection] = useState<string | null>("users")
   const [search, setSearch] = useState("")
 
-  const filtered = userPermissions.filter(
+  useEffect(() => {
+    Promise.all([
+      gqlList("authentication", "User"),
+      gqlList("multi_company", "LocationBasedOperation"),
+      gqlList("multi_company", "MultiCompany"),
+    ])
+      .then(([usersRes, locsRes, companiesRes]) => {
+        const userRows: UserRow[] = (usersRes.data ?? []).map((u: GqlRow) => {
+          const firstName = String(u.first_name ?? "")
+          const lastName = String(u.last_name ?? "")
+          const name = `${firstName} ${lastName}`.trim() || String(u.email ?? "")
+          const isSuper = Boolean(u.is_superuser)
+          return {
+            name,
+            role: isSuper ? "Super Admin" : u.is_staff ? "Staff" : "User",
+            location: "—",
+            subCompany: "—",
+            modules: [],
+            access: isSuper ? "Full" : "Standard",
+          }
+        })
+        setUsers(userRows)
+        setLocations(
+          (locsRes.data ?? []).map((loc: GqlRow) => ({
+            name: String(loc.operation_type ?? "—"),
+            code: `#${String(loc.id ?? "")}`,
+            users: "—",
+            status: loc.is_active ? "Active" : "Inactive",
+          })),
+        )
+        setSubCompanies(
+          (companiesRes.data ?? []).map((c: GqlRow) => ({
+            name: String(c.name ?? "—"),
+            code: String(c.code ?? ""),
+            locations: "—",
+            status: c.is_active ? "Active" : "Inactive",
+          })),
+        )
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const filtered = users.filter(
     (u) =>
       u.name.toLowerCase().includes(search.toLowerCase()) ||
       u.location.toLowerCase().includes(search.toLowerCase()) ||
@@ -82,15 +116,15 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <CardHeader className="flex flex-row items-start justify-between space-y-0">
-              <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Active Users</CardTitle>
+              <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Registered Users</CardTitle>
               <Users className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{userPermissions.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">With custom permissions</p>
+              <div className="text-3xl font-bold text-foreground">{loading ? "—" : users.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">User accounts</p>
             </CardContent>
           </Card>
 
@@ -100,8 +134,8 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
               <MapPin className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{locations.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">Active locations</p>
+              <div className="text-3xl font-bold text-foreground">{loading ? "—" : locations.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">Operation locations</p>
             </CardContent>
           </Card>
 
@@ -111,19 +145,8 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
               <Building2 className="h-4 w-4 text-amber-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{subCompanies.length}</div>
+              <div className="text-3xl font-bold text-foreground">{loading ? "—" : subCompanies.length}</div>
               <p className="text-xs text-muted-foreground mt-1">Registered entities</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <CardHeader className="flex flex-row items-start justify-between space-y-0">
-              <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Permission Overrides</CardTitle>
-              <Shield className="h-4 w-4 text-violet-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground">24</div>
-              <p className="text-xs text-muted-foreground mt-1">Custom overrides applied</p>
             </CardContent>
           </Card>
         </div>
@@ -148,11 +171,13 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
                   <div>Modules</div>
                   <div>Access</div>
                 </div>
+                {loading && <div className="px-6 py-8 text-xs text-muted-foreground text-center">Loading users…</div>}
+                {!loading && filtered.length === 0 && <div className="px-6 py-8 text-xs text-muted-foreground text-center">No users found.</div>}
                 {filtered.map((u, i) => (
                   <div key={i} className="grid grid-cols-[1.5fr_1fr_1.2fr_1.2fr_1.5fr_0.8fr] items-center px-6 py-3 border-b border-border last:border-0 hover:bg-muted/10 transition-colors text-sm">
                     <div className="flex items-center gap-2">
                       <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary shrink-0">
-                        {u.name.split(" ").map(n => n[0]).join("")}
+                        {u.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
                       </div>
                       <span className="font-medium text-foreground text-xs">{u.name}</span>
                     </div>
@@ -160,6 +185,7 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
                     <div className="text-xs text-muted-foreground">{u.location}</div>
                     <div className="text-xs text-muted-foreground">{u.subCompany}</div>
                     <div className="flex flex-wrap gap-1">
+                      {u.modules.length === 0 && <span className="text-[10px] text-muted-foreground">—</span>}
                       {u.modules.map((m, j) => (
                         <span key={j} className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{m}</span>
                       ))}
@@ -190,6 +216,8 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
               </div>
               {expandedSection === "locations" && (
                 <CardContent className="space-y-2 pt-4">
+                  {loading && <div className="py-4 text-xs text-muted-foreground text-center">Loading…</div>}
+                  {!loading && locations.length === 0 && <div className="py-4 text-xs text-muted-foreground text-center">No locations defined.</div>}
                   {locations.map((loc, i) => (
                     <div key={i} className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/10 transition-colors">
                       <div>
@@ -197,7 +225,7 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
                         <p className="text-xs text-muted-foreground">{loc.code} • {loc.users} users</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">{loc.status}</span>
+                        <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded border", loc.status === "Active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200")}>{loc.status}</span>
                         <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => toast.info(`Editing ${loc.name} permissions`)}>
                           <Edit className="h-3 w-3" />
                         </Button>
@@ -221,6 +249,8 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
               </div>
               {expandedSection === "subcompanies" && (
                 <CardContent className="space-y-2 pt-4">
+                  {loading && <div className="py-4 text-xs text-muted-foreground text-center">Loading…</div>}
+                  {!loading && subCompanies.length === 0 && <div className="py-4 text-xs text-muted-foreground text-center">No sub-companies defined.</div>}
                   {subCompanies.map((sc, i) => (
                     <div key={i} className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/10 transition-colors">
                       <div>

@@ -1,52 +1,62 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import {
-  ArrowLeft, DollarSign, Users, Tag, Search,
-  Plus, Edit, CheckCircle2, XCircle, MoreVertical,
-  Filter, Eye, Lock, Unlock, BarChart3
+  ArrowLeft, Users, Search,
+  Plus, Edit, Filter, BarChart3, Tag, Globe
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { gqlList, type GqlRow } from "@/lib/api/graphql"
 
-const priceLevels = [
-  { level: "Level 1 – Premium", code: "PL1", range: "$12.00 – $18.00", assignedTeams: ["Zara", "H&M Premium"], status: "Active", color: "bg-primary/10 text-primary border-primary/20" },
-  { level: "Level 2 – Standard", code: "PL2", range: "$8.00 – $12.00", assignedTeams: ["H&M", "Levi's", "Uniqlo"], status: "Active", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  { level: "Level 3 – Budget", code: "PL3", range: "$4.00 – $8.00", assignedTeams: ["Primark", "Decathlon"], status: "Active", color: "bg-amber-50 text-amber-700 border-amber-200" },
-  { level: "Level 4 – Outlet", code: "PL4", range: "$2.00 – $4.00", assignedTeams: [], status: "Inactive", color: "bg-red-50 text-red-700 border-red-200" },
-]
-
-const buyerTeams = [
-  { name: "Zara (Inditex)", buyer: "Zara", team: "Premium Retail", level: "PL1", users: 3, spend: "$2.4M", status: "Active" },
-  { name: "H&M Group", buyer: "H&M", team: "Fast Fashion", level: "PL2", users: 8, spend: "$4.8M", status: "Active" },
-  { name: "Levi's", buyer: "Levi's", team: "Denim Specialist", level: "PL2", users: 4, spend: "$1.2M", status: "Active" },
-  { name: "Uniqlo (Fast Retailing)", buyer: "Uniqlo", team: "Casual Wear", level: "PL2", users: 5, spend: "$3.1M", status: "Active" },
-  { name: "Primark", buyer: "Primark", team: "Value Retail", level: "PL3", users: 6, spend: "$2.8M", status: "Active" },
-  { name: "Decathlon", buyer: "Decathlon", team: "Sportswear", level: "PL3", users: 2, spend: "$0.9M", status: "Active" },
-  { name: "Target", buyer: "Target", team: "Mass Market", level: "PL4", users: 3, spend: "$1.5M", status: "Inactive" },
-]
-
-const marketingTeams = [
-  { name: "Premium Accounts", members: 4, buyers: ["Zara", "H&M Premium"], level: "PL1", status: "Active" },
-  { name: "Volume Accounts", members: 8, buyers: ["H&M", "Uniqlo", "Levi's"], level: "PL2", status: "Active" },
-  { name: "Value Accounts", members: 5, buyers: ["Primark", "Decathlon"], level: "PL3", status: "Active" },
-  { name: "New Business", members: 3, buyers: ["Target"], level: "PL4", status: "Active" },
-]
+interface BuyerRow {
+  name: string
+  code: string
+  team: string
+  level: string
+  users: string
+  country: string
+  status: string
+}
 
 export default function BuyerMarketingTeamwisePriceLevelPermissionPage() {
+  const [buyers, setBuyers] = useState<BuyerRow[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
 
-  const filtered = buyerTeams.filter(
+  useEffect(() => {
+    gqlList("buyers", "Buyer")
+      .then((res) => {
+        setBuyers(
+          (res.data ?? []).map((b: GqlRow) => ({
+            name: String(b.name ?? "—"),
+            code: String(b.code ?? ""),
+            team: String(b.contact_person ?? "") || "—",
+            level: "—",
+            users: "—",
+            country: String(b.country ?? "") || "—",
+            status: b.is_active ? "Active" : "Inactive",
+          })),
+        )
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const filtered = buyers.filter(
     (t) =>
       t.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.buyer.toLowerCase().includes(search.toLowerCase()) ||
+      t.code.toLowerCase().includes(search.toLowerCase()) ||
       t.team.toLowerCase().includes(search.toLowerCase()),
   )
+
+  const activeCount = buyers.filter((b) => b.status === "Active").length
+  const inactiveCount = buyers.filter((b) => b.status === "Inactive").length
+  const countries = new Set(buyers.map((b) => b.country).filter((c) => c && c !== "—")).size
 
   return (
     <AppLayout>
@@ -75,45 +85,45 @@ export default function BuyerMarketingTeamwisePriceLevelPermissionPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <CardHeader className="flex flex-row items-start justify-between space-y-0">
-              <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Price Levels</CardTitle>
+              <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Active Buyers</CardTitle>
               <Tag className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{priceLevels.filter(p => p.status === "Active").length}</div>
-              <p className="text-xs text-muted-foreground mt-1">Active price tiers</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <CardHeader className="flex flex-row items-start justify-between space-y-0">
-              <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Buyer Assignments</CardTitle>
-              <Users className="h-4 w-4 text-emerald-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground">{buyerTeams.filter(b => b.status === "Active").length}</div>
+              <div className="text-3xl font-bold text-foreground">{loading ? "—" : activeCount}</div>
               <p className="text-xs text-muted-foreground mt-1">Active buyer accounts</p>
             </CardContent>
           </Card>
 
           <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <CardHeader className="flex flex-row items-start justify-between space-y-0">
-              <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Marketing Teams</CardTitle>
-              <Users className="h-4 w-4 text-amber-500" />
+              <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Inactive Buyers</CardTitle>
+              <Users className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{marketingTeams.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">Team-wise assignments</p>
+              <div className="text-3xl font-bold text-foreground">{loading ? "—" : inactiveCount}</div>
+              <p className="text-xs text-muted-foreground mt-1">Inactive accounts</p>
             </CardContent>
           </Card>
 
           <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <CardHeader className="flex flex-row items-start justify-between space-y-0">
-              <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Total Users with Access</CardTitle>
-              <DollarSign className="h-4 w-4 text-violet-500" />
+              <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Total Buyers</CardTitle>
+              <Users className="h-4 w-4 text-amber-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{buyerTeams.reduce((sum, b) => sum + b.users, 0)}</div>
-              <p className="text-xs text-muted-foreground mt-1">Across all teams</p>
+              <div className="text-3xl font-bold text-foreground">{loading ? "—" : buyers.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">Registered buyers</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+            <CardHeader className="flex flex-row items-start justify-between space-y-0">
+              <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Countries</CardTitle>
+              <Globe className="h-4 w-4 text-violet-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-foreground">{loading ? "—" : countries}</div>
+              <p className="text-xs text-muted-foreground mt-1">Buyer countries</p>
             </CardContent>
           </Card>
         </div>
@@ -137,31 +147,31 @@ export default function BuyerMarketingTeamwisePriceLevelPermissionPage() {
               <CardContent className="p-0">
                 <div className="grid grid-cols-[2fr_1.2fr_1fr_0.8fr_1fr_0.8fr] text-xs font-bold text-muted-foreground uppercase tracking-wider px-6 py-3 border-b border-border bg-muted/20">
                   <div>Buyer / Team</div>
-                  <div>Marketing Team</div>
-                  <div>Price Level</div>
-                  <div>Users</div>
-                  <div>Annual Spend</div>
+                  <div>Contact</div>
+                  <div>Code</div>
+                  <div>Country</div>
                   <div>Status</div>
+                  <div>Actions</div>
                 </div>
+                {loading && <div className="px-6 py-8 text-xs text-muted-foreground text-center">Loading buyers…</div>}
+                {!loading && filtered.length === 0 && <div className="px-6 py-8 text-xs text-muted-foreground text-center">No buyers found.</div>}
                 {filtered.map((b, i) => (
                   <div key={i} className="grid grid-cols-[2fr_1.2fr_1fr_0.8fr_1fr_0.8fr] items-center px-6 py-3 border-b border-border last:border-0 hover:bg-muted/10 transition-colors text-sm">
                     <div>
                       <div className="font-medium text-foreground text-xs">{b.name}</div>
-                      <div className="text-[10px] text-muted-foreground">{b.buyer}</div>
+                      <div className="text-[10px] text-muted-foreground">{b.code}</div>
                     </div>
                     <div className="text-xs text-muted-foreground">{b.team}</div>
-                    <div>
-                      <span className={cn("text-[10px] font-semibold px-2 py-1 rounded border", priceLevels.find(p => p.code === b.level)?.color || "bg-muted text-muted-foreground border-border")}>
-                        {b.level}
-                      </span>
-                    </div>
-                    <div className="text-xs text-muted-foreground font-mono">{b.users}</div>
-                    <div className="text-xs font-medium text-foreground">{b.spend}</div>
+                    <div className="text-xs text-muted-foreground">{b.code}</div>
+                    <div className="text-xs text-muted-foreground font-mono">{b.country}</div>
                     <div>
                       <span className={cn("text-[10px] font-semibold px-2 py-1 rounded border", b.status === "Active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200")}>
                         {b.status}
                       </span>
                     </div>
+                    <Button variant="ghost" size="sm" className="text-[10px] h-6 gap-1" onClick={() => toast.info(`Editing ${b.name} price permissions`)}>
+                      <Edit className="h-3 w-3" /> Edit
+                    </Button>
                   </div>
                 ))}
               </CardContent>
@@ -177,34 +187,10 @@ export default function BuyerMarketingTeamwisePriceLevelPermissionPage() {
                   <Tag className="h-4 w-4 text-primary" /> Price Levels
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 pt-4">
-                {priceLevels.map((p, i) => (
-                  <div key={i} className="p-3 border border-border rounded-lg space-y-2 hover:bg-muted/10 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground">{p.level}</span>
-                      <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded border", p.color)}>
-                        {p.code}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">{p.range}</span>
-                      <span className="text-muted-foreground">{p.assignedTeams.length} teams</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {p.assignedTeams.map((t, j) => (
-                        <span key={j} className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{t}</span>
-                      ))}
-                    </div>
-                    <div className="flex items-center justify-between pt-1">
-                      <Button variant="ghost" size="sm" className="text-[10px] h-6 gap-1" onClick={() => toast.info(`Editing ${p.level}`)}>
-                        <Edit className="h-3 w-3" /> Edit
-                      </Button>
-                      <span className={cn("text-[10px] font-semibold", p.status === "Active" ? "text-emerald-600" : "text-red-500")}>
-                        {p.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+              <CardContent className="pt-4">
+                <div className="py-8 text-center text-xs text-muted-foreground">
+                  Price level configuration is not tracked on the backend yet.
+                </div>
               </CardContent>
             </Card>
 
@@ -215,23 +201,10 @@ export default function BuyerMarketingTeamwisePriceLevelPermissionPage() {
                   <Users className="h-4 w-4 text-amber-500" /> Marketing Teams
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 pt-4">
-                {marketingTeams.map((t, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/10 transition-colors">
-                    <div>
-                      <div className="text-sm font-medium text-foreground">{t.name}</div>
-                      <p className="text-xs text-muted-foreground">{t.members} members • {t.buyers.length} buyers</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded border", priceLevels.find(p => p.code === t.level)?.color || "bg-muted text-muted-foreground border-border")}>
-                        {t.level}
-                      </span>
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => toast.info(`Editing ${t.name}`)}>
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+              <CardContent className="pt-4">
+                <div className="py-8 text-center text-xs text-muted-foreground">
+                  Marketing team assignments are not tracked on the backend yet.
+                </div>
               </CardContent>
             </Card>
           </div>

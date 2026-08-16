@@ -1,5 +1,5 @@
 import os, sys, random
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, time
 from decimal import Decimal
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
@@ -7,11 +7,15 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
+from django.utils import timezone
+
 from buyers.models import Buyer
 from merchandising.models import Style, PurchaseOrder
 from production.models import (
     ProductionLine, ProductionOrder, CuttingRecord,
     SewingRecord, InspectionPacking, FloorRequisition,
+    ProductionUnit, LineCapacity, ProductionShift, ProductionRecord,
+    OEELog, DefectLog, HeatmapData, BottleneckAlert,
 )
 
 print("Seeding production data...")
@@ -57,6 +61,97 @@ for name, code, loc, cap in [
 ]:
     ln, _ = ProductionLine.objects.get_or_create(code=code, defaults={"name": name, "location": loc, "capacity": cap})
     lines.append(ln)
+
+# ── Production Units ─────────────────────────────────────────────────────────
+units = []
+for name, loc in [("Unit 1", "Ashulia"), ("Unit 2", "Gazipur"), ("Unit 3", "Savar")]:
+    u, _ = ProductionUnit.objects.get_or_create(name=name, defaults={"location": loc})
+    units.append(u)
+for idx, ln in enumerate(lines):
+    matched = None
+    for u in units:
+        if u.location.lower() in ln.location.lower():
+            matched = u
+            break
+    if matched is None:
+        matched = units[idx % len(units)]
+    ln.production_unit = matched
+    ln.save(update_fields=["production_unit"])
+
+# ── Line Capacities ──────────────────────────────────────────────────────────
+for ln in lines:
+    for d in range(7):
+        cap = ln.capacity + random.choice([-50, 0, 0, 50, 100])
+        LineCapacity.objects.get_or_create(
+            production_line=ln, date=date(2024, 10, 13 + d),
+            defaults={"daily_capacity_pcs": cap},
+        )
+
+# ── Production Shifts ────────────────────────────────────────────────────────
+for ln in lines:
+    ProductionShift.objects.get_or_create(
+        production_line=ln, name="Day Shift",
+        defaults={"start_time": time(7, 0), "end_time": time(19, 0)},
+    )
+    ProductionShift.objects.get_or_create(
+        production_line=ln, name="Night Shift",
+        defaults={"start_time": time(19, 0), "end_time": time(7, 0)},
+    )
+
+# ── Production Records ───────────────────────────────────────────────────────
+for ln in lines:
+    for d in range(5):
+        ProductionRecord.objects.get_or_create(
+            production_line=ln, date=date(2024, 10, 13 + d),
+            defaults={"output_quantity": random.randint(400, ln.capacity),
+                      "notes": random.choice(["", "OT deployed", "Normal run"])},
+        )
+
+# ── OEE Logs ─────────────────────────────────────────────────────────────────
+for ln in lines:
+    for d in range(4):
+        ts = timezone.make_aware(datetime(2024, 10, 15 + d, 9, 0))
+        avail = round(random.uniform(88, 98), 2)
+        perf = round(random.uniform(75, 92), 2)
+        qual = round(random.uniform(96, 99.5), 2)
+        OEELog.objects.get_or_create(
+            production_line=ln, timestamp=ts,
+            defaults={"availability_rate": Decimal(str(avail)), "performance_rate": Decimal(str(perf)),
+                      "quality_rate": Decimal(str(qual)), "oee_score": Decimal(str(round(avail * perf * qual / 10000, 2)))},
+        )
+
+# ── Defect Logs ──────────────────────────────────────────────────────────────
+for ln in lines:
+    for d in range(3):
+        checked = random.randint(800, 1500)
+        defects = random.randint(4, 40)
+        DefectLog.objects.get_or_create(
+            production_line=ln, date=date(2024, 10, 14 + d),
+            defaults={"defect_type": random.choice(["Sewing", "Stitching", "Stain", "Size"]),
+                      "checked_quantity": checked, "defect_quantity": defects,
+                      "defect_rate": Decimal(str(round(defects * 100 / checked, 3)))},
+        )
+
+# ── Heatmap Data ─────────────────────────────────────────────────────────────
+for ln in lines:
+    for metric in ["efficiency", "output", "utilization", "attendance"]:
+        HeatmapData.objects.get_or_create(
+            production_line=ln, metric=metric,
+            timestamp=timezone.make_aware(datetime(2024, 10, 17, 12, 0)),
+            defaults={"value": Decimal(str(round(random.uniform(60, 98), 2)))},
+        )
+
+# ── Bottleneck Alerts ────────────────────────────────────────────────────────
+for i, ln in enumerate(lines):
+    BottleneckAlert.objects.get_or_create(
+        production_line=ln, alert_message=f"Throughput below target on {ln.name}",
+        defaults={"is_resolved": i % 2 == 0,
+                  "resolved_at": timezone.make_aware(datetime(2024, 10, 16, 10, 0)) if i % 2 == 0 else None},
+    )
+    BottleneckAlert.objects.get_or_create(
+        production_line=ln, alert_message="High WIP at collar attach station",
+        defaults={"is_resolved": False, "resolved_at": None},
+    )
 
 # ── Production Orders ────────────────────────────────────────────────────────
 prod_orders = []
@@ -133,7 +228,11 @@ for i, mo in enumerate(prod_orders[:6]):
 
 # ── Summary ──────────────────────────────────────────────────────────────────
 for model, label in [
-    (ProductionLine, "Production Lines"), (ProductionOrder, "Production Orders"),
+    (ProductionUnit, "Production Units"), (ProductionLine, "Production Lines"),
+    (LineCapacity, "Line Capacities"), (ProductionShift, "Production Shifts"),
+    (ProductionRecord, "Production Records"), (OEELog, "OEE Logs"),
+    (DefectLog, "Defect Logs"), (HeatmapData, "Heatmap Data"),
+    (BottleneckAlert, "Bottleneck Alerts"), (ProductionOrder, "Production Orders"),
     (CuttingRecord, "Cutting Records"), (SewingRecord, "Sewing Records"),
     (InspectionPacking, "Inspection & Packing"), (FloorRequisition, "Floor Requisitions"),
 ]:

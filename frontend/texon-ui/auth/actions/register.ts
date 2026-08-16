@@ -17,10 +17,15 @@ export async function registerAction(input: RegisterInput): Promise<{
   accessToken?: string
 }> {
   try {
-    const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/register/`, {
+    const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/registration/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
+      body: JSON.stringify({
+        ...input,
+        username: input.email,
+        password1: input.password,
+        password2: input.password,
+      }),
     })
 
     if (!res.ok) {
@@ -50,7 +55,7 @@ export async function registerAction(input: RegisterInput): Promise<{
     })
 
     return { success: true, accessToken: result.access }
-  } catch (err) {
+  } catch {
     return { success: false, error: "Network error. Server may be offline." }
   }
 }

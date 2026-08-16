@@ -55,7 +55,7 @@ Authorization: Bearer <your_access_token>
 
 All query names are automatically converted from Python's snake_case to standard frontend **camelCase**.
 
-Below are the queries exposed by the gateway schema, divided by app.
+The gateway schema exposes **every model in every ERP app**. Sections A and B below document the hand-designed Orders and Production contracts; Section C documents the auto-generated surface for the rest of the ERP.
 
 ### A. Orders App Schema
 This schema enables querying purchase orders, buyers, style details, sample development status, and tracking logs.
@@ -354,3 +354,77 @@ function MyDashboard() {
   );
 }
 ```
+
+---
+
+## 6. Mutations Reference
+
+The gateway also exposes auto-generated mutations for every model, including
+`authentication.User` (queries `allUsers`/`userById` and `createUser`/
+`updateUser`/`deleteUser`). Passwords are hashed automatically and are never
+returned by any GraphQL type. Registration via REST auth
+(`/api/v1/auth/registration/`) remains the recommended flow for public signup.
+
+| Mutation | Arguments (all optional unless noted) | Returns |
+| :--- | :--- | :--- |
+| `create<Model>` | required fields, `<fk>Id`, `<m2m>Ids` | `{ ok, errors, <model> }` |
+| `update<Model>` | `id: ID!` + any mutable fields | `{ ok, errors, <model> }` |
+| `delete<Model>` | `id: ID!` | `{ ok, errors, deletedId }` |
+
+```graphql
+mutation CreateBuyerExample {
+  createBuyer(name: "Target Corp", code: "TGT", country: "USA") {
+    ok
+    errors
+    buyer { id name code }
+  }
+}
+```
+
+Updating uses the record id plus only the fields you want to change:
+
+```graphql
+mutation UpdateBuyerExample {
+  updateBuyer(id: 3, contactPerson: "Jane Doe", phone: "+1555000") {
+    ok
+    errors
+    buyer { id contactPerson }
+  }
+}
+```
+
+Deleting returns the removed id:
+
+```graphql
+mutation DeleteBuyerExample {
+  deleteBuyer(id: 3) {
+    ok
+    errors
+    deletedId
+  }
+}
+```
+
+Input conventions:
+*   Foreign keys: `<field>Id` (e.g. `buyerId: 5`, `productionLineId: 2`)
+*   Many-to-many: `<field>Ids` (list of ids)
+*   Dates: `"YYYY-MM-DD"`; datetimes: ISO-8601 (`"2026-08-16T10:00:00"`)
+*   Decimals: strings (`unitPrice: "3.25"`)
+*   Fields that are required (no default, not nullable) must be supplied;
+    otherwise the mutation returns `ok: false` with an `errors` array.
+
+---
+
+## 7. Model Additions
+
+To fulfil the guide's contract, these models were added (migrated + seeded):
+
+*   **merchandising:** `Season` (with `Style.season`), `OrderItem`,
+    `OrderStageLog`
+*   **production:** `ProductionUnit` (with `ProductionLine.production_unit`),
+    `LineCapacity`, `ProductionShift`, `ProductionRecord`, `OEELog`,
+    `DefectLog`, `HeatmapData`, `BottleneckAlert`
+
+These power the documented fields: `style.season`, `order.items`,
+`order.stageLogs`, `line.productionUnit`, `line.capacity`,
+`line.oeeLogs`, `line.bottleneckAlerts`, `allProductionUnits`, etc.

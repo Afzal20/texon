@@ -1,14 +1,43 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Upload, User, Globe, Bell, ShieldCheck, Building2 } from "lucide-react"
 import { toast } from "sonner"
+import { gqlList } from "@/lib/api/graphql"
 
 export default function Settings() {
+  const [profile, setProfile] = useState({ fullName: "", employeeId: "", designation: "", email: "", phone: "" })
+
+  useEffect(() => {
+    gqlList("authentication", "User")
+      .then((res) => {
+        const rows = (res.data ?? []) as Record<string, unknown>[]
+        if (!rows.length) return
+        const u = rows[0]
+        setProfile({
+          fullName: `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim(),
+          employeeId: u.is_superuser ? "ADMIN" : `USER-${String(u.id)}`,
+          designation: u.is_superuser ? "System Administrator" : u.is_staff ? "Staff" : "User",
+          email: String(u.email ?? ""),
+          phone: String(u.phone ?? ""),
+        })
+      })
+      .catch(() => {})
+  }, [])
+
+  const initials = profile.fullName
+    .split(" ")
+    .filter(Boolean)
+    .map((p) => p[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2) || "TX"
+
   return (
     <AppLayout>
       <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8">
@@ -50,20 +79,19 @@ export default function Settings() {
 
           {/* Right Content */}
           <div className="lg:col-span-2 space-y-6">
-            
+
             {/* Personal Profile Section */}
             <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
               <CardHeader className="border-b border-border">
                 <CardTitle className="text-lg font-bold">Personal Profile</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                
+
                 {/* Photo Upload */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
                   <div className="relative">
                     <Avatar className="h-24 w-24 border-2 border-border rounded-xl">
-                      <AvatarImage src="https://i.pravatar.cc/150?u=rafiqul" alt="User" className="rounded-xl object-cover" />
-                      <AvatarFallback className="text-xl font-bold rounded-xl bg-primary text-primary-foreground">RI</AvatarFallback>
+                      <AvatarFallback className="text-xl font-bold rounded-xl bg-primary text-primary-foreground">{initials}</AvatarFallback>
                     </Avatar>
                     <button onClick={() => toast.info("Photo upload coming soon")} className="absolute -bottom-2 -right-2 bg-white border border-border text-primary rounded-full p-1.5 shadow-sm hover:bg-muted transition-colors">
                       <Upload className="h-3 w-3" />
@@ -82,35 +110,30 @@ export default function Settings() {
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-foreground">Full Name</label>
-                    <Input defaultValue="Rafiqul Islam" className="bg-white" />
+                    <Input value={profile.fullName} onChange={(e) => setProfile((p) => ({ ...p, fullName: e.target.value }))} className="bg-white" />
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-center">
-                      <label className="text-xs font-bold text-foreground">Employee ID</label>
+                      <label className="text-xs font-bold text-foreground">User ID</label>
                       <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"/> Verified
                       </span>
                     </div>
-                    <Input defaultValue="UNIT1-MGR-004" disabled className="bg-muted/50 text-muted-foreground font-mono" />
+                    <Input value={profile.employeeId} disabled className="bg-muted/50 text-muted-foreground font-mono" />
                   </div>
-                  
+
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-foreground">Designation</label>
-                    <Input defaultValue="Floor Manager" className="bg-white" />
+                    <Input value={profile.designation} onChange={(e) => setProfile((p) => ({ ...p, designation: e.target.value }))} className="bg-white" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-foreground">Email Address</label>
-                    <Input defaultValue="r.islam@dhakaplant.com" className="bg-white" />
+                    <Input value={profile.email} onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))} className="bg-white" />
                   </div>
 
                   <div className="sm:col-span-2 space-y-1.5">
                     <label className="text-xs font-bold text-foreground">Primary Contact Number</label>
-                    <div className="flex">
-                      <div className="flex items-center justify-center px-3 border border-r-0 border-border rounded-l-md bg-muted/30 text-sm font-medium text-muted-foreground">
-                        +880
-                      </div>
-                      <Input defaultValue="171-234-5678" className="rounded-l-none font-mono bg-white" />
-                    </div>
+                    <Input value={profile.phone} onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))} className="font-mono bg-white" />
                   </div>
                 </div>
 
@@ -128,7 +151,7 @@ export default function Settings() {
                 <CardTitle className="text-lg font-bold">Language & Region</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                
+
                 <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                   <div>
                     <div className="font-semibold text-sm text-foreground">Interface Language</div>

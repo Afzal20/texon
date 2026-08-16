@@ -2,10 +2,28 @@ from django.db import models
 from merchandising.models import Style, PurchaseOrder
 
 
+class ProductionUnit(models.Model):
+    name = models.CharField(max_length=100)
+    location = models.CharField(max_length=255, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Production Unit"
+        verbose_name_plural = "Production Units"
+
+    def __str__(self):
+        return self.name
+
+
 class ProductionLine(models.Model):
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=50)
     location = models.CharField(max_length=255, blank=True)
+    production_unit = models.ForeignKey(
+        ProductionUnit, on_delete=models.SET_NULL, null=True, blank=True, related_name="lines"
+    )
     capacity = models.PositiveIntegerField(help_text="Daily capacity in pieces")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -144,3 +162,125 @@ class FloorRequisition(models.Model):
 
     def __str__(self):
         return f"{self.production_order.order_number} - {self.item_type}"
+
+
+class LineCapacity(models.Model):
+    production_line = models.ForeignKey(
+        ProductionLine, on_delete=models.CASCADE, related_name="capacities"
+    )
+    date = models.DateField()
+    daily_capacity_pcs = models.PositiveIntegerField()
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Line Capacity"
+        verbose_name_plural = "Line Capacities"
+
+    def __str__(self):
+        return f"{self.production_line.code} - {self.date} - {self.daily_capacity_pcs}"
+
+
+class ProductionShift(models.Model):
+    production_line = models.ForeignKey(
+        ProductionLine, on_delete=models.CASCADE, null=True, blank=True, related_name="shifts"
+    )
+    name = models.CharField(max_length=100)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Production Shift"
+        verbose_name_plural = "Production Shifts"
+
+    def __str__(self):
+        return f"{self.name} ({self.start_time}-{self.end_time})"
+
+
+class ProductionRecord(models.Model):
+    production_line = models.ForeignKey(
+        ProductionLine, on_delete=models.CASCADE, related_name="production_records"
+    )
+    date = models.DateField()
+    output_quantity = models.PositiveIntegerField()
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Production Record"
+        verbose_name_plural = "Production Records"
+
+    def __str__(self):
+        return f"{self.production_line.code} - {self.date} - {self.output_quantity}"
+
+
+class OEELog(models.Model):
+    production_line = models.ForeignKey(
+        ProductionLine, on_delete=models.CASCADE, related_name="oee_logs"
+    )
+    timestamp = models.DateTimeField()
+    availability_rate = models.DecimalField(max_digits=5, decimal_places=2)
+    performance_rate = models.DecimalField(max_digits=5, decimal_places=2)
+    quality_rate = models.DecimalField(max_digits=5, decimal_places=2)
+    oee_score = models.DecimalField(max_digits=5, decimal_places=2)
+
+    class Meta:
+        verbose_name = "OEE Log"
+        verbose_name_plural = "OEE Logs"
+
+    def __str__(self):
+        return f"{self.production_line.code} - OEE {self.oee_score}%"
+
+
+class DefectLog(models.Model):
+    production_line = models.ForeignKey(
+        ProductionLine, on_delete=models.CASCADE, related_name="defect_logs"
+    )
+    date = models.DateField()
+    defect_type = models.CharField(max_length=100, blank=True)
+    checked_quantity = models.PositiveIntegerField()
+    defect_quantity = models.PositiveIntegerField()
+    defect_rate = models.DecimalField(max_digits=6, decimal_places=3, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Defect Log"
+        verbose_name_plural = "Defect Logs"
+
+    def __str__(self):
+        return f"{self.production_line.code} - {self.date} - {self.defect_quantity} defects"
+
+
+class HeatmapData(models.Model):
+    production_line = models.ForeignKey(
+        ProductionLine, on_delete=models.CASCADE, related_name="heatmap_data"
+    )
+    metric = models.CharField(max_length=100)
+    value = models.DecimalField(max_digits=12, decimal_places=2)
+    timestamp = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Heatmap Data"
+        verbose_name_plural = "Heatmap Data"
+
+    def __str__(self):
+        return f"{self.production_line.code} - {self.metric} = {self.value}"
+
+
+class BottleneckAlert(models.Model):
+    production_line = models.ForeignKey(
+        ProductionLine, on_delete=models.CASCADE, related_name="bottleneck_alerts"
+    )
+    alert_message = models.TextField()
+    is_resolved = models.BooleanField(default=False)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Bottleneck Alert"
+        verbose_name_plural = "Bottleneck Alerts"
+
+    def __str__(self):
+        return f"{self.production_line.code} - {self.alert_message[:50]}"

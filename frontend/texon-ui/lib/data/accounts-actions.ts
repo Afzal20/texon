@@ -1,7 +1,7 @@
 "use server"
 
 import { getApiToken } from "@/auth/lib/api-client"
-import { apiFetch } from "@/lib/api"
+import { gqlList } from "@/lib/api/graphql"
 import type { AccountsPayable, AccountsReceivable, JournalEntry, AccountsSummary } from "./accounts"
 
 async function getToken(): Promise<string> {
@@ -12,20 +12,48 @@ async function getToken(): Promise<string> {
 
 export async function getAccountsPayable(): Promise<AccountsPayable[]> {
   const token = await getToken()
-  return apiFetch("/api/v1/accounts-payable/", {}, token)
+  return (await gqlList("accounts", "AccountsPayable", undefined, token)).data as unknown as AccountsPayable[]
 }
 
 export async function getAccountsReceivable(): Promise<AccountsReceivable[]> {
   const token = await getToken()
-  return apiFetch("/api/v1/accounts-receivable/", {}, token)
+  return (await gqlList("accounts", "AccountsReceivable", undefined, token)).data as unknown as AccountsReceivable[]
 }
 
 export async function getJournalEntries(): Promise<JournalEntry[]> {
   const token = await getToken()
-  return apiFetch("/api/v1/journal-entries/", {}, token)
+  return (await gqlList("accounts", "JournalEntry", undefined, token)).data as unknown as JournalEntry[]
 }
 
 export async function getAccountsSummary(): Promise<AccountsSummary> {
   const token = await getToken()
-  return apiFetch("/api/v1/accounts/summary/", {}, token)
+  const [{ data: payable }, { data: receivable }, { data: journal }, { data: expense }] = await Promise.all([
+    gqlList("accounts", "AccountsPayable", undefined, token),
+    gqlList("accounts", "AccountsReceivable", undefined, token),
+    gqlList("accounts", "JournalEntry", undefined, token),
+    gqlList("accounts", "Expense", undefined, token),
+  ])
+  const payables = payable ?? []
+  const receivables = receivable ?? []
+  const journalEntries = journal ?? []
+  const expenses = expense ?? []
+  const sum = (rows: Record<string, unknown>[], key: string) =>
+    rows.reduce((total, row) => total + (Number(row[key]) || 0), 0)
+  const receivablesDue = sum(receivables, "balance")
+  const payablesScheduled = sum(payables, "balance")
+  const totalRevenue = sum(receivables, "amount")
+  const totalExpenses = sum(expenses, "amount")
+  const cash = Math.max(0, sum(journalEntries, "debit") - sum(journalEntries, "credit"))
+  return {
+    cash_available: cash.toFixed(2),
+    cash_trend: "up",
+    receivables_due: receivablesDue.toFixed(2),
+    receivables_count: receivables.length,
+    payables_scheduled: payablesScheduled.toFixed(2),
+    payables_note: `${payables.length} open payables`,
+    portfolio_contribution: totalRevenue.toFixed(2),
+    portfolio_margin: "0.00",
+    total_revenue: totalRevenue.toFixed(2),
+    total_expenses: totalExpenses.toFixed(2),
+  }
 }

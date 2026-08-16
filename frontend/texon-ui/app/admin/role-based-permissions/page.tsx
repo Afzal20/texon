@@ -1,104 +1,63 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import {
   ArrowLeft, Shield, Plus, Users, Lock,
-  Edit, CheckCircle2, XCircle, MoreVertical,
-  ChevronDown, ChevronRight, Eye, Pencil, Trash2
+  Edit, CheckCircle2, XCircle,
+  ChevronDown, ChevronRight, Trash2
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { gqlList } from "@/lib/api/graphql"
 
-const roles = [
-  {
-    name: "Factory Owner",
-    description: "Full system access with all administrative privileges",
-    level: "Super Admin",
-    users: 2,
-    color: "bg-red-50 text-red-700 border-red-200",
-    permissions: {
-      "Order Management": { read: true, write: true, delete: true },
-      "Production": { read: true, write: true, delete: true },
-      "Inventory": { read: true, write: true, delete: true },
-      "Commercial": { read: true, write: true, delete: true },
-      "HR & Payroll": { read: true, write: true, delete: true },
-      "Compliance": { read: true, write: true, delete: true },
-      "Admin": { read: true, write: true, delete: true },
-    }
-  },
-  {
-    name: "Floor Manager",
-    description: "Module-level access for production and inventory management",
-    level: "Module Admin",
-    users: 12,
-    color: "bg-primary/10 text-primary border-primary/20",
-    permissions: {
-      "Order Management": { read: true, write: true, delete: false },
-      "Production": { read: true, write: true, delete: false },
-      "Inventory": { read: true, write: true, delete: false },
-      "Commercial": { read: true, write: false, delete: false },
-      "HR & Payroll": { read: true, write: false, delete: false },
-      "Compliance": { read: true, write: true, delete: false },
-      "Admin": { read: false, write: false, delete: false },
-    }
-  },
-  {
-    name: "Merchandiser",
-    description: "Access to orders, commercial, and basic inventory views",
-    level: "Standard User",
-    users: 45,
-    color: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    permissions: {
-      "Order Management": { read: true, write: true, delete: false },
-      "Production": { read: true, write: false, delete: false },
-      "Inventory": { read: true, write: false, delete: false },
-      "Commercial": { read: true, write: true, delete: false },
-      "HR & Payroll": { read: false, write: false, delete: false },
-      "Compliance": { read: false, write: false, delete: false },
-      "Admin": { read: false, write: false, delete: false },
-    }
-  },
-  {
-    name: "Line Supervisor",
-    description: "Limited access to production line data and team management",
-    level: "Limited User",
-    users: 8,
-    color: "bg-amber-50 text-amber-700 border-amber-200",
-    permissions: {
-      "Order Management": { read: true, write: false, delete: false },
-      "Production": { read: true, write: true, delete: false },
-      "Inventory": { read: false, write: false, delete: false },
-      "Commercial": { read: false, write: false, delete: false },
-      "HR & Payroll": { read: true, write: false, delete: false },
-      "Compliance": { read: false, write: false, delete: false },
-      "Admin": { read: false, write: false, delete: false },
-    }
-  },
-  {
-    name: "Quality Checker",
-    description: "Access to quality, compliance, and production inspection modules",
-    level: "Standard User",
-    users: 18,
-    color: "bg-violet-50 text-violet-700 border-violet-200",
-    permissions: {
-      "Order Management": { read: true, write: false, delete: false },
-      "Production": { read: true, write: true, delete: false },
-      "Inventory": { read: true, write: false, delete: false },
-      "Commercial": { read: false, write: false, delete: false },
-      "HR & Payroll": { read: false, write: false, delete: false },
-      "Compliance": { read: true, write: true, delete: false },
-      "Admin": { read: false, write: false, delete: false },
-    }
-  },
-]
+interface PermMatrix {
+  read: boolean
+  write: boolean
+  delete: boolean
+}
+
+interface RoleRow {
+  name: string
+  description: string
+  level: string
+  users: string
+  color: string
+  permissions: Record<string, PermMatrix>
+}
 
 export default function RolebasedPermissionsPage() {
-  const [expandedRole, setExpandedRole] = useState<string | null>("Factory Owner")
+  const [roles, setRoles] = useState<RoleRow[]>([])
+  const [userCount, setUserCount] = useState(0)
+  const [permissionCount, setPermissionCount] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [expandedRole, setExpandedRole] = useState<string | null>(null)
+
+  useEffect(() => {
+    Promise.all([gqlList("rbac", "Role"), gqlList("rbac", "Permission"), gqlList("authentication", "User")])
+      .then(([rolesRes, permsRes, usersRes]) => {
+        const groups = new Map<string, PermMatrix>()
+        for (const perm of permsRes.data ?? []) {
+          const group = String(perm.group ?? "General")
+          if (!groups.has(group)) groups.set(group, { read: true, write: false, delete: false })
+        }
+        const roleRows: RoleRow[] = (rolesRes.data ?? []).map((role) => ({
+          name: String(role.name ?? ""),
+          description: String(role.description ?? ""),
+          level: role.is_system ? "System Role" : "Custom Role",
+          users: "—",
+          color: role.is_system ? "bg-red-50 text-red-700 border-red-200" : "bg-primary/10 text-primary border-primary/20",
+          permissions: Object.fromEntries(groups),
+        }))
+        setRoles(roleRows)
+        setUserCount((usersRes.data ?? []).length)
+        setPermissionCount(groups.size)
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
 
   const toggleRole = (name: string) => {
     setExpandedRole(expandedRole === name ? null : name)
@@ -132,7 +91,7 @@ export default function RolebasedPermissionsPage() {
               <Shield className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{roles.length}</div>
+              <div className="text-3xl font-bold text-foreground">{loading ? "—" : roles.length}</div>
               <p className="text-xs text-muted-foreground mt-1">Custom system roles</p>
             </CardContent>
           </Card>
@@ -143,7 +102,7 @@ export default function RolebasedPermissionsPage() {
               <Users className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{roles.reduce((sum, r) => sum + r.users, 0)}</div>
+              <div className="text-3xl font-bold text-foreground">{loading ? "—" : userCount}</div>
               <p className="text-xs text-muted-foreground mt-1">Across all roles</p>
             </CardContent>
           </Card>
@@ -154,7 +113,7 @@ export default function RolebasedPermissionsPage() {
               <Lock className="h-4 w-4 text-amber-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">7</div>
+              <div className="text-3xl font-bold text-foreground">{loading ? "—" : permissionCount}</div>
               <p className="text-xs text-muted-foreground mt-1">Controllable modules</p>
             </CardContent>
           </Card>
@@ -162,6 +121,8 @@ export default function RolebasedPermissionsPage() {
 
         {/* Roles List */}
         <div className="space-y-4">
+          {loading && <div className="py-10 text-sm text-muted-foreground text-center">Loading roles…</div>}
+          {!loading && roles.length === 0 && <div className="py-10 text-sm text-muted-foreground text-center">No roles defined yet.</div>}
           {roles.map((role) => (
             <Card key={role.name} className="bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
               <div

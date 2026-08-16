@@ -1,7 +1,7 @@
 "use server"
 
 import { getApiToken } from "@/auth/lib/api-client"
-import { apiFetch } from "@/lib/api"
+import { gqlList } from "@/lib/api/graphql"
 import type { Fabric, Accessory, StockMovement, InventorySummary } from "./inventory"
 
 async function getToken(): Promise<string> {
@@ -12,21 +12,43 @@ async function getToken(): Promise<string> {
 
 export async function getFabrics(search?: string): Promise<Fabric[]> {
   const token = await getToken()
-  const params = search ? `?search=${search}` : ""
-  return apiFetch(`/api/v1/fabrics/${params}`, {}, token)
+  const rows = (await gqlList("inventory", "Fabric", undefined, token)).data as unknown as Fabric[]
+  return search
+    ? rows.filter((row) => `${row.name} ${row.code} ${row.color}`.toLowerCase().includes(search.toLowerCase()))
+    : rows
 }
 
 export async function getAccessories(): Promise<Accessory[]> {
   const token = await getToken()
-  return apiFetch("/api/v1/accessories/", {}, token)
+  return (await gqlList("inventory", "Accessory", undefined, token)).data as unknown as Accessory[]
 }
 
 export async function getStockMovements(): Promise<StockMovement[]> {
   const token = await getToken()
-  return apiFetch("/api/v1/stock-movements/", {}, token)
+  return (await gqlList("inventory", "StockMovement", undefined, token)).data as unknown as StockMovement[]
 }
 
 export async function getInventorySummary(): Promise<InventorySummary> {
   const token = await getToken()
-  return apiFetch("/api/v1/inventory/summary/", {}, token)
+  const [{ data: fabrics }, { data: accessories }, { data: trims }] = await Promise.all([
+    gqlList("inventory", "Fabric", undefined, token),
+    gqlList("inventory", "Accessory", undefined, token),
+    gqlList("inventory", "Trim", undefined, token),
+  ])
+  const deadstockAlerts = [...fabrics, ...accessories, ...trims].filter((row) => Number(row.quantity) <= 0).length
+  const lowStockAlerts = [...fabrics, ...accessories, ...trims].filter(
+    (row) => Number(row.quantity) > 0 && Number(row.quantity) < Number(row.threshold_quantity),
+  ).length
+  const totalValue = fabrics.reduce(
+    (sum, row) => sum + (Number(row.quantity) || 0) * (Number(row.unit_price) || 0),
+    0,
+  )
+  return {
+    total_fabrics: fabrics.length,
+    total_accessories: accessories.length,
+    total_trims: trims.length,
+    deadstock_alerts: deadstockAlerts,
+    low_stock_alerts: lowStockAlerts,
+    total_value: totalValue.toFixed(2),
+  }
 }

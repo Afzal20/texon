@@ -15,7 +15,7 @@ export async function loginAction(input: LoginInput): Promise<{
   refreshToken?: string
 }> {
   try {
-    const res = await fetch(`${DJANGO_API_URL}/api/v1/login/`, {
+    const res = await fetch(`${DJANGO_API_URL}/api/users/api/token/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
@@ -25,29 +25,42 @@ export async function loginAction(input: LoginInput): Promise<{
       const data = await res.json().catch(() => null)
       return {
         success: false,
-        error: data?.detail ?? data?.message ?? "Login failed",
+        error:
+          data?.detail ??
+          (typeof data === "object" && data !== null
+            ? Object.values(data).flat().join("; ")
+            : "Login failed"),
       }
     }
 
-    const tokens: {
-      access: string
-      refresh: string
-      user?: { id: number; email: string }
-      roles?: string[]
-      permissions?: string[]
-    } = await res.json()
+    const tokens: { access: string; refresh: string } = await res.json()
+
+    let userId = 0
+    let email = input.email
+    try {
+      const meRes = await fetch(`${DJANGO_API_URL}/api/v1/auth/user/`, {
+        headers: { Authorization: `Bearer ${tokens.access}` },
+      })
+      if (meRes.ok) {
+        const me = await meRes.json()
+        userId = me.pk ?? me.id ?? 0
+        email = me.email ?? email
+      }
+    } catch {
+      // profile fetch is best-effort; session still works
+    }
 
     await setSession({
-      userId: tokens.user?.id ?? 0,
-      email: tokens.user?.email ?? input.email,
-      roles: tokens.roles ?? [],
-      permissions: tokens.permissions ?? [],
+      userId,
+      email,
+      roles: [],
+      permissions: [],
       accessToken: tokens.access,
       refreshToken: tokens.refresh,
     })
 
     return { success: true, accessToken: tokens.access, refreshToken: tokens.refresh }
-  } catch (err) {
+  } catch {
     return { success: false, error: "Network error. Server may be offline." }
   }
 }

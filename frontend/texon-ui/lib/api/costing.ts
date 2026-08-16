@@ -1,61 +1,20 @@
-import apiClient from './client'
+import { gqlList, gqlGet, gqlCreate, gqlUpdate, gqlDelete } from "./graphql"
 
-// ─── Cost Sheets ─────────────────────────────────────────────────────────────
-
-export const getCostSheets = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/cost-sheets/', { params })
-
-export const getCostSheet = (id: number) =>
-  apiClient.get(`/api/v1/cost-sheets/${id}/`)
-
-export const createCostSheet = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/cost-sheets/', data)
-
-export const updateCostSheet = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/cost-sheets/${id}/`, data)
-
-export const patchCostSheet = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/cost-sheets/${id}/`, data)
-
-export const deleteCostSheet = (id: number) =>
-  apiClient.delete(`/api/v1/cost-sheets/${id}/`)
-
-// ─── Pre-Costings ────────────────────────────────────────────────────────────
-
-export const getPreCostings = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/pre-costings/', { params })
-
-export const getPreCosting = (id: number) =>
-  apiClient.get(`/api/v1/pre-costings/${id}/`)
-
-export const createPreCosting = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/pre-costings/', data)
-
-export const updatePreCosting = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/pre-costings/${id}/`, data)
-
-export const patchPreCosting = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/pre-costings/${id}/`, data)
-
-export const deletePreCosting = (id: number) =>
-  apiClient.delete(`/api/v1/pre-costings/${id}/`)
-
-// ─── SMV Records ─────────────────────────────────────────────────────────────
-
-export const getSmvRecords = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/smv-records/', { params })
-
-export const getSmvRecord = (id: number) =>
-  apiClient.get(`/api/v1/smv-records/${id}/`)
-
-export const createSmvRecord = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/smv-records/', data)
-
-export const updateSmvRecord = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/smv-records/${id}/`, data)
-
-export const patchSmvRecord = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/smv-records/${id}/`, data)
-
-export const deleteSmvRecord = (id: number) =>
-  apiClient.delete(`/api/v1/smv-records/${id}/`)
+export const getCostSheets = (params?: Record<string, unknown>) => gqlList("costing", "CostSheet", params)
+export const getCostSheet = (id: number) => gqlGet("costing", "CostSheet", id)
+export const createCostSheet = (data: Record<string, unknown>) => gqlCreate("costing", "CostSheet", data)
+export const updateCostSheet = (id: number, data: Record<string, unknown>) => gqlUpdate("costing", "CostSheet", id, data)
+export const patchCostSheet = (id: number, data: Record<string, unknown>) => gqlUpdate("costing", "CostSheet", id, data)
+export const deleteCostSheet = (id: number) => gqlDelete("costing", "CostSheet", id)
+export const getPreCostings = (params?: Record<string, unknown>) => gqlList("costing", "PreCosting", params)
+export const getPreCosting = (id: number) => gqlGet("costing", "PreCosting", id)
+export const createPreCosting = (data: Record<string, unknown>) => gqlCreate("costing", "PreCosting", data)
+export const updatePreCosting = (id: number, data: Record<string, unknown>) => gqlUpdate("costing", "PreCosting", id, data)
+export const patchPreCosting = (id: number, data: Record<string, unknown>) => gqlUpdate("costing", "PreCosting", id, data)
+export const deletePreCosting = (id: number) => gqlDelete("costing", "PreCosting", id)
+export const getSmvRecords = (params?: Record<string, unknown>) => gqlList("merchandising", "SMVRecord", params)
+export const getSmvRecord = (id: number) => gqlGet("merchandising", "SMVRecord", id)
+export const createSmvRecord = (data: Record<string, unknown>) => gqlCreate("merchandising", "SMVRecord", data)
+export const updateSmvRecord = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "SMVRecord", id, data)
+export const patchSmvRecord = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "SMVRecord", id, data)
+export const deleteSmvRecord = (id: number) => gqlDelete("merchandising", "SMVRecord", id)

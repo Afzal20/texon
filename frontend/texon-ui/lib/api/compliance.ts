@@ -1,41 +1,14 @@
-import apiClient from './client'
+import { gqlList, gqlGet, gqlCreate, gqlUpdate, gqlDelete } from "./graphql"
 
-// ─── Compliance Records ──────────────────────────────────────────────────────
-
-export const getComplianceRecords = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/compliance-records/', { params })
-
-export const getComplianceRecord = (id: number) =>
-  apiClient.get(`/api/v1/compliance-records/${id}/`)
-
-export const createComplianceRecord = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/compliance-records/', data)
-
-export const updateComplianceRecord = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/compliance-records/${id}/`, data)
-
-export const patchComplianceRecord = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/compliance-records/${id}/`, data)
-
-export const deleteComplianceRecord = (id: number) =>
-  apiClient.delete(`/api/v1/compliance-records/${id}/`)
-
-// ─── Risk Assessments ────────────────────────────────────────────────────────
-
-export const getRiskAssessments = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/risk-assessments/', { params })
-
-export const getRiskAssessment = (id: number) =>
-  apiClient.get(`/api/v1/risk-assessments/${id}/`)
-
-export const createRiskAssessment = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/risk-assessments/', data)
-
-export const updateRiskAssessment = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/risk-assessments/${id}/`, data)
-
-export const patchRiskAssessment = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/risk-assessments/${id}/`, data)
-
-export const deleteRiskAssessment = (id: number) =>
-  apiClient.delete(`/api/v1/risk-assessments/${id}/`)
+export const getComplianceRecords = (params?: Record<string, unknown>) => gqlList("compliance", "ComplianceRecord", params)
+export const getComplianceRecord = (id: number) => gqlGet("compliance", "ComplianceRecord", id)
+export const createComplianceRecord = (data: Record<string, unknown>) => gqlCreate("compliance", "ComplianceRecord", data)
+export const updateComplianceRecord = (id: number, data: Record<string, unknown>) => gqlUpdate("compliance", "ComplianceRecord", id, data)
+export const patchComplianceRecord = (id: number, data: Record<string, unknown>) => gqlUpdate("compliance", "ComplianceRecord", id, data)
+export const deleteComplianceRecord = (id: number) => gqlDelete("compliance", "ComplianceRecord", id)
+export const getRiskAssessments = (params?: Record<string, unknown>) => gqlList("ie_planning", "RiskAssessment", params)
+export const getRiskAssessment = (id: number) => gqlGet("ie_planning", "RiskAssessment", id)
+export const createRiskAssessment = (data: Record<string, unknown>) => gqlCreate("ie_planning", "RiskAssessment", data)
+export const updateRiskAssessment = (id: number, data: Record<string, unknown>) => gqlUpdate("ie_planning", "RiskAssessment", id, data)
+export const patchRiskAssessment = (id: number, data: Record<string, unknown>) => gqlUpdate("ie_planning", "RiskAssessment", id, data)
+export const deleteRiskAssessment = (id: number) => gqlDelete("ie_planning", "RiskAssessment", id)

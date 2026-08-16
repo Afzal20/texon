@@ -73,9 +73,9 @@ function isTokenExpired(token: string): boolean {
   }
 }
 
-async function refreshAccessToken(refresh: string): Promise<{ access: string } | null> {
+async function refreshAccessToken(refresh: string): Promise<{ access: string; refresh: string } | null> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/auth/refresh/`, {
+    const res = await fetch(`${API_BASE_URL}/api/users/api/token/refresh/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refresh }),
@@ -101,10 +101,14 @@ export async function getValidSession(): Promise<SessionPayload | null> {
     return null
   }
 
-  const updated: SessionPayload = { ...session, accessToken: data.access }
+  const updated: SessionPayload = {
+    ...session,
+    accessToken: data.access,
+    refreshToken: data.refresh || session.refreshToken,
+  }
   await setSession(updated)
 
-  const meRes = await fetch(`${API_BASE_URL}/api/v1/auth/me/`, {
+  const meRes = await fetch(`${API_BASE_URL}/api/v1/auth/user/`, {
     headers: { Authorization: `Bearer ${data.access}` },
   })
   if (meRes.ok) {

@@ -1,37 +1,57 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ShieldCheck, Edit, Plus } from "lucide-react"
 import { toast } from "sonner"
+import { gqlList } from "@/lib/api/graphql"
 
-const roles = [
-  { name: "Factory Owner", level: "Super Admin", users: 2 },
-  { name: "Floor Manager",  level: "Module Admin", users: 12 },
-  { name: "Merchandiser",   level: "Standard User", users: 45 },
-]
+interface RoleRow {
+  name: string
+  level: string
+  users: string
+}
 
-const modules = [
-  {
-    title: "Production Module",
-    perms: [
-      { label: "Read Access",   granted: true },
-      { label: "Write Access",  granted: true },
-      { label: "Delete Access", granted: false },
-    ],
-  },
-  {
-    title: "Inventory Module",
-    perms: [
-      { label: "Read Access",   granted: true },
-      { label: "Write Access",  granted: false },
-      { label: "Delete Access", granted: false },
-    ],
-  },
-]
+interface PermissionRow {
+  label: string
+  granted: boolean
+}
 
 export default function Security() {
+  const [roles, setRoles] = useState<RoleRow[]>([])
+  const [modules, setModules] = useState<{ title: string; perms: PermissionRow[] }[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    Promise.all([
+      gqlList("rbac", "Role"),
+      gqlList("rbac", "Permission"),
+    ])
+      .then(([rolesRes, permsRes]) => {
+        const roleRows: RoleRow[] = (rolesRes.data ?? []).map((role) => ({
+          name: String(role.name ?? ""),
+          level: role.is_system ? "System Role" : "Custom Role",
+          users: "—",
+        }))
+        setRoles(roleRows)
+        const groups = new Map<string, PermissionRow[]>()
+        for (const perm of permsRes.data ?? []) {
+          const group = String(perm.group ?? "General")
+          if (!groups.has(group)) groups.set(group, [])
+          groups.get(group)!.push({ label: String(perm.label ?? perm.codename ?? ""), granted: true })
+        }
+        setModules(
+          [...groups.entries()].map(([title, perms]) => ({ title, perms })),
+        )
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const matrixRole = roles[0]?.name ?? "System Role"
+
   return (
     <AppLayout>
       <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8">
@@ -87,6 +107,8 @@ export default function Security() {
                     <div className="grid grid-cols-[1.5fr_1fr_1fr_80px] text-xs font-bold text-muted-foreground uppercase tracking-wide px-4 py-3 bg-muted/20 border-b border-border">
                       <div>Role Name</div><div>Permission Level</div><div>Active Users</div><div>Action</div>
                     </div>
+                    {loading && <div className="px-4 py-6 text-xs text-muted-foreground text-center">Loading roles…</div>}
+                    {!loading && roles.length === 0 && <div className="px-4 py-6 text-xs text-muted-foreground text-center">No roles defined yet.</div>}
                     {roles.map((role, i) => (
                       <div key={i} className="grid grid-cols-[1.5fr_1fr_1fr_80px] items-center px-4 py-4 border-b border-border last:border-0 hover:bg-muted/10 transition-colors text-sm">
                         <div className="font-medium text-foreground">{role.name}</div>
@@ -106,9 +128,11 @@ export default function Security() {
                 {/* Permissions Matrix */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <div className="text-sm font-bold text-foreground">Permissions Matrix: Floor Manager</div>
+                    <div className="text-sm font-bold text-foreground">Permissions Matrix: {matrixRole}</div>
                     <button onClick={() => toast.warning("Permissions reset to defaults")} className="text-xs text-primary font-semibold hover:underline">Reset to Default</button>
                   </div>
+                  {loading && <div className="py-6 text-xs text-muted-foreground text-center">Loading permissions…</div>}
+                  {!loading && modules.length === 0 && <div className="py-6 text-xs text-muted-foreground text-center">No permissions defined yet.</div>}
                   <div className="grid md:grid-cols-2 gap-4">
                     {modules.map((mod) => (
                       <div key={mod.title} className="border border-border rounded-lg p-4">
@@ -150,15 +174,11 @@ export default function Security() {
                   <div>
                     <div className="text-sm font-bold text-foreground mb-3">Session Management</div>
                     <div className="space-y-2">
-                      {[
-                        { device: "Windows PC – Dhaka", time: "Active Now", active: true },
-                        { device: "iPhone 14 – Dhaka", time: "2 hours ago", active: false },
-                      ].map((s) => (
-                        <div key={s.device} className="flex items-center justify-between text-sm p-3 border border-border rounded-lg">
-                          <span className="text-foreground/80">{s.device}</span>
-                          <span className={`text-xs font-semibold ${s.active ? "text-primary" : "text-muted-foreground"}`}>{s.time}</span>
-                        </div>
-                      ))}
+                      <div className="flex items-center justify-between text-sm p-3 border border-border rounded-lg">
+                        <span className="text-foreground/80">Current session</span>
+                        <span className="text-xs font-semibold text-primary">Active Now</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground px-1">Device history is not tracked on the backend.</div>
                     </div>
                   </div>
                 </div>

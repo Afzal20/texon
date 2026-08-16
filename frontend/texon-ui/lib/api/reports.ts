@@ -1,19 +1,8 @@
-import apiClient from './client'
+import { gqlList, gqlGet, gqlCreate, gqlUpdate, gqlDelete } from "./graphql"
 
-export const getReports = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/reports/', { params })
-
-export const getReport = (id: number) =>
-  apiClient.get(`/api/v1/reports/${id}/`)
-
-export const createReport = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/reports/', data)
-
-export const updateReport = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/reports/${id}/`, data)
-
-export const patchReport = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/reports/${id}/`, data)
-
-export const deleteReport = (id: number) =>
-  apiClient.delete(`/api/v1/reports/${id}/`)
+export const getReports = (params?: Record<string, unknown>) => gqlList("reporting", "Report", params)
+export const getReport = (id: number) => gqlGet("reporting", "Report", id)
+export const createReport = (data: Record<string, unknown>) => gqlCreate("reporting", "Report", data)
+export const updateReport = (id: number, data: Record<string, unknown>) => gqlUpdate("reporting", "Report", id, data)
+export const patchReport = (id: number, data: Record<string, unknown>) => gqlUpdate("reporting", "Report", id, data)
+export const deleteReport = (id: number) => gqlDelete("reporting", "Report", id)

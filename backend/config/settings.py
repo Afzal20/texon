@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'drf_spectacular_sidecar',
     'django_filters',
     'crispy_forms',
+    'graphene_django',
     'authentication',
     'core',
     'buyers',
@@ -480,6 +481,12 @@ AI_LLM_CONFIG = {
         "temperature": config("AI_TEMPERATURE", default=0.0, cast=float),
         "max_tokens": config("AI_MAX_TOKENS", default=4096, cast=int),
     },
+}
+
+# GraphQL gateway configuration
+GRAPHENE = {
+    "SCHEMA": "config.graphql.schema.schema",
+    "MIDDLEWARE": ["config.graphql.middleware.JWTAuthMiddleware"],
 }
 
 # dj-rest-auth and allauth settings

@@ -1,26 +1,68 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   ArrowRight, Users, Shield, Database, FolderArchive,
   Lock, MapPin, DollarSign, Settings, BarChart3
 } from "lucide-react"
 import { toast } from "sonner"
+import { gqlList } from "@/lib/api/graphql"
 
-const pages = [
-  { title: "User Management", slug: "user-management", desc: "Manage user accounts, roles, and access levels.", icon: Users, stat: "8 users", color: "text-primary" },
-  { title: "Security & Access Control", slug: "security-access-control", desc: "System roles, permissions, and security protocols.", icon: Shield, stat: "5 roles", color: "text-emerald-600" },
-  { title: "Backup & Recovery", slug: "backup-recovery", desc: "Automated data protection and disaster recovery.", icon: Database, stat: "30 restore points", color: "text-amber-600" },
-  { title: "Document Archiving", slug: "document-archiving", desc: "Centralized document repository with retention policies.", icon: FolderArchive, stat: "142 documents", color: "text-violet-600" },
-  { title: "Role-Based Permissions", slug: "role-based-permissions", desc: "Define roles and granular module-level permissions.", icon: Lock, stat: "7 modules", color: "text-blue-600" },
-  { title: "Micro-Level Permissions", slug: "micro-level-permissions-user-location-sub-company", desc: "Granular access by user, location, and sub-company.", icon: MapPin, stat: "4 locations", color: "text-rose-600" },
-  { title: "Buyer/Marketing Price Permissions", slug: "buyer-marketing-team-wise-price-level-permission", desc: "Price level visibility and editing rights by buyer/team.", icon: DollarSign, stat: "4 price levels", color: "text-cyan-600" },
+interface PageStat {
+  users: number
+  roles: number
+  locations: number
+  buyers: number
+  modules: number
+}
+
+const modules = [
+  "Order Management",
+  "Commercial",
+  "HR & Payroll",
+  "Inventory",
+  "Production",
+  "Accounts",
+  "Compliance",
 ]
 
 export default function ControlPanelAdminIndexPage() {
+  const [stats, setStats] = useState<PageStat>({ users: 0, roles: 0, locations: 0, buyers: 0, modules: 0 })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    Promise.all([
+      gqlList("authentication", "User"),
+      gqlList("rbac", "Role"),
+      gqlList("multi_company", "LocationBasedOperation"),
+      gqlList("buyers", "Buyer"),
+    ])
+      .then(([users, roles, locations, buyers]) => {
+        setStats({
+          users: users.data?.length ?? 0,
+          roles: roles.data?.length ?? 0,
+          locations: locations.data?.length ?? 0,
+          buyers: buyers.data?.length ?? 0,
+          modules: modules.length,
+        })
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const pages = [
+    { title: "User Management", slug: "user-management", desc: "Manage user accounts, roles, and access levels.", icon: Users, stat: loading ? "Loading…" : `${stats.users} users`, color: "text-primary" },
+    { title: "Security & Access Control", slug: "security-access-control", desc: "System roles, permissions, and security protocols.", icon: Shield, stat: loading ? "Loading…" : `${stats.roles} roles`, color: "text-emerald-600" },
+    { title: "Backup & Recovery", slug: "backup-recovery", desc: "Automated data protection and disaster recovery.", icon: Database, stat: "Not configured", color: "text-amber-600" },
+    { title: "Document Archiving", slug: "document-archiving", desc: "Centralized document repository with retention policies.", icon: FolderArchive, stat: "Not configured", color: "text-violet-600" },
+    { title: "Role-Based Permissions", slug: "role-based-permissions", desc: "Define roles and granular module-level permissions.", icon: Lock, stat: loading ? "Loading…" : `${stats.modules} modules`, color: "text-blue-600" },
+    { title: "Micro-Level Permissions", slug: "micro-level-permissions-user-location-sub-company", desc: "Granular access by user, location, and sub-company.", icon: MapPin, stat: loading ? "Loading…" : `${stats.locations} locations`, color: "text-rose-600" },
+    { title: "Buyer/Marketing Price Permissions", slug: "buyer-marketing-team-wise-price-level-permission", desc: "Price level visibility and editing rights by buyer/team.", icon: DollarSign, stat: loading ? "Loading…" : `${stats.buyers} buyers`, color: "text-cyan-600" },
+  ]
+
   return (
     <AppLayout>
       <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8">

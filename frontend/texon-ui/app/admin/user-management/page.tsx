@@ -1,43 +1,85 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import {
   ArrowLeft, Search, Plus, Download, RefreshCw,
-  Users, UserCheck, UserX, Shield, MoreVertical,
-  Edit, Trash2, Mail, Phone, Building2
+  Users, UserCheck, UserX, Shield
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { gqlList, type GqlRow } from "@/lib/api/graphql"
 
-const users = [
-  { name: "Rafiqul Islam", email: "r.islam@dhakaplant.com", role: "Floor Manager", department: "Production", status: "Active", lastLogin: "2 hours ago", avatar: "RI", twoFA: true },
-  { name: "Salma Begum", email: "s.begum@dhakaplant.com", role: "Quality Checker", department: "Quality Control", status: "Active", lastLogin: "1 hour ago", avatar: "SB", twoFA: true },
-  { name: "Abdul Karim", email: "a.karim@dhakaplant.com", role: "Line Supervisor", department: "Production", status: "Active", lastLogin: "30 minutes ago", avatar: "AK", twoFA: false },
-  { name: "Nusrat Jahan", email: "n.jahan@dhakaplant.com", role: "Merchandiser", department: "Merchandising", status: "Active", lastLogin: "1 day ago", avatar: "NJ", twoFA: true },
-  { name: "Kamal Hossain", email: "k.hossain@dhakaplant.com", role: "Store Manager", department: "Inventory", status: "Active", lastLogin: "3 hours ago", avatar: "KH", twoFA: true },
-  { name: "Fatema Begum", email: "f.begum@dhakaplant.com", role: "HR Officer", department: "HR & Payroll", status: "Inactive", lastLogin: "5 days ago", avatar: "FB", twoFA: false },
-  { name: "Rahim Uddin", email: "r.uddin@dhakaplant.com", role: "Sewing Operator", department: "Production", status: "Active", lastLogin: "4 hours ago", avatar: "RU", twoFA: false },
-  { name: "Anisur Rahman", email: "a.rahman@dhakaplant.com", role: "IE Engineer", department: "IE & Planning", status: "Active", lastLogin: "12 hours ago", avatar: "AR", twoFA: true },
-]
+interface UserRow {
+  name: string
+  email: string
+  role: string
+  department: string
+  status: string
+  lastLogin: string
+  avatar: string
+  twoFA: boolean
+}
+
+function formatLastLogin(value: unknown): string {
+  if (!value) return "Never"
+  const date = new Date(String(value))
+  if (Number.isNaN(date.getTime())) return String(value)
+  const diff = Date.now() - date.getTime()
+  const minutes = Math.floor(diff / 60000)
+  if (minutes < 60) return minutes <= 1 ? "just now" : `${minutes} minutes ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `${days} day${days > 1 ? "s" : ""} ago`
+  return date.toLocaleDateString()
+}
+
+function mapUser(row: GqlRow): UserRow {
+  const firstName = String(row.first_name ?? "")
+  const lastName = String(row.last_name ?? "")
+  const email = String(row.email ?? "")
+  const name = `${firstName} ${lastName}`.trim() || email
+  const role = row.is_superuser ? "Super Admin" : row.is_staff ? "Staff" : "User"
+  const active = Boolean(row.is_active)
+  const initials = name
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase()
+  return {
+    name,
+    email,
+    role,
+    department: "—",
+    status: active ? "Active" : "Inactive",
+    lastLogin: formatLastLogin(row.last_login),
+    avatar: initials || "U",
+    twoFA: Boolean(row.is_verified),
+  }
+}
 
 const roleColors: Record<string, string> = {
-  "Floor Manager": "bg-primary/10 text-primary border-primary/20",
-  "Quality Checker": "bg-emerald-50 text-emerald-700 border-emerald-200",
-  "Line Supervisor": "bg-amber-50 text-amber-700 border-amber-200",
-  "Merchandiser": "bg-violet-50 text-violet-700 border-violet-200",
-  "Store Manager": "bg-blue-50 text-blue-700 border-blue-200",
-  "HR Officer": "bg-rose-50 text-rose-700 border-rose-200",
-  "Sewing Operator": "bg-slate-50 text-slate-700 border-slate-200",
-  "IE Engineer": "bg-cyan-50 text-cyan-700 border-cyan-200",
+  "Super Admin": "bg-red-50 text-red-700 border-red-200",
+  "Staff": "bg-primary/10 text-primary border-primary/20",
+  "User": "bg-slate-50 text-slate-700 border-slate-200",
 }
 
 export default function UserManagementPage() {
+  const [users, setUsers] = useState<UserRow[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
+
+  useEffect(() => {
+    gqlList("authentication", "User")
+      .then((res) => setUsers((res.data ?? []).map(mapUser)))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
 
   const filtered = users.filter(
     (u) =>
@@ -85,8 +127,8 @@ export default function UserManagementPage() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{users.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">Across all departments</p>
+              <div className="text-3xl font-bold text-foreground">{loading ? "—" : users.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">Registered accounts</p>
             </CardContent>
           </Card>
 
@@ -96,7 +138,7 @@ export default function UserManagementPage() {
               <UserCheck className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-emerald-600">{activeCount}</div>
+              <div className="text-3xl font-bold text-emerald-600">{loading ? "—" : activeCount}</div>
               <p className="text-xs text-muted-foreground mt-1">Currently active in system</p>
             </CardContent>
           </Card>
@@ -107,23 +149,23 @@ export default function UserManagementPage() {
               <UserX className="h-4 w-4 text-red-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-red-600">{inactiveCount}</div>
+              <div className="text-3xl font-bold text-red-600">{loading ? "—" : inactiveCount}</div>
               <p className="text-xs text-muted-foreground mt-1">Require reactivation</p>
             </CardContent>
           </Card>
 
           <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <CardHeader className="flex flex-row items-start justify-between space-y-0">
-              <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">2FA Enabled</CardTitle>
+              <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Email Verified</CardTitle>
               <Shield className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-3xl font-bold text-foreground">{twoFACount}</span>
-                <span className="text-sm text-muted-foreground">/ {users.length}</span>
+                <span className="text-3xl font-bold text-foreground">{loading ? "—" : twoFACount}</span>
+                {users.length > 0 && <span className="text-sm text-muted-foreground">/ {users.length}</span>}
               </div>
               <div className="h-1.5 w-full bg-muted rounded-full mt-3 overflow-hidden">
-                <div className="h-full bg-primary rounded-full" style={{ width: `${(twoFACount / users.length) * 100}%` }} />
+                <div className="h-full bg-primary rounded-full" style={{ width: `${users.length ? (twoFACount / users.length) * 100 : 0}%` }} />
               </div>
             </CardContent>
           </Card>
@@ -146,8 +188,14 @@ export default function UserManagementPage() {
               <div>Department</div>
               <div>Status</div>
               <div>Last Login</div>
-              <div>2FA</div>
+              <div>Verified</div>
             </div>
+            {loading && (
+              <div className="px-6 py-8 text-sm text-muted-foreground text-center">Loading users…</div>
+            )}
+            {!loading && filtered.length === 0 && (
+              <div className="px-6 py-8 text-sm text-muted-foreground text-center">No users found.</div>
+            )}
             {filtered.map((u, i) => (
               <div key={i} className="grid grid-cols-[2fr_2fr_1.2fr_1fr_0.8fr_1fr_0.8fr] items-center px-6 py-4 border-b border-border last:border-0 hover:bg-muted/10 transition-colors text-sm">
                 <div className="flex items-center gap-3">

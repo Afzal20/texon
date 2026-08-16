@@ -1,81 +1,26 @@
-import apiClient from './client'
+import { gqlList, gqlGet, gqlCreate, gqlUpdate, gqlDelete } from "./graphql"
 
-// ─── Orders ──────────────────────────────────────────────────────────────────
-
-export const getOrders = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/orders/', { params })
-
-export const getOrder = (id: number) =>
-  apiClient.get(`/api/v1/orders/${id}/`)
-
-export const createOrder = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/orders/', data)
-
-export const updateOrder = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/orders/${id}/`, data)
-
-export const patchOrder = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/orders/${id}/`, data)
-
-export const deleteOrder = (id: number) =>
-  apiClient.delete(`/api/v1/orders/${id}/`)
-
-// ─── Order Amendment Histories ───────────────────────────────────────────────
-
-export const getOrderAmendments = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/order-amendment-histories/', { params })
-
-export const getOrderAmendment = (id: number) =>
-  apiClient.get(`/api/v1/order-amendment-histories/${id}/`)
-
-export const createOrderAmendment = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/order-amendment-histories/', data)
-
-export const updateOrderAmendment = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/order-amendment-histories/${id}/`, data)
-
-export const patchOrderAmendment = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/order-amendment-histories/${id}/`, data)
-
-export const deleteOrderAmendment = (id: number) =>
-  apiClient.delete(`/api/v1/order-amendment-histories/${id}/`)
-
-// ─── Sample Orders ───────────────────────────────────────────────────────────
-
-export const getSampleOrders = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/sample-orders/', { params })
-
-export const getSampleOrder = (id: number) =>
-  apiClient.get(`/api/v1/sample-orders/${id}/`)
-
-export const createSampleOrder = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/sample-orders/', data)
-
-export const updateSampleOrder = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/sample-orders/${id}/`, data)
-
-export const patchSampleOrder = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/sample-orders/${id}/`, data)
-
-export const deleteSampleOrder = (id: number) =>
-  apiClient.delete(`/api/v1/sample-orders/${id}/`)
-
-// ─── Shipments ───────────────────────────────────────────────────────────────
-
-export const getShipments = (params?: Record<string, unknown>) =>
-  apiClient.get('/api/v1/shipments/', { params })
-
-export const getShipment = (id: number) =>
-  apiClient.get(`/api/v1/shipments/${id}/`)
-
-export const createShipment = (data: Record<string, unknown>) =>
-  apiClient.post('/api/v1/shipments/', data)
-
-export const updateShipment = (id: number, data: Record<string, unknown>) =>
-  apiClient.put(`/api/v1/shipments/${id}/`, data)
-
-export const patchShipment = (id: number, data: Record<string, unknown>) =>
-  apiClient.patch(`/api/v1/shipments/${id}/`, data)
-
-export const deleteShipment = (id: number) =>
-  apiClient.delete(`/api/v1/shipments/${id}/`)
+export const getOrders = (params?: Record<string, unknown>) => gqlList("orders", "Order", params)
+export const getOrder = (id: number) => gqlGet("orders", "Order", id)
+export const createOrder = (data: Record<string, unknown>) => gqlCreate("orders", "Order", data)
+export const updateOrder = (id: number, data: Record<string, unknown>) => gqlUpdate("orders", "Order", id, data)
+export const patchOrder = (id: number, data: Record<string, unknown>) => gqlUpdate("orders", "Order", id, data)
+export const deleteOrder = (id: number) => gqlDelete("orders", "Order", id)
+export const getOrderAmendments = (params?: Record<string, unknown>) => gqlList("crm", "OrderAmendmentHistory", params)
+export const getOrderAmendment = (id: number) => gqlGet("crm", "OrderAmendmentHistory", id)
+export const createOrderAmendment = (data: Record<string, unknown>) => gqlCreate("crm", "OrderAmendmentHistory", data)
+export const updateOrderAmendment = (id: number, data: Record<string, unknown>) => gqlUpdate("crm", "OrderAmendmentHistory", id, data)
+export const patchOrderAmendment = (id: number, data: Record<string, unknown>) => gqlUpdate("crm", "OrderAmendmentHistory", id, data)
+export const deleteOrderAmendment = (id: number) => gqlDelete("crm", "OrderAmendmentHistory", id)
+export const getSampleOrders = (params?: Record<string, unknown>) => gqlList("merchandising", "SampleOrder", params)
+export const getSampleOrder = (id: number) => gqlGet("merchandising", "SampleOrder", id)
+export const createSampleOrder = (data: Record<string, unknown>) => gqlCreate("merchandising", "SampleOrder", data)
+export const updateSampleOrder = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "SampleOrder", id, data)
+export const patchSampleOrder = (id: number, data: Record<string, unknown>) => gqlUpdate("merchandising", "SampleOrder", id, data)
+export const deleteSampleOrder = (id: number) => gqlDelete("merchandising", "SampleOrder", id)
+export const getShipments = (params?: Record<string, unknown>) => gqlList("commercial", "Shipment", params)
+export const getShipment = (id: number) => gqlGet("commercial", "Shipment", id)
+export const createShipment = (data: Record<string, unknown>) => gqlCreate("commercial", "Shipment", data)
+export const updateShipment = (id: number, data: Record<string, unknown>) => gqlUpdate("commercial", "Shipment", id, data)
+export const patchShipment = (id: number, data: Record<string, unknown>) => gqlUpdate("commercial", "Shipment", id, data)
+export const deleteShipment = (id: number) => gqlDelete("commercial", "Shipment", id)

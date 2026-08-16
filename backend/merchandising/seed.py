@@ -13,6 +13,7 @@ from merchandising.models import (
     Style, BuyerEnquiry, PurchaseOrder, SampleOrder, SMVRecord,
     DevelopmentMonitoring, BudgetDemandAssessment, IeSuggestion,
     SkillInventory, ProductionDowntime, ProcessWiseTarget,
+    Season, OrderItem, OrderStageLog,
 )
 
 print("Seeding merchandising data...")
@@ -27,12 +28,21 @@ for name, code, country in [
     buyers.append(b)
 
 styles = []
-for name, snum in [("Basic Tee", "STY-001"), ("Classic Polo", "STY-002"), ("Denim Jacket", "STY-003"), ("Chino Pants", "STY-004"), ("Hoodie", "STY-005"), ("Track Pants", "STY-006")]:
+for i, (name, snum) in enumerate([("Basic Tee", "STY-001"), ("Classic Polo", "STY-002"), ("Denim Jacket", "STY-003"), ("Chino Pants", "STY-004"), ("Hoodie", "STY-005"), ("Track Pants", "STY-006")]):
     s, _ = Style.objects.get_or_create(
         style_number=snum,
         defaults={"name": name, "buyer": buyers[0], "description": "Regular fit, medium weight", "category": "Knitwear"},
     )
     styles.append(s)
+
+# ── Seasons ──────────────────────────────────────────────────────────────────
+seasons = []
+for name, year in [("Spring", 2025), ("Summer", 2025), ("Autumn", 2025), ("Winter", 2025)]:
+    sn, _ = Season.objects.get_or_create(name=name, year=year)
+    seasons.append(sn)
+for i, s in enumerate(styles):
+    s.season = seasons[i % len(seasons)]
+    s.save(update_fields=["season"])
 
 lines = []
 for name, code, loc, cap in [
@@ -200,6 +210,32 @@ for i, (line_i, style_i, start, hours, cause, status, desc) in enumerate([
         defaults={"duration_hours": Decimal(hours), "cause": cause, "description": desc, "status": status},
     )
 
+# ── Order Items & Stage Logs ─────────────────────────────────────────────────
+from datetime import datetime
+from django.utils import timezone
+colors = ["White", "Black", "Navy", "Grey", "Red", "Blue"]
+sizes = ["S", "M", "L", "XL", "XXL"]
+STAGES = ["PO_RECEIVED", "FABRIC_SOURCING", "PRODUCTION", "SHIPPING"]
+STATUS_TO_STAGES = {
+    "draft": ["PO_RECEIVED"],
+    "confirmed": ["PO_RECEIVED", "FABRIC_SOURCING"],
+    "in_production": ["PO_RECEIVED", "FABRIC_SOURCING", "PRODUCTION"],
+    "shipped": STAGES,
+    "delivered": STAGES,
+    "cancelled": ["PO_RECEIVED"],
+}
+for i, po in enumerate(PurchaseOrder.objects.all()):
+    for j in range(3):
+        OrderItem.objects.get_or_create(
+            purchase_order=po, color=colors[(i + j) % len(colors)],
+            size=sizes[(i + j) % len(sizes)], qty=po.quantity // 3,
+        )
+    for idx, stage in enumerate(STATUS_TO_STAGES.get(po.status, ["PO_RECEIVED"])):
+        OrderStageLog.objects.get_or_create(
+            purchase_order=po, stage=stage,
+            defaults={"notes": f"Stage {stage} recorded for PO {po.po_number}"},
+        )
+
 # ── Process Wise Targets ─────────────────────────────────────────────────────
 for i, (process, target, achieved, target_date, status) in enumerate([
     ("Cutting", 5000, 5200, "2024-09-30", "exceeded"),
@@ -222,6 +258,7 @@ for model, label in [
     (DevelopmentMonitoring, "Development Monitoring"), (BudgetDemandAssessment, "Budget Demand Assessments"),
     (IeSuggestion, "IE Suggestions"), (SkillInventory, "Skill Inventories"),
     (ProductionDowntime, "Production Downtimes"), (ProcessWiseTarget, "Process Wise Targets"),
+    (Season, "Seasons"), (OrderItem, "Order Items"), (OrderStageLog, "Order Stage Logs"),
 ]:
     print(f"  {label}: {model.objects.count()}")
 print("Done!")
