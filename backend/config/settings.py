@@ -505,6 +505,7 @@ REST_AUTH = {
     'JWT_AUTH_COOKIE': 'jwt-auth',
     'JWT_AUTH_REFRESH_COOKIE': 'jwt-refresh-token',
     'TOKEN_MODEL': None,
+    'USER_DETAILS_SERIALIZER': 'authentication.serializers.UserDetailsSerializer',
 }
 
 SOCIALACCOUNT_PROVIDERS = {

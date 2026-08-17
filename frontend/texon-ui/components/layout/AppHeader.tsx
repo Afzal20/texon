@@ -1,12 +1,19 @@
 "use client"
 
+import Link from "next/link"
 import { Search, Bell, MessageSquare, Globe, Sparkles } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { useCurrentUser, userInitials } from "@/hooks/use-current-user"
 
 export function AppHeader() {
+  const { user } = useCurrentUser()
+  const initials = userInitials(user)
+  const displayName = user
+    ? `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() || user.email
+    : "User"
   return (
     <header className="sticky top-0 z-50 h-[64px] border-b border-border bg-white/70 backdrop-blur-md shadow-sm flex items-center justify-between px-4 shrink-0 gap-4 transition-all">
       {/* Left: trigger + title */}
@@ -68,10 +75,15 @@ export function AppHeader() {
         </Button>
 
         {/* Avatar */}
-        <Avatar className="h-8 w-8 border-2 border-border cursor-pointer hover:border-primary transition-colors">
-          <AvatarImage src="" alt="Rafiqul Islam" />
-          <AvatarFallback className="text-xs font-bold bg-primary text-primary-foreground">RI</AvatarFallback>
-        </Avatar>
+        <Link href="/settings" aria-label={displayName}>
+          <Avatar className="h-8 w-8 border-2 border-border cursor-pointer hover:border-primary transition-colors">
+            {user?.avatar ? (
+              <AvatarImage src={user.avatar} alt={displayName} />
+            ) : (
+              <AvatarFallback className="text-xs font-bold bg-primary text-primary-foreground">{initials}</AvatarFallback>
+            )}
+          </Avatar>
+        </Link>
       </div>
     </header>
   )

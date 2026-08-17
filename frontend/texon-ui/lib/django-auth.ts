@@ -13,7 +13,10 @@ export interface DjangoUser {
   first_name: string
   last_name: string
   phone: string
+  avatar: string
   is_verified: boolean
+  is_superuser: boolean
+  is_staff: boolean
   date_joined: string
 }
 
@@ -68,7 +71,7 @@ export async function loginWithDjango(
   email: string,
   password: string,
 ): Promise<DjangoTokenResponse> {
-  const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/login/`, {
+  const res = await fetch(`${DJANGO_API_URL}/api/users/api/token/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -109,6 +112,24 @@ export async function registerUser(
 
   const result: RegisterResponse = await res.json()
   storeTokens(result.access, result.refresh)
+
+  // dj_rest_auth returns a blank refresh token in the body when JWT cookies
+  // are enabled; fall back to the SimpleJWT login endpoint for real tokens.
+  if (!result.refresh) {
+    try {
+      const tokenRes = await fetch(`${DJANGO_API_URL}/api/users/api/token/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: payload.email, password: payload.password }),
+      })
+      if (tokenRes.ok) {
+        const tokens = await tokenRes.json()
+        storeTokens(tokens.access, tokens.refresh)
+      }
+    } catch {
+      // best-effort; the user object is still returned
+    }
+  }
 
   console.log("Registered user:", result.user)
   return result
@@ -179,7 +200,54 @@ export async function fetchMe(): Promise<DjangoUser> {
     first_name: String(data.first_name ?? ""),
     last_name: String(data.last_name ?? ""),
     phone: String(data.phone ?? ""),
+    avatar: String(data.avatar ?? ""),
     is_verified: Boolean(data.is_verified ?? false),
+    is_superuser: Boolean(data.is_superuser ?? false),
+    is_staff: Boolean(data.is_staff ?? false),
+    date_joined: String(data.date_joined ?? ""),
+  }
+}
+
+export interface UpdateProfilePayload {
+  first_name?: string
+  last_name?: string
+  phone?: string
+  avatar?: string
+}
+
+export async function updateUserProfile(payload: UpdateProfilePayload): Promise<DjangoUser> {
+  const token = await getValidAccessToken()
+  if (!token) throw new Error("Not authenticated")
+
+  const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/user/`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    const message =
+      typeof data === "object" && data !== null
+        ? Object.values(data).flat().join("; ")
+        : "Failed to update profile"
+    throw new Error(message)
+  }
+
+  const data: Record<string, unknown> = await res.json()
+  return {
+    id: Number(data.pk ?? data.id ?? 0),
+    email: String(data.email ?? ""),
+    first_name: String(data.first_name ?? ""),
+    last_name: String(data.last_name ?? ""),
+    phone: String(data.phone ?? ""),
+    avatar: String(data.avatar ?? ""),
+    is_verified: Boolean(data.is_verified ?? false),
+    is_superuser: Boolean(data.is_superuser ?? false),
+    is_staff: Boolean(data.is_staff ?? false),
     date_joined: String(data.date_joined ?? ""),
   }
 }

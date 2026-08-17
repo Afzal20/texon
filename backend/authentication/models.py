@@ -8,6 +8,7 @@ class User(AbstractUser):
     username = None
     email = models.EmailField(unique=True, max_length=255)
     phone = models.CharField(max_length=20, blank=True)
+    avatar = models.TextField(blank=True, default="")
     is_verified = models.BooleanField(default=False)
     employee = models.OneToOneField(
         "hr.Employee",

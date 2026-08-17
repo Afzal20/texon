@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
@@ -14,12 +15,12 @@ import {
   ShieldCheck,
   CalendarDays,
   Users,
-  Activity,
   FileCheck2,
   DollarSign,
   ChevronRight,
   ShoppingBag,
   LogOut,
+  UserRound,
   ChevronDown,
   Search,
 } from "lucide-react"
@@ -48,6 +49,8 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { useCurrentUser, userInitials } from "@/hooks/use-current-user"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { getGroupedCategories, type NavCategory } from "@/components/data/navigation"
 
@@ -208,6 +211,29 @@ function TreeGroup({ name, cats, treeState, setTreeState }: { name: string; cats
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
+  const router = useRouter()
+  const { user } = useCurrentUser()
+  const initials = userInitials(user)
+  const displayName = user
+    ? `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() || user.email
+    : "User"
+  const role = user
+    ? user.is_superuser
+      ? "System Administrator"
+      : user.is_staff
+        ? "Staff"
+        : "User"
+    : ""
+
+  const handleLogout = async () => {
+    const { logoutAction } = await import("@/auth/actions/logout")
+    await logoutAction()
+    localStorage.removeItem("django_access_token")
+    localStorage.removeItem("django_refresh_token")
+    router.push("/auth/login")
+    router.refresh()
+  }
+
   const grouped = getGroupedCategories()
   const [search, setSearch] = React.useState("")
   const [treeState, setTreeState] = React.useState<Record<string, boolean>>({})
@@ -343,12 +369,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-auto py-2"
                 >
                   <Avatar className="h-8 w-8 rounded-lg border">
-                    <AvatarImage src="" alt="User" />
-                    <AvatarFallback className="rounded-lg bg-primary text-primary-foreground font-bold">RI</AvatarFallback>
+                    {user?.avatar ? (
+                      <AvatarImage src={user.avatar} alt={displayName} />
+                    ) : (
+                      <AvatarFallback className="rounded-lg bg-primary text-primary-foreground font-bold">{initials}</AvatarFallback>
+                    )}
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">Rafiqul Islam</span>
-                    <span className="truncate text-xs text-muted-foreground">Factory Manager</span>
+                    <span className="truncate font-semibold">{displayName}</span>
+                    <span className="truncate text-xs text-muted-foreground">{role}</span>
                   </div>
                   <ChevronRight className="ml-auto size-4" />
                 </SidebarMenuButton>
@@ -362,28 +391,35 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg border">
-                      <AvatarImage src="" alt="Rafiqul Islam" />
-                      <AvatarFallback className="rounded-lg bg-primary text-primary-foreground font-bold">RI</AvatarFallback>
+                      {user?.avatar ? (
+                        <AvatarImage src={user.avatar} alt={displayName} />
+                      ) : (
+                        <AvatarFallback className="rounded-lg bg-primary text-primary-foreground font-bold">{initials}</AvatarFallback>
+                      )}
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">Rafiqul Islam</span>
-                      <span className="truncate text-xs text-muted-foreground">Factory Manager</span>
+                      <span className="truncate font-semibold">{displayName}</span>
+                      <span className="truncate text-xs text-muted-foreground">{role}</span>
                     </div>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem>
-                    <Activity className="mr-2 h-4 w-4" />
-                    <span>My Performance</span>
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings">
+                      <UserRound className="mr-2 h-4 w-4" />
+                      <span>My Profile</span>
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Account Settings</span>
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Account Settings</span>
+                    </Link>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>

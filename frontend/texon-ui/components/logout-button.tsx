@@ -4,7 +4,13 @@ import { logoutAction } from "@/auth/actions/logout";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
-export function LogoutButton({ children }: { children?: React.ReactNode }) {
+export function LogoutButton({
+  children,
+  className,
+}: {
+  children?: React.ReactNode;
+  className?: string;
+}) {
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -15,5 +21,9 @@ export function LogoutButton({ children }: { children?: React.ReactNode }) {
     router.refresh();
   };
 
-  return <Button onClick={handleLogout}>{children ?? "Logout"}</Button>;
+  return (
+    <Button onClick={handleLogout} className={className}>
+      {children ?? "Logout"}
+    </Button>
+  );
 }

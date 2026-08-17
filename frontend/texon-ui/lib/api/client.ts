@@ -25,9 +25,9 @@ apiClient.interceptors.request.use(
       const refresh = getStoredRefreshToken()
       if (refresh) {
         try {
-          const res = await axios.post(`${API_BASE_URL}/api/v1/auth/refresh/`, { refresh })
+          const res = await axios.post(`${API_BASE_URL}/api/users/api/token/refresh/`, { refresh })
           const newToken: string = res.data.access
-          storeTokens(newToken, refresh)
+          storeTokens(newToken, res.data.refresh ?? refresh)
           token = newToken
         } catch {
           clearTokens()
@@ -81,9 +81,9 @@ apiClient.interceptors.response.use(
       try {
         const refresh = getStoredRefreshToken()
         if (!refresh) throw new Error('No refresh token')
-        const res = await axios.post(`${API_BASE_URL}/api/v1/auth/refresh/`, { refresh })
+        const res = await axios.post(`${API_BASE_URL}/api/users/api/token/refresh/`, { refresh })
         const newToken: string = res.data.access
-        storeTokens(newToken, refresh)
+        storeTokens(newToken, res.data.refresh ?? refresh)
         processQueue(null, newToken)
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${newToken}`
