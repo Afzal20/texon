@@ -280,8 +280,8 @@ export function ReportingWorkspace({ module, rawItems }: { module: ModuleKey; ra
                     <tr>{config.columns.map((column) => <th key={column} className="px-5 py-3 font-medium">{column}</th>)}</tr>
                   </thead>
                   <tbody>
-                    {config.rows.map((row) => (
-                      <tr key={row[0]} className="border-t transition-colors hover:bg-muted/30">
+                    {config.rows.map((row, rowIndex) => (
+                      <tr key={rowIndex} className="border-t transition-colors hover:bg-muted/30">
                         {row.map((cell, index) => (
                           <td key={`${row[0]}-${index}`} className={`px-5 py-4 ${index === 0 ? "font-medium" : "text-muted-foreground"}`}>
                             {index === config.statusIndex ? <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${noticeClass(cell as "amber" | "rose" | "emerald")}`}>{cell}</span> : cell}

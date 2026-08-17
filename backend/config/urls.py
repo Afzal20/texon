@@ -23,7 +23,10 @@ urlpatterns = [
     path("operations/", operations_site.urls),
     path("i18n/", include(i18n)),
     path("api/v1/auth/", include("authentication.urls")),
-    path("api/v1/accounts/", include("accounts.urls")),
+
+    # Generic REST layer (docs/backend/01-rest-api-design.md) — replaces the
+    # previous per-app accounts router; all models register here.
+    path("api/v1/", include("core.urls")),
 
     # GraphQL gateway (frontend_graphql_guide.md)
     path(

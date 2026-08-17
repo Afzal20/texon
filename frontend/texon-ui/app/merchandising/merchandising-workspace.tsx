@@ -674,9 +674,9 @@ export function MerchandisingWorkspace({ module, metrics, rows, isLoading, error
                     <tr>{config.columns.map((column) => <th key={column} className="px-5 py-3 font-medium">{column}</th>)}</tr>
                   </thead>
                   <tbody>
-                    {paginatedRows.length > 0 ? paginatedRows.map((row) => (
+                    {paginatedRows.length > 0 ? paginatedRows.map((row, rowIndex) => (
                       <tr
-                        key={row[0]}
+                        key={rowIndex}
                         className={`border-t transition-colors ${rowLink ? "cursor-pointer hover:bg-muted/50" : "hover:bg-muted/30"}`}
                         onClick={() => { if (rowLink) router.push(rowLink(row)) }}
                       >
