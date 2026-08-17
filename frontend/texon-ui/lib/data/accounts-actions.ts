@@ -1,7 +1,7 @@
 "use server"
 
 import { getApiToken } from "@/auth/lib/api-client"
-import { gqlList } from "@/lib/api/graphql"
+import { restList } from "@/lib/api/rest"
 import type { AccountsPayable, AccountsReceivable, JournalEntry, AccountsSummary } from "./accounts"
 
 async function getToken(): Promise<string> {
@@ -12,26 +12,26 @@ async function getToken(): Promise<string> {
 
 export async function getAccountsPayable(): Promise<AccountsPayable[]> {
   const token = await getToken()
-  return (await gqlList("accounts", "AccountsPayable", undefined, token)).data as unknown as AccountsPayable[]
+  return (await restList("accounts", "AccountsPayable", undefined, token)).data as unknown as AccountsPayable[]
 }
 
 export async function getAccountsReceivable(): Promise<AccountsReceivable[]> {
   const token = await getToken()
-  return (await gqlList("accounts", "AccountsReceivable", undefined, token)).data as unknown as AccountsReceivable[]
+  return (await restList("accounts", "AccountsReceivable", undefined, token)).data as unknown as AccountsReceivable[]
 }
 
 export async function getJournalEntries(): Promise<JournalEntry[]> {
   const token = await getToken()
-  return (await gqlList("accounts", "JournalEntry", undefined, token)).data as unknown as JournalEntry[]
+  return (await restList("accounts", "JournalEntry", undefined, token)).data as unknown as JournalEntry[]
 }
 
 export async function getAccountsSummary(): Promise<AccountsSummary> {
   const token = await getToken()
   const [{ data: payable }, { data: receivable }, { data: journal }, { data: expense }] = await Promise.all([
-    gqlList("accounts", "AccountsPayable", undefined, token),
-    gqlList("accounts", "AccountsReceivable", undefined, token),
-    gqlList("accounts", "JournalEntry", undefined, token),
-    gqlList("accounts", "Expense", undefined, token),
+    restList("accounts", "AccountsPayable", undefined, token),
+    restList("accounts", "AccountsReceivable", undefined, token),
+    restList("accounts", "JournalEntry", undefined, token),
+    restList("accounts", "Expense", undefined, token),
   ])
   const payables = payable ?? []
   const receivables = receivable ?? []

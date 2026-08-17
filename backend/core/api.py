@@ -105,6 +105,24 @@ NAME_PREFERRED = (
     "invoice_number",
 )
 
+# Field types django-filter can build an AutoFilterSet for (JSONField etc. excluded).
+FILTERABLE_TYPES = (
+    models.CharField,
+    models.TextField,
+    models.IntegerField,
+    models.PositiveIntegerField,
+    models.PositiveSmallIntegerField,
+    models.BigIntegerField,
+    models.DecimalField,
+    models.FloatField,
+    models.BooleanField,
+    models.DateField,
+    models.DateTimeField,
+    models.TimeField,
+    models.UUIDField,
+    models.ForeignKey,
+)
+
 
 def _display_field(rel_model):
     """First human-readable char field of a related model, or None."""
@@ -170,10 +188,11 @@ def build_serializer(model):
 
 def build_viewset(model, read_only=False):
     fk_names = [f.name for f in model._meta.concrete_fields if isinstance(f, models.ForeignKey)]
-    scalar_fields = [f.name for f in model._meta.concrete_fields]
+    filterable = [f for f in model._meta.concrete_fields if isinstance(f, FILTERABLE_TYPES)]
+    filterable_names = [f.name for f in filterable]
 
     search_fields = [
-        f.name for f in model._meta.concrete_fields if isinstance(f, (models.CharField, models.TextField))
+        f.name for f in filterable if isinstance(f, (models.CharField, models.TextField))
     ]
     for f in model._meta.concrete_fields:
         if isinstance(f, models.ForeignKey):
@@ -185,9 +204,9 @@ def build_viewset(model, read_only=False):
         "queryset": model.objects.select_related(*fk_names).all(),
         "serializer_class": build_serializer(model),
         "permission_classes": [DjangoModelPermissions],
-        "filterset_fields": scalar_fields,
+        "filterset_fields": filterable_names,
         "search_fields": search_fields,
-        "ordering_fields": scalar_fields,
+        "ordering_fields": filterable_names,
     }
 
     if read_only:

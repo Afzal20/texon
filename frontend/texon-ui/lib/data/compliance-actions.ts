@@ -1,7 +1,7 @@
 "use server"
 
 import { getApiToken } from "@/auth/lib/api-client"
-import { gqlList } from "@/lib/api/graphql"
+import { restList } from "@/lib/api/rest"
 import type { ComplianceRecord, ComplianceDocument, ComplianceSummary } from "./compliance"
 
 async function getToken(): Promise<string> {
@@ -12,12 +12,12 @@ async function getToken(): Promise<string> {
 
 export async function getComplianceRecords(): Promise<ComplianceRecord[]> {
   const token = await getToken()
-  return (await gqlList("compliance", "ComplianceRecord", undefined, token)).data as unknown as ComplianceRecord[]
+  return (await restList("compliance", "ComplianceRecord", undefined, token)).data as unknown as ComplianceRecord[]
 }
 
 export async function getComplianceSummary(): Promise<ComplianceSummary> {
   const token = await getToken()
-  const { data: records } = await gqlList("compliance", "ComplianceRecord", undefined, token)
+  const { data: records } = await restList("compliance", "ComplianceRecord", undefined, token)
   const scores = records.map((row) => Number(row.score) || 0)
   const overall =
     scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0

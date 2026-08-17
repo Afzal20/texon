@@ -1,7 +1,7 @@
 "use server"
 
 import { getApiToken } from "@/auth/lib/api-client"
-import { gqlList } from "@/lib/api/graphql"
+import { restList } from "@/lib/api/rest"
 import type { ProductionLine, ProductionOrder, SewingRecord, PerformanceRecord, ProductionDashboard } from "./production"
 
 async function getToken(): Promise<string> {
@@ -12,32 +12,32 @@ async function getToken(): Promise<string> {
 
 export async function getProductionLines(): Promise<ProductionLine[]> {
   const token = await getToken()
-  return (await gqlList("production", "ProductionLine", undefined, token)).data as unknown as ProductionLine[]
+  return (await restList("production", "ProductionLine", undefined, token)).data as unknown as ProductionLine[]
 }
 
 export async function getProductionOrders(search?: string): Promise<ProductionOrder[]> {
   const token = await getToken()
-  const rows = (await gqlList("production", "ProductionOrder", undefined, token)).data as unknown as ProductionOrder[]
+  const rows = (await restList("production", "ProductionOrder", undefined, token)).data as unknown as ProductionOrder[]
   return search ? rows.filter((row) => String(row.order_number).includes(search)) : rows
 }
 
 export async function getSewingRecords(_lineId?: number): Promise<SewingRecord[]> {
   void _lineId
   const token = await getToken()
-  return (await gqlList("production", "SewingRecord", undefined, token)).data as unknown as SewingRecord[]
+  return (await restList("production", "SewingRecord", undefined, token)).data as unknown as SewingRecord[]
 }
 
 export async function getPerformanceRecords(): Promise<PerformanceRecord[]> {
   const token = await getToken()
-  return (await gqlList("performance", "PerformanceRecord", undefined, token)).data as unknown as PerformanceRecord[]
+  return (await restList("performance", "PerformanceRecord", undefined, token)).data as unknown as PerformanceRecord[]
 }
 
 export async function getDashboardSummary(): Promise<ProductionDashboard> {
   const token = await getToken()
   const [{ data: orders }, { data: sewing }, { data: lines }] = await Promise.all([
-    gqlList("production", "ProductionOrder", undefined, token),
-    gqlList("production", "SewingRecord", undefined, token),
-    gqlList("production", "ProductionLine", undefined, token),
+    restList("production", "ProductionOrder", undefined, token),
+    restList("production", "SewingRecord", undefined, token),
+    restList("production", "ProductionLine", undefined, token),
   ])
   const totalOrders = orders.length
   const outputActual = sewing.reduce((sum, row) => sum + (Number(row.output_quantity) || 0), 0)

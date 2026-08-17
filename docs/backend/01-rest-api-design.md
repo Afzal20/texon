@@ -102,16 +102,16 @@ Status: **Approved — to implement** | Updated: 2026-08-17
 - **One generic factory** (`backend/core/api.py`) introspects models at import: builds a `ModelSerializer` (all scalar fields + FK name mirrors + choice display labels) and a `ModelViewSet` (queryset with `select_related`, `DjangoModelPermissions`, allowlisted `filterset_fields`/`search_fields`/`ordering_fields`). Mirrors the GraphQL registry pattern — one implementation for 103 models, zero per-model files.
 - **One router** (`backend/core/urls.py`) registers every model from installed apps; `config/urls.py` mounts it at `api/v1/` (accounts app include removed, auth unchanged).
 - **Slug uniqueness verified** — zero collisions across all 25 apps.
-- **Frontend:** regenerate `lib/api/*.ts` (481 exports) via a new `gen_rest.py` — identical export names/signatures/return shapes, now backed by `client.ts` (axios + JWT auto-refresh). **Zero page changes.**
-- **GraphQL gateway stays** (previous decision); REST becomes the primary transport.
+- **Frontend:** regenerate `lib/api/*.ts` (481 exports) via `scripts/gen_rest.py` — identical export names/signatures/return shapes, now backed by `lib/api/rest.ts` (axios + JWT auto-refresh, server-token support). **Zero page changes.** The script also rewrites `lib/data/*-actions.ts` ("use server" actions) from `gql*` to `rest*`.
+- **GraphQL gateway stays** (previous decision); REST becomes the primary transport. Direct `gqlList` calls remain only where REST intentionally has no endpoint — `authentication.User`, `authentication.OTP`, `authentication.SocialAuthCallbackUrl`, `rbac.RolePermission`, `rbac.UserRole` (admin/security/settings pages).
 
 ## 6. Implementation steps
 
 1. `backend/core/api.py` — serializer/viewset factory + model registry with skip-list and read-only set
 2. `backend/core/urls.py` — router registration; update `config/urls.py`
 3. Restart backend; curl smoke matrix (auth → list/detail/filter/search/ordering/pagination/403/401), verify Swagger schema
-4. `gen_rest.py` regenerates `lib/api/*.ts`; keep `lib/api/graphql.ts` for server-side use
-5. Verify: `npx tsc --noEmit`, `npx eslint`, `npm run build`, browser spot-check (dashboard/orders/admin/crm)
+4. `scripts/gen_rest.py` regenerates `lib/api/*.ts` + `lib/data/*-actions.ts`; keep `lib/api/graphql.ts` for admin/settings pages (models excluded from REST)
+5. Verify: `npx tsc --noEmit`, `npx eslint`, `npm run build`, browser spot-check (dashboard/orders/admin/crm); server-action RPC smoke (action ids from `server-reference-manifest.json`, POST `Next-Action`)
 
 ## 7. Existing infrastructure (verified)
 
