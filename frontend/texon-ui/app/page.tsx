@@ -12,6 +12,18 @@ import { getDashboardOrdersSummary } from "@/lib/data/order-actions"
 import type { ProductionDashboard } from "@/lib/data/production"
 import { toast } from "sonner"
 
+import { cn } from "@/lib/utils"
+
+function getStatValueFontSize(val: string | number | undefined | null) {
+  if (val === undefined || val === null) return "text-2xl xl:text-3xl font-extrabold"
+  const str = String(val)
+  if (str.length > 20) return "text-xs sm:text-sm font-bold tracking-tight"
+  if (str.length > 16) return "text-sm sm:text-base font-bold tracking-tight"
+  if (str.length > 12) return "text-base sm:text-lg xl:text-xl font-bold tracking-tight"
+  if (str.length > 8) return "text-lg sm:text-xl xl:text-2xl font-extrabold tracking-tight"
+  return "text-2xl sm:text-3xl xl:text-4xl font-extrabold tracking-tight"
+}
+
 export default function Dashboard() {
   const [summary, setSummary] = React.useState<ProductionDashboard | null>(null)
   const [ordersSummary, setOrdersSummary] = React.useState<{
@@ -39,6 +51,11 @@ export default function Dashboard() {
   }, [])
 
   React.useEffect(() => { fetchData() }, [fetchData])
+
+  const displayTotal = ordersSummary?.total_ytd ?? summary?.total_orders?.toLocaleString() ?? "—"
+  const outputPctStr = summary ? `${Math.round(summary.output_percentage)}%` : "—"
+  const delayRiskStr = summary ? `${summary.delay_risk_percentage}%` : "—"
+  const activeLinesStr = summary?.active_lines ?? "—"
 
   return (
     <AppLayout>
@@ -74,47 +91,51 @@ export default function Dashboard() {
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 
-          <Card className="relative bg-transparent border-border/50 shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-visible">
-            <div className="absolute inset-0 rounded-xl bg-white -z-10" />
-            <div className="hover:-translate-y-0.5 transition-transform duration-300">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <Card className="relative bg-white border border-border/60 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden rounded-xl">
+            <div className="hover:-translate-y-0.5 transition-transform duration-300 p-5 pb-6">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
                 <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                  Total Orders
+                  Total Orders / YTD
                 </CardTitle>
-                <div className="p-2 bg-gradient-to-br from-muted/50 to-muted/20 rounded-md">
-                  <ReceiptText className="h-4 w-4 text-muted-foreground/60" />
+                <div className="p-1.5 bg-muted/40 rounded-md shrink-0 ml-2">
+                  <ReceiptText className="h-4 w-4 text-muted-foreground/70" />
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="text-4xl font-bold text-foreground">
-                  {ordersSummary?.total_ytd ?? summary?.total_orders?.toLocaleString() ?? "—"}
+              <CardContent className="p-0 pt-1 min-w-0">
+                <div
+                  className={cn(
+                    getStatValueFontSize(displayTotal),
+                    "text-foreground leading-tight tracking-tight break-words font-extrabold"
+                  )}
+                >
+                  {displayTotal}
                 </div>
                 {summary?.order_trend && (
                   <p className="text-xs text-primary font-semibold flex items-center mt-2">
-                    <ArrowUpRight className="h-3 w-3 mr-1" />
+                    <ArrowUpRight className="h-3 w-3 mr-1 shrink-0" />
                     {summary.order_trend}
                   </p>
                 )}
               </CardContent>
             </div>
-            <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary/20 rounded-b-xl overflow-hidden">
-              <div className="h-full bg-primary" style={{ width: summary ? `${Math.min(summary.output_percentage, 100)}%` : "65%" }} />
+            <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary/20 overflow-hidden">
+              <div className="h-full bg-primary transition-all duration-500" style={{ width: summary ? `${Math.min(summary.output_percentage, 100)}%` : "65%" }} />
             </div>
           </Card>
 
-          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <Card className="bg-white border border-border/60 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 overflow-hidden rounded-xl p-5 pb-6">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
               <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
                 Output: Target vs Actual
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-baseline gap-2">
-                <div className="text-4xl font-bold text-foreground">
-                  {summary ? `${Math.round(summary.output_percentage)}%` : "—"}
+            <CardContent className="p-0 pt-1 min-w-0">
+              <div className="flex items-baseline gap-2 flex-wrap min-w-0">
+                <div className={cn(getStatValueFontSize(outputPctStr), "text-foreground leading-tight tracking-tight break-words font-extrabold")}>
+                  {outputPctStr}
                 </div>
                 {summary && (
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-muted-foreground shrink-0 font-medium">
                     {summary.output_actual?.toLocaleString()} / <span className="text-muted-foreground/60">{summary.output_target?.toLocaleString()} pcs</span>
                   </div>
                 )}
@@ -128,48 +149,49 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-red-200/60 bg-gradient-to-br from-red-50 to-white shadow-sm hover:shadow-lg hover:shadow-red-100 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden">
-            <div className="absolute top-[--card-spacing] right-[--card-spacing] w-12 h-12 bg-red-100 rounded-full opacity-60" />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 relative z-10">
-              <CardTitle className="text-[11px] font-bold text-red-600 uppercase tracking-wider">
+          <Card className="border border-rose-200/80 bg-gradient-to-br from-rose-50/60 via-white to-white shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden rounded-xl p-5 pb-6 relative">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2 relative z-10">
+              <CardTitle className="text-[11px] font-bold text-rose-600 uppercase tracking-wider">
                 Delay Risk
               </CardTitle>
             </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-4xl font-bold text-red-600">
-                {summary ? `${summary.delay_risk_percentage}%` : "—"}
+            <CardContent className="p-0 pt-1 min-w-0 relative z-10">
+              <div className={cn(getStatValueFontSize(delayRiskStr), "text-rose-600 leading-tight tracking-tight break-words font-extrabold")}>
+                {delayRiskStr}
               </div>
               {summary?.delay_risk_note && (
-                <p className="text-xs text-red-600 font-semibold flex items-center mt-2">
-                  <AlertTriangle className="h-3 w-3 mr-1" />
+                <p className="text-xs text-rose-600 font-semibold flex items-center mt-2">
+                  <AlertTriangle className="h-3 w-3 mr-1 shrink-0" />
                   {summary.delay_risk_note}
                 </p>
               )}
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <Card className="bg-white border border-border/60 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 overflow-hidden rounded-xl p-5 pb-6">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 pb-2">
               <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
                 Active Lines
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-baseline gap-2">
-                <div className="text-4xl font-bold text-foreground">{summary?.active_lines ?? "—"}</div>
+            <CardContent className="p-0 pt-1 min-w-0">
+              <div className="flex items-baseline gap-2 min-w-0">
+                <div className={cn(getStatValueFontSize(activeLinesStr), "text-foreground leading-tight tracking-tight break-words font-extrabold")}>
+                  {activeLinesStr}
+                </div>
                 {summary && (
-                  <div className="text-sm text-muted-foreground font-medium">/ {summary.total_lines}</div>
+                  <div className="text-sm text-muted-foreground font-medium shrink-0">/ {summary.total_lines}</div>
                 )}
               </div>
-              <div className="flex h-2 w-full mt-4 gap-0.5 rounded-full overflow-hidden">
+              <div className="flex h-2 w-full mt-3 gap-0.5 rounded-full overflow-hidden">
                 <div className="bg-primary h-full" style={{ width: summary ? `${summary.lines_running}%` : "30%" }} />
-                <div className="bg-primary/70 h-full" style={{ width: summary ? `${summary.lines_error}%` : "28%" }} />
-                <div className="bg-destructive h-full" style={{ width: summary ? `${summary.lines_idle}%` : "11%" }} />
+                <div className="bg-amber-500 h-full" style={{ width: summary ? `${summary.lines_error}%` : "28%" }} />
+                <div className="bg-slate-300 h-full" style={{ width: summary ? `${summary.lines_idle}%` : "11%" }} />
               </div>
-              <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
-                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-primary inline-block" />Running</span>
-                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-destructive inline-block" />Error</span>
-                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-border inline-block" />Idle</span>
+              <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground flex-wrap">
+                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-primary inline-block shrink-0" />Running</span>
+                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-amber-500 inline-block shrink-0" />Error</span>
+                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-slate-300 inline-block shrink-0" />Idle</span>
               </div>
             </CardContent>
           </Card>

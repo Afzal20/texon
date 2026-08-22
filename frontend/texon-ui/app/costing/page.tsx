@@ -68,29 +68,29 @@ export default function Costing() {
 
         {/* KPI Cards */}
         <div className="grid gap-4 md:grid-cols-3">
-          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <CardContent className="pt-6">
+          <Card className="bg-white border border-border/60 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden rounded-xl">
+            <CardContent className="p-5 min-w-0">
               <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Target Margin %</div>
-              <div className="text-4xl font-bold text-foreground">18.5%</div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-foreground break-words">18.5%</div>
               <p className="text-xs text-primary font-semibold flex items-center gap-1 mt-2">
-                <TrendingUp className="h-3 w-3" /> +0.5%
+                <TrendingUp className="h-3 w-3 shrink-0" /> +0.5%
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <CardContent className="pt-6">
+          <Card className="bg-white border border-border/60 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden rounded-xl">
+            <CardContent className="p-5 min-w-0">
               <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Total Cost / Unit (FOB)</div>
-              <div className="text-4xl font-bold text-foreground">$8.42 <span className="text-sm font-normal text-muted-foreground">USD</span></div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-foreground break-words">$8.42 <span className="text-sm font-normal text-muted-foreground">USD</span></div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-indigo-50 to-white border-indigo-100/50 shadow-sm hover:shadow-lg hover:shadow-indigo-100 hover:-translate-y-0.5 transition-all duration-300">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="h-4 w-4 text-primary" />
+          <Card className="bg-gradient-to-br from-indigo-50/70 to-white border border-indigo-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden rounded-xl">
+            <CardContent className="p-5 min-w-0">
+              <div className="flex items-center gap-2 mb-2 flex-wrap min-w-0">
+                <Sparkles className="h-4 w-4 text-primary shrink-0" />
                 <div className="text-xs font-bold text-primary uppercase tracking-wider">AI Predict: Cost Accuracy</div>
-                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 px-1.5 py-0.5 rounded">High Confidence</span>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 px-1.5 py-0.5 rounded shrink-0">High Confidence</span>
               </div>
               <div className="text-sm font-semibold text-foreground mb-1">Potential Savings Identified</div>
               <p className="text-xs text-muted-foreground leading-relaxed">

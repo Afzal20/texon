@@ -420,16 +420,16 @@ export function FinanceWorkspace({ module, metrics, rows, rawItems }: { module: 
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[720px] text-sm">
+                <table className="w-full min-w-full text-xs sm:text-[13px]">
                   <thead className="bg-muted/40 text-left text-xs text-muted-foreground">
-                    <tr>{config.columns.map((column) => <th key={column} className="px-5 py-3 font-medium">{column}</th>)}</tr>
+                    <tr>{config.columns.map((column) => <th key={column} className="px-3 py-2.5 font-semibold whitespace-nowrap">{column}</th>)}</tr>
                   </thead>
                   <tbody>
                     {resolvedRows.map((row, rowIdx) => (
                       <tr key={rowIdx} className="border-t transition-colors hover:bg-muted/30">
                         {row.map((cell, index) => (
-                          <td key={`${row[0]}-${index}`} className={`px-5 py-4 ${index === 0 ? "font-medium" : "text-muted-foreground"}`}>
-                            {index === config.statusIndex ? <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${statusClass(cell)}`}>{cell}</span> : cell}
+                          <td key={`${row[0]}-${index}`} className={`px-3 py-2.5 whitespace-nowrap ${index === 0 ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
+                            {index === config.statusIndex ? <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium whitespace-nowrap ${statusClass(cell)}`}>{cell}</span> : cell}
                           </td>
                         ))}
                       </tr>

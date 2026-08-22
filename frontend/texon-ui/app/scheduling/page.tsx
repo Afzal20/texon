@@ -71,40 +71,42 @@ export default function Scheduling() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
-          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <Card className="bg-white border border-border/60 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden rounded-xl">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-5 pb-2">
               <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Workers</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground/40" />
+              <Users className="h-4 w-4 text-muted-foreground/40 shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-bold text-foreground">{totalWorkers.toLocaleString()}</div>
+            <CardContent className="p-5 pt-0 min-w-0">
+              <div className="text-2xl sm:text-3xl font-extrabold text-foreground break-words">{totalWorkers.toLocaleString()}</div>
               <p className="text-xs text-primary font-semibold flex items-center gap-1 mt-2">
                 ↑ {summary?.present_today ?? 0} present today
               </p>
             </CardContent>
           </Card>
-          <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+
+          <Card className="bg-white border border-border/60 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden rounded-xl">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-5 pb-2">
               <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Night Shift Load</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-baseline gap-2">
-                <div className="text-4xl font-bold text-foreground">{nightShiftPct}%</div>
-                <div className="text-xs text-muted-foreground">Target: &lt; 40%</div>
+            <CardContent className="p-5 pt-0 min-w-0">
+              <div className="flex items-baseline gap-2 flex-wrap min-w-0">
+                <div className="text-2xl sm:text-3xl font-extrabold text-foreground break-words">{nightShiftPct}%</div>
+                <div className="text-xs text-muted-foreground shrink-0 font-medium">Target: &lt; 40%</div>
               </div>
               <div className="h-1.5 w-full bg-muted rounded-full mt-3 overflow-hidden">
                 <div className="h-full bg-primary rounded-full" style={{ width: `${nightShiftPct}%` }} />
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white border-red-100 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+
+          <Card className="bg-white border border-rose-200/80 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden rounded-xl">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-5 pb-2">
               <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Unassigned Staff</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-red-400" />
+              <AlertTriangle className="h-4 w-4 text-rose-500 shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-bold text-red-600">{unassigned}</div>
-              <p className="text-xs text-red-600 font-semibold mt-2">Needs action</p>
+            <CardContent className="p-5 pt-0 min-w-0">
+              <div className="text-2xl sm:text-3xl font-extrabold text-rose-600 break-words">{unassigned}</div>
+              <p className="text-xs text-rose-600 font-semibold mt-2">Needs action</p>
             </CardContent>
           </Card>
         </div>

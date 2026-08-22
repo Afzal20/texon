@@ -1,7 +1,7 @@
 import {
   Shirt, Ruler, FileText, Truck, Factory, Package, Eye,
   Users, DollarSign, Contact, Clock, Lock, BarChart, Globe,
-  Layers, Building2, ShoppingBag
+  Layers, Building2, ShoppingBag, BrainCircuit, FileCheck2
 } from "lucide-react"
 
 export interface NavPage {
@@ -261,6 +261,20 @@ export const categories: NavCategory[] = [
       "Task splitting at any level",
       "Task dependency specification",
     ], "tna"),
+  },
+  {
+    title: "AI Insights",
+    categorySlug: "ai-insights",
+    group: "Platform & Reporting",
+    icon: BrainCircuit,
+    pages: [{ title: "AI Analytics & Intelligence", slug: "ai-analytics", url: "/ai-insights" }],
+  },
+  {
+    title: "Module Map",
+    categorySlug: "modules",
+    group: "Platform & Reporting",
+    icon: FileCheck2,
+    pages: [{ title: "System Module Map", slug: "module-map", url: "/modules" }],
   },
   {
     title: "Control Panel / Admin",

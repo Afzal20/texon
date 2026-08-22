@@ -54,13 +54,6 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { getGroupedCategories, type NavCategory } from "@/components/data/navigation"
 
-const quickLinks = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Module Map", url: "/modules", icon: FileCheck2 },
-  { title: "AI Insights", url: "/ai-insights", icon: BrainCircuit },
-  { title: "Settings", url: "/settings", icon: Settings },
-]
-
 const STORAGE_KEY = "sidebar-tree-state"
 
 function loadTreeState(): Record<string, boolean> {
@@ -294,36 +287,35 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </div>
       </div>
 
-      {/* Quick Links */}
-      <div className="px-3 pb-2 shrink-0">
-        <div className="flex flex-wrap gap-1">
-          {quickLinks.map((item) => {
-            const active = pathname === item.url
-            return (
-              <a
-                key={item.url}
-                href={item.url}
-                className={cn(
-                  "flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition-colors",
-                  active
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                <item.icon className="size-3" />
-                {item.title}
-              </a>
-            )
-          })}
-        </div>
-      </div>
-
       {/* Navigation Tree */}
-      <SidebarContent className="px-2 py-1 overflow-y-auto flex-1">
+      <SidebarContent className="px-2 py-2 overflow-y-auto flex-1">
+        {/* Dashboard Link directly above Factory Operations */}
+        {(!search.trim() || "dashboard".includes(search.toLowerCase())) && (
+          <div className="mb-2">
+            <Link
+              href="/"
+              className={cn(
+                "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm font-medium transition-all duration-150",
+                pathname === "/"
+                  ? "text-primary bg-primary/10 shadow-xs"
+                  : "text-foreground/75 hover:bg-muted/50 hover:text-foreground"
+              )}
+            >
+              <LayoutDashboard
+                className={cn(
+                  "size-4 shrink-0 transition-colors duration-150",
+                  pathname === "/" ? "text-primary" : "text-muted-foreground"
+                )}
+              />
+              <span className="flex-1 text-left truncate">Dashboard</span>
+            </Link>
+          </div>
+        )}
+
         {Object.entries(filteredGrouped).map(([group, cats]) => (
           <TreeGroup key={group} name={group} cats={cats} treeState={treeState} setTreeState={setTreeState} />
         ))}
-        {Object.keys(filteredGrouped).length === 0 && (
+        {Object.keys(filteredGrouped).length === 0 && !("dashboard".includes(search.toLowerCase())) && (
           <div className="px-3 py-8 text-center text-sm text-muted-foreground">
             No pages found
           </div>
@@ -331,16 +323,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       {/* Footer */}
-      <SidebarFooter className="p-4 border-t border-border space-y-2 shrink-0 relative z-10">
-        <Button
-          onClick={() => toast.info("Quick report feature coming soon")}
-          className="w-full justify-start font-semibold text-sm gap-2 bg-foreground text-background hover:bg-foreground/90"
-        >
-          <Plus className="size-4" />
-          Quick Report
-        </Button>
-
-        <SidebarMenu className="gap-0.5 mt-1">
+      <SidebarFooter className="p-3 border-t border-border space-y-1.5 shrink-0 relative z-10">
+        <SidebarMenu className="gap-0.5">
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
