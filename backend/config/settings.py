@@ -152,13 +152,34 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+#
+# Uses Supabase Postgres when SUPABASE_DB_HOST is set (see .env);
+# otherwise falls back to local SQLite for development.
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if config("SUPABASE_DB_HOST", default=""):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('SUPABASE_DB_NAME', default='postgres'),
+            'USER': config('SUPABASE_DB_USER', default='postgres'),
+            'PASSWORD': config('SUPABASE_DB_PASSWORD', default=''),
+            'HOST': config('SUPABASE_DB_HOST'),
+            'PORT': config('SUPABASE_DB_PORT', default='5432', cast=int),
+            'CONN_MAX_AGE': 60,
+            'OPTIONS': {
+                # Supabase uses a connection pooler on port 6543 that requires
+                # disabling prepared statements; harmless on direct connections.
+                'sslmode': config('SUPABASE_DB_SSLMODE', default='require'),
+            },
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
