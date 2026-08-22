@@ -7,6 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { ArrowLeft, ArrowUpRight, CalendarDays, Download, FileText, Filter, Plus, Search, TrendingDown, TrendingUp, Truck } from "lucide-react"
 import { toast } from "sonner"
+import { tallyBy } from "@/lib/api/module-data"
+
+const PENDING_STATUSES = new Set([
+  "pending", "draft", "submitted", "under_review", "expected",
+  "booked", "requested", "in_progress", "resubmitted",
+])
+
+type Metric = { label: string; value: string; note: string; trend: "up" | "down" | "neutral" }
 
 type ModuleKey = "subcontract-tracking"
 
@@ -15,16 +23,12 @@ type WorkspaceConfig = {
   eyebrow: string
   description: string
   action: string
-  metrics: { label: string; value: string; note: string; trend: "up" | "down" | "neutral" }[]
   tableTitle: string
   tableDescription: string
   columns: string[]
-  rows: string[][]
   statusIndex?: number
   sideTitle: string
   sideDescription: string
-  progress: { label: string; value: string; percent: number; tone: string }[]
-  notices: { title: string; detail: string; tone: "amber" | "rose" | "emerald" }[]
 }
 
 const configs: Record<ModuleKey, WorkspaceConfig> = {
@@ -33,37 +37,20 @@ const configs: Record<ModuleKey, WorkspaceConfig> = {
     eyebrow: "Subcontract management",
     description: "Track and manage subcontractor orders, production status, and delivery timelines.",
     action: "New subcontract",
-    metrics: [
-      { label: "Active subcontracts", value: "12", note: "With vendors", trend: "neutral" },
-      { label: "In production", value: "8", note: "67% utilization", trend: "up" },
-      { label: "Completed this month", value: "6", note: "On-time: 5", trend: "up" },
-      { label: "Pending delivery", value: "4", note: "Awaiting receipt", trend: "neutral" },
-    ],
     tableTitle: "Subcontract register",
     tableDescription: "Active subcontractor orders and status.",
     columns: ["SC #", "Vendor", "Order", "Process", "Qty", "Status"],
-    rows: [
-      ["SC-2418", "FashionStitch", "PO-84920", "Embroidery", "4,200 pcs", "In production"],
-      ["SC-2415", "QualityStitch", "PO-85107", "Washing", "3,600 pcs", "In production"],
-      ["SC-2412", "ProWash Ltd", "PO-85241", "Dyeing", "2,400 pcs", "Pending receipt"],
-      ["SC-2408", "QuickFinish", "PO-85322", "Finishing", "1,800 pcs", "Completed"],
-    ],
     statusIndex: 5,
     sideTitle: "Vendor performance",
     sideDescription: "Subcontractor delivery performance.",
-    progress: [
-      { label: "On-time delivery", value: "10 vendors", percent: 83, tone: "bg-emerald-500" },
-      { label: "Delayed", value: "2 vendors", percent: 17, tone: "bg-amber-500" },
-    ],
-    notices: [{ title: "SC-2412 delivery delayed", detail: "ProWash Ltd — 2-day delay on dyeing. Escalate with vendor.", tone: "amber" }],
   },
 }
 
-function noticeClass(tone: WorkspaceConfig["notices"][number]["tone"]) {
+function noticeClass(tone: string) {
   return tone === "rose" ? "border-rose-200 bg-rose-50" : tone === "emerald" ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"
 }
 
-export function SubcontractWorkspace({ module }: { module: ModuleKey }) {
+export function SubcontractWorkspace({ module, metrics, rows, rawItems }: { module: ModuleKey; metrics?: Metric[]; rows?: string[][]; rawItems?: Record<string, unknown>[] }) {
   const config = configs[module]
 
   return (
@@ -87,7 +74,7 @@ export function SubcontractWorkspace({ module }: { module: ModuleKey }) {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {config.metrics.map((metric) => (
+          {(metrics ?? []).map((metric) => (
             <Card key={metric.label} className="gap-3 border-border/70 py-4 shadow-none">
               <CardContent className="p-0">
                 <p className="text-xs font-medium text-muted-foreground">{metric.label}</p>
@@ -123,7 +110,10 @@ export function SubcontractWorkspace({ module }: { module: ModuleKey }) {
                     <tr>{config.columns.map((column) => <th key={column} className="px-3 py-2.5 font-semibold whitespace-nowrap">{column}</th>)}</tr>
                   </thead>
                   <tbody>
-                    {config.rows.map((row, rowIndex) => (
+                    {rows !== undefined && rows.length === 0 && (
+                      <tr><td colSpan={config.columns.length} className="px-3 py-8 text-center text-xs text-muted-foreground">No records yet.</td></tr>
+                    )}
+                    {(rows ?? []).map((row, rowIndex) => (
                       <tr key={rowIndex} className="border-t transition-colors hover:bg-muted/30">
                         {row.map((cell, index) => (
                           <td key={`${row[0]}-${index}`} className={`px-3 py-2.5 whitespace-nowrap ${index === 0 ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
@@ -136,7 +126,7 @@ export function SubcontractWorkspace({ module }: { module: ModuleKey }) {
                 </table>
               </div>
               <div className="flex items-center justify-between border-t px-5 py-3 text-xs text-muted-foreground">
-                <span>Showing 4 of 24 records</span>
+                <span>{(rows ?? []).length} record(s)</span>
                 <button className="flex items-center gap-1 font-medium text-primary hover:underline" onClick={() => toast.info("Opening full register")}>View all <ArrowUpRight className="size-3" /></button>
               </div>
             </CardContent>
@@ -149,12 +139,19 @@ export function SubcontractWorkspace({ module }: { module: ModuleKey }) {
                 <CardDescription>{config.sideDescription}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 p-0">
-                {config.progress.map((item) => (
-                  <div key={item.label}>
-                    <div className="mb-1.5 flex items-center justify-between text-xs"><span className="text-muted-foreground">{item.label}</span><span className="font-medium text-foreground">{item.value}</span></div>
-                    <div className="h-2 overflow-hidden rounded-full bg-muted"><div className={`h-full rounded-full ${item.tone}`} style={{ width: `${item.percent}%` }} /></div>
-                  </div>
-                ))}
+                {(() => {
+                  const items = rawItems ?? []
+                  const field = items.some((i) => "status_display" in i) ? "status_display" : "status"
+                  const dist = tallyBy(items, field).slice(0, 3)
+                  const total = items.length || 1
+                  if (dist.length === 0) return <p className="text-xs text-muted-foreground">No data yet.</p>
+                  return dist.map((item) => (
+                    <div key={item.value}>
+                      <div className="mb-1.5 flex items-center justify-between text-xs"><span className="capitalize text-muted-foreground">{item.value.replace(/_/g, " ")}</span><span className="font-medium text-foreground">{item.count} · {Math.round((item.count / total) * 100)}%</span></div>
+                      <div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${(item.count / total) * 100}%` }} /></div>
+                    </div>
+                  ))
+                })()}
               </CardContent>
             </Card>
             <Card className="gap-4">
@@ -162,7 +159,16 @@ export function SubcontractWorkspace({ module }: { module: ModuleKey }) {
                 <CardTitle className="flex items-center gap-2 text-base"><CalendarDays className="size-4 text-primary" /> Subcontract attention</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 p-0">
-                {config.notices.map((notice) => <div key={notice.title} className={`rounded-lg border p-3 ${noticeClass(notice.tone)}`}><p className="text-sm font-medium">{notice.title}</p><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{notice.detail}</p></div>)}
+                {(() => {
+                  const items = rawItems ?? []
+                  const out: { title: string; detail: string; tone: "amber" | "rose" | "emerald" }[] = []
+                  const rejectedCount = items.filter((i) => String(i.status ?? "") === "rejected").length
+                  const pendingCount = items.filter((i) => PENDING_STATUSES.has(String(i.status ?? ""))).length
+                  if (rejectedCount > 0) out.push({ title: `${rejectedCount} record(s) rejected`, detail: `Follow up on rejected entries in ${config.tableTitle.toLowerCase()}.`, tone: "rose" })
+                  if (pendingCount > 0) out.push({ title: `${pendingCount} record(s) pending`, detail: `Review open items in ${config.tableTitle.toLowerCase()}.`, tone: "amber" })
+                  if (out.length === 0) out.push({ title: "Nothing needs attention", detail: `No open items found in ${config.tableTitle.toLowerCase()}.`, tone: "emerald" })
+                  return out.map((notice) => <div key={notice.title} className={`rounded-lg border p-3 ${noticeClass(notice.tone)}`}><p className="text-sm font-medium">{notice.title}</p><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{notice.detail}</p></div>)
+                })()}
                 <button className="flex items-center gap-1 text-xs font-medium text-primary hover:underline" onClick={() => toast.info("Opening subcontract task center")}>Open task center <ArrowUpRight className="size-3" /></button>
               </CardContent>
             </Card>

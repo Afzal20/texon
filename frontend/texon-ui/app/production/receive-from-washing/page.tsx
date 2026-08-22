@@ -21,8 +21,8 @@ export default function ReceiveFromWashingPage() {
           metrics: [
             { label: "Received today", value: `${totalReceived || 2400} pcs`, note: "Live from API", trend: "up" as const },
             { label: "Total batches", value: String(items.length), note: "Washing receipts", trend: "neutral" as const },
-            { label: "QC pass rate", value: "98.4%", note: "Post-wash quality", trend: "up" as const },
-            { label: "Rejections", value: "0.6%", note: "Defect rate", trend: "up" as const },
+            { label: "QC passed", value: String(items.filter((i: any) => String(i.qc_status ?? i.status ?? "").toLowerCase().includes("pass")).length), note: "Post-wash quality", trend: "up" as const },
+            { label: "QC failed", value: String(items.filter((i: any) => String(i.qc_status ?? i.status ?? "").toLowerCase().includes("fail")).length), note: "Needs rework", trend: "down" as const },
           ],
           rows: items.slice(0, 4).map((i: any) => [
             String(i.receipt_no ?? i.id ?? "-"),

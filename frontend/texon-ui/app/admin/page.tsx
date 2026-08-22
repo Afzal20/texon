@@ -37,7 +37,7 @@ export default function ControlPanelAdminIndexPage() {
     Promise.all([
       restList("authentication", "User"),
       restList("rbac", "Role"),
-      restList("multi_company", "LocationBasedOperation"),
+      restList("core", "Location"),
       restList("buyers", "Buyer"),
     ])
       .then(([users, roles, locations, buyers]) => {

@@ -21,7 +21,7 @@ export default function CartonPackingPage() {
           metrics: [
             { label: "Cartons packed", value: String(totalPacked || items.length), note: "Live from API", trend: "up" as const },
             { label: "Records logged", value: String(items.length), note: "Total entries", trend: "neutral" as const },
-            { label: "Packing accuracy", value: "99.6%", note: "Match rate", trend: "up" as const },
+            { label: "Verified cartons", value: String(items.filter((i: any) => ["verified", "packed", "completed"].includes(String(i.status ?? "").toLowerCase())).length), note: "Match confirmed", trend: "up" as const },
             { label: "API Sync", value: "Active", note: "Connected", trend: "up" as const },
           ],
           rows: items.slice(0, 4).map((i: any) => [

@@ -23,7 +23,7 @@ export default function FinalQcPage() {
           { label: "Inspected today", value: `${totalInspected} pcs`, note: "From API", trend: "up" as const },
           { label: "Pass rate", value: `${totalInspected ? Math.round(totalPass / totalInspected * 100) : 0}%`, note: "First-time pass", trend: "up" as const },
           { label: "Rejections", value: `${totalFail} pcs`, note: `${totalInspected ? Math.round(totalFail / totalInspected * 100) : 0}% rejection`, trend: "down" as const },
-          { label: "Open CARs", value: "3", note: "Corrective actions", trend: "neutral" as const },
+          { label: "Failed checks", value: String(items.filter((i: any) => String(i.result ?? i.status ?? "").toLowerCase().includes("fail")).length), note: "From API", trend: "down" as const },
         ],
         rows: items.slice(0, 4).map((i: any) => [i.order_no ?? i.id ?? "-", String(i.inspected ?? i.sample_size ?? ""), String(i.pass ?? i.passed ?? ""), String(i.fail ?? i.defects ?? ""), i.result ?? "-", i.status ?? "-"]),
       })

@@ -111,11 +111,6 @@ const SLUGS: Record<string, Record<string, string>> = {
     SkillInventory: "skill-inventory",
     Style: "styles",
   },
-  multi_company: {
-    GroupCompany: "group-companies",
-    LocationBasedOperation: "location-based-operations",
-    MultiCompany: "multi-companies",
-  },
   orders: {
     Order: "orders",
   },

@@ -27,7 +27,7 @@ export default function RealizationFollowUpPage() {
             { label: "Realizations tracked", value: String(items.length), note: "This month", trend: "up" as const },
             { label: "Pending realization", value: String(pending), note: `$${(totalValue - paidValue).toLocaleString()} awaiting`, trend: "neutral" as const },
             { label: "Realized value", value: `$${(paidValue / 1000000).toFixed(1)}M`, note: items.length ? `${Math.round((paid.length / items.length) * 100)}% of invoiced` : "0%", trend: "up" as const },
-            { label: "Avg. days to realize", value: "28 days", note: "Below 35-day target", trend: "up" as const },
+            { label: "Overdue", value: String(items.filter((i: any) => String(i.status ?? "").toLowerCase() === "overdue").length), note: "Past due date", trend: "down" as const },
           ],
           rows: items.slice(0, 4).map((i: any) => [
             i.invoice_number ?? `-`,

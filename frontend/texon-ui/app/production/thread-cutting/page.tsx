@@ -21,8 +21,8 @@ export default function ThreadCuttingPage() {
           metrics: [
             { label: "Cut today", value: `${totalCut || 3600} pcs`, note: "Live from API", trend: "up" as const },
             { label: "Batches logged", value: String(items.length), note: "Total entries", trend: "neutral" as const },
-            { label: "Quality pass", value: "99.1%", note: "Post-cut QC", trend: "up" as const },
-            { label: "Efficiency", value: "92.4%", note: "Against target", trend: "up" as const },
+            { label: "Quality pass", value: items.length ? `${Math.round((items.filter((i: any) => !String(i.status ?? "").toLowerCase().includes("fail")).length / items.length) * 100)}%` : "—", note: "Post-cut QC", trend: "up" as const },
+            { label: "Batches pending", value: String(items.filter((i: any) => String(i.status ?? "").toLowerCase() === "pending").length), note: "Awaiting QC", trend: "neutral" as const },
           ],
           rows: items.slice(0, 4).map((i: any) => [
             String(i.line_name ?? i.line ?? "Line 1"),

@@ -1,6 +1,6 @@
 import {
   Shirt, Ruler, FileText, Truck, Factory, Package, Eye,
-  Users, DollarSign, Contact, Clock, Lock, BarChart, Globe,
+  Users, DollarSign, Contact, Clock, Lock, BarChart,
   Layers, Building2, ShoppingBag, BrainCircuit, FileCheck2
 } from "lucide-react"
 
@@ -304,18 +304,6 @@ export const categories: NavCategory[] = [
       "Style-wise profitability",
       "Production efficiency reports",
     ], "reporting"),
-  },
-  {
-    title: "Multi-Company / Multi-Location",
-    categorySlug: "multi-company",
-    group: "Platform & Reporting",
-    icon: Globe,
-    pages: makePages([
-      "Group-company & multi-company",
-      "Multi-currency support",
-      "Location-based operations",
-      "Inter-modules integrated system",
-    ], "multi-company"),
   },
   {
     title: "Subcontract Management",

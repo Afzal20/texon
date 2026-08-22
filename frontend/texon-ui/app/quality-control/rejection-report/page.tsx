@@ -20,7 +20,7 @@ export default function RejectionReportPage() {
       setData({
         metrics: [
           { label: "Rejections today", value: `${totalRejected} pcs`, note: "From API", trend: "down" as const },
-          { label: "Rejection rate", value: "3.2%", note: "Below 4% target", trend: "up" as const },
+          { label: "Open rejections", value: String(items.filter((i: any) => ["pending", "open"].includes(String(i.status ?? "").toLowerCase())).length), note: "Awaiting action", trend: "neutral" as const },
           { label: "Reworked", value: String(totalReworked), note: `${totalRejected ? Math.round(totalReworked / totalRejected * 100) : 0}% rework success`, trend: "up" as const },
           { label: "Scrapped", value: String(totalRejected - totalReworked), note: "Irrecoverable", trend: "neutral" as const },
         ],

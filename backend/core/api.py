@@ -35,7 +35,6 @@ PROJECT_APPS = [
     "hr",
     "fixed_assets",
     "tna",
-    "multi_company",
     "costing",
     "orders",
     "compliance",

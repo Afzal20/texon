@@ -21,7 +21,7 @@ export default function QuotationVsActualAnalysisPage() {
           { label: "Analyses completed", value: String(items.length), note: "From API", trend: "up" as const },
           { label: "Positive variances", value: String(favorable), note: "Actual below quote", trend: "up" as const },
           { label: "Negative variances", value: String(items.filter((i: any) => i.status === "unfavorable" || i.status === "Unfavorable").length), note: "Actual above quote", trend: "down" as const },
-          { label: "Avg. variance", value: "2.4%", note: "Favorable overall", trend: "up" as const },
+          { label: "Favorable variances", value: String(items.filter((i: any) => i.status === "favorable" || i.status === "Favorable").length), note: "Actual below quote", trend: "up" as const },
         ],
         rows: items.slice(0, 4).map((i: any) => [i.material ?? "-", i.supplier ?? "-", i.quoted_price ? `$${i.quoted_price}` : "-", i.actual_price ? `$${i.actual_price}` : "-", i.variance ?? "-", i.status ?? "-"]),
       })

@@ -28,7 +28,6 @@ APP_ORDER = [
     "rbac",
     "buyers",
     "hr",
-    "multi_company",
     "inventory",
     "procurement",
     "merchandising",

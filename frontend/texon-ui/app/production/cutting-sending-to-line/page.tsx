@@ -22,7 +22,7 @@ export default function CuttingSendingToLinePage() {
           { label: "Cut today", value: `${totalCut} pcs`, note: "From API", trend: "up" as const },
           { label: "Sent to line", value: `${totalSent} pcs`, note: `${totalCut ? Math.round(totalSent / totalCut * 100) : 0}% dispatch rate`, trend: "up" as const },
           { label: "Pending dispatch", value: `${totalCut - totalSent} pcs`, note: "Awaiting bundling", trend: "neutral" as const },
-          { label: "Cutting efficiency", value: "94%", note: "Fabric utilization", trend: "up" as const },
+          { label: "Sent to line", value: `${totalSent} pcs`, note: "Dispatched", trend: "up" as const },
         ],
         rows: items.slice(0, 4).map((i: any) => [i.order_no ?? i.id ?? "-", i.style ?? "-", String(i.cut_qty ?? i.quantity ?? ""), String(i.sent_qty ?? i.sent ?? ""), String((i.cut_qty ?? i.quantity ?? 0) - (i.sent_qty ?? i.sent ?? 0)), i.status ?? "-"]),
       })

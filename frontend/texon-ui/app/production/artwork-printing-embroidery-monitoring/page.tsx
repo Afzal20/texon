@@ -22,7 +22,7 @@ export default function ArtworkPrintingEmbroideryMonitoringPage() {
           { label: "Operations active", value: String(items.length), note: "From API", trend: "neutral" as const },
           { label: "Completed today", value: String(totalCompleted), note: `${totalQty ? Math.round(totalCompleted / totalQty * 100) : 0}% done`, trend: "up" as const },
           { label: "Pending", value: String(items.filter((i: any) => i.status === "pending" || i.status === "Pending").length), note: "Awaiting material", trend: "neutral" as const },
-          { label: "Rejection rate", value: "1.8%", note: "Below 3% target", trend: "up" as const },
+          { label: "In progress", value: String(items.filter((i: any) => String(i.status ?? "").toLowerCase() === "in_progress").length), note: "On floor now", trend: "neutral" as const },
         ],
         rows: items.slice(0, 4).map((i: any) => [i.order_no ?? i.id ?? "-", i.style ?? "-", i.type ?? i.operation_type ?? "-", String(i.quantity ?? i.qty ?? ""), String(i.completed ?? i.completed_qty ?? ""), i.status ?? "-"]),
       })

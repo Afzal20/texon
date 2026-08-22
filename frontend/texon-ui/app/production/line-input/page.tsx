@@ -21,7 +21,7 @@ export default function LineInputPage() {
           { label: "Inputs today", value: `${totalInput} pcs`, note: "Across all lines", trend: "up" as const },
           { label: "Lines fed", value: String(new Set(items.map((i: any) => i.line)).size), note: "From API", trend: "up" as const },
           { label: "Pending input", value: String(items.filter((i: any) => i.status === "pending" || i.status === "Pending").length), note: "Awaiting", trend: "neutral" as const },
-          { label: "Input efficiency", value: "96%", note: "From API", trend: "up" as const },
+          { label: "Completed input", value: String(items.filter((i: any) => ["done", "completed", "received"].includes(String(i.status ?? "").toLowerCase())).length), note: "From API", trend: "up" as const },
         ],
         rows: items.slice(0, 4).map((i: any) => [i.line ?? "-", i.order ?? i.order_no ?? "-", String(i.input_qty ?? i.quantity ?? ""), i.time ?? i.recorded_at ?? "-", i.operator ?? "-", i.status ?? "-"]),
       })

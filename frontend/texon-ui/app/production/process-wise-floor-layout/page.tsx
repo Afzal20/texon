@@ -20,7 +20,7 @@ export default function ProcessWiseFloorLayoutPage() {
         metrics: [
           { label: "Active layouts", value: String(items.length), note: "Configured lines", trend: "neutral" as const },
           { label: "Machines placed", value: String(machines), note: "Across all lines", trend: "neutral" as const },
-          { label: "Utilization", value: "85%", note: "Machine placement", trend: "up" as const },
+          { label: "Lines covered", value: String(new Set(items.map((i: any) => String(i.line ?? ""))).size), note: "With placements", trend: "neutral" as const },
           { label: "Lines optimized", value: String(items.filter((i: any) => i.status === "optimized" || i.status === "Optimized").length), note: "From API", trend: "up" as const },
         ],
         rows: items.slice(0, 4).map((i: any) => [i.name ?? i.line_name ?? "-", i.process ?? "-", String(i.machines ?? i.machine_count ?? ""), String(i.operators ?? ""), i.capacity_per_day ?? i.capacity ?? "-", i.status ?? "-"]),

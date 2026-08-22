@@ -23,7 +23,7 @@ export default function WorkerIdPage() {
           { label: "IDs issued", value: String(items.length), note: "Active workers", trend: "neutral" as const },
           { label: "Pending issue", value: String(items.length - active.length), note: "Awaiting photo/biometric", trend: "neutral" as const },
           { label: "Expired IDs", value: String(expired.length), note: "Need renewal", trend: "down" as const },
-          { label: "Replacement requests", value: "0", note: "This week", trend: "neutral" as const },
+          { label: "Active IDs", value: String(Math.max(0, items.length - expired.length)), note: "Valid credentials", trend: "up" as const },
         ],
         rows: items.slice(0, 4).map((i: any) => [i.worker_id ?? i.employee_id ?? i.id ?? "-", i.name ?? i.full_name ?? "-", i.department ?? i.department_name ?? "-", i.id_issued ?? i.join_date ?? "-", i.id_expiry ?? i.expiry_date ?? "-", i.status ?? i.employment_status ?? "Active"]),
       })

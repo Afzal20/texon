@@ -22,7 +22,6 @@ from hr.models import Attendance, Bonus, Department, Designation, Employee, Leav
 from ie_planning.models import CapacityBooking, LinePlan, ProductionPlan, RiskAssessment, StyleAnalysis
 from inventory.models import Accessory, Fabric, PhysicalInventory, ShadeApproval, StockMovement, Trim, Warehouse
 from merchandising.models import BuyerEnquiry, DevelopmentMonitoring, PurchaseOrder, SMVRecord, SampleOrder, Style
-from multi_company.models import GroupCompany, LocationBasedOperation, MultiCompany
 from orders.models import Order
 from performance.models import PerformanceRecord
 from planning.models import Plan
@@ -109,8 +108,6 @@ class Command(BaseCommand):
             self._seed_ie_planning()
         if not PreCosting.objects.exists():
             self._seed_costing()
-        if not GroupCompany.objects.exists():
-            self._seed_multi_company()
         if not Order.objects.exists():
             self._seed_orders()
         if not ComplianceRecord.objects.exists():
@@ -124,7 +121,6 @@ class Command(BaseCommand):
         if not Schedule.objects.exists():
             self._seed_scheduling()
         self._seed_otps()
-        self._seed_ai()
 
     # ── helpers ──────────────────────────────────────────────────────
     def _rand_date(self, start="-2y", end="+30d") -> date:
@@ -1341,31 +1337,6 @@ class Command(BaseCommand):
                 status=random.choice(["draft", "approved"]),
             )
 
-    # ── Multi-Company ────────────────────────────────────────────────
-    def _seed_multi_company(self):
-        from core.models import Currency
-        currency_ids = list(Currency.objects.values_list("id", flat=True))
-        companies = [
-            ("Texon Garments Ltd.", "TGL", "BD"),
-            ("Texon Exports Ltd.", "TEL", "BD"),
-            ("Texon International FZE", "TIF", "AE"),
-            ("Texon Europe GmbH", "TEG", "DE"),
-        ]
-        for i, (name, code, country) in enumerate(companies):
-            gc = GroupCompany.objects.create(
-                name=name, code=code,
-                registration_number=f"REG{2020 + i}{i:03d}",
-                country=country,
-            )
-            mc = MultiCompany.objects.create(
-                parent_company=gc, name=name, code=code, country=country,
-            )
-            LocationBasedOperation.objects.create(
-                multi_company=mc,
-                location_id=random.choice([1, 2, 3]),
-                operation_type=random.choice(["manufacturing", "sourcing", "trading", "logistics"]),
-            )
-
     # ── OTP ─────────────────────────────────────────────────────────
     def _seed_otps(self):
         from authentication.models import OTP, User
@@ -1387,40 +1358,6 @@ class Command(BaseCommand):
                     purpose=purpose,
                     is_used=used,
                     expires_at=timezone.now() + timedelta(minutes=10),
-                )
-
-    # ── AI ──────────────────────────────────────────────────────────
-    def _seed_ai(self):
-        from ai.models import ConversationLog, MessageLog
-        from authentication.models import User
-        if ConversationLog.objects.exists():
-            return
-        user_ids = list(User.objects.values_list("id", flat=True))
-        if not user_ids:
-            return
-        prompts = [
-            "What is the current production status?",
-            "Show me pending shipments",
-            "Summarize today's attendance",
-            "Which orders are delayed?",
-            "What is the open LC exposure?",
-        ]
-        for i in range(1, 11):
-            conv = ConversationLog.objects.create(
-                conversation_id=f"conv-{2025}-{i:04d}",
-                user_id=random.choice(user_ids),
-            )
-            for role, content in [
-                ("user", random.choice(prompts)),
-                ("assistant", fake.text(max_nb_chars=200)),
-                ("user", random.choice(prompts)),
-                ("assistant", fake.text(max_nb_chars=180)),
-            ]:
-                MessageLog.objects.create(
-                    conversation=conv,
-                    role=role,
-                    content=content,
-                    tool_name=random.choice(["", "query_shipments", "query_orders", "query_attendance"]),
                 )
 
 

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
-  ArrowLeft, Users, MapPin, Building2, Search,
+  ArrowLeft, Users, MapPin, Search,
   Plus, Edit, ChevronDown,
   ChevronRight, Shield
 } from "lucide-react"
@@ -18,7 +18,6 @@ interface UserRow {
   name: string
   role: string
   location: string
-  subCompany: string
   modules: string[]
   access: string
 }
@@ -32,8 +31,8 @@ const accessColors: Record<string, string> = {
 
 export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
   const [users, setUsers] = useState<UserRow[]>([])
-  const [locations, setLocations] = useState<{ name: string; code: string; users: string; status: string }[]>([])
-  const [subCompanies, setSubCompanies] = useState<{ name: string; code: string; locations: string; status: string }[]>([])
+  const [locations, setLocations] = useState<{ name: string; code: string; status: string }[]>([])
+  const [roles, setRoles] = useState<{ name: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedSection, setExpandedSection] = useState<string | null>("users")
   const [search, setSearch] = useState("")
@@ -41,10 +40,10 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
   useEffect(() => {
     Promise.all([
       restList("authentication", "User"),
-      restList("multi_company", "LocationBasedOperation"),
-      restList("multi_company", "MultiCompany"),
+      restList("core", "Location"),
+      restList("rbac", "Role"),
     ])
-      .then(([usersRes, locsRes, companiesRes]) => {
+      .then(([usersRes, locsRes, rolesRes]) => {
         const userRows: UserRow[] = (usersRes.data ?? []).map((u: RestRow) => {
           const firstName = String(u.first_name ?? "")
           const lastName = String(u.last_name ?? "")
@@ -53,8 +52,7 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
           return {
             name,
             role: isSuper ? "Super Admin" : u.is_staff ? "Staff" : "User",
-            location: "—",
-            subCompany: "—",
+            location: u.employee ? "Assigned" : "—",
             modules: [],
             access: isSuper ? "Full" : "Standard",
           }
@@ -62,20 +60,12 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
         setUsers(userRows)
         setLocations(
           (locsRes.data ?? []).map((loc: RestRow) => ({
-            name: String(loc.operation_type ?? "—"),
-            code: `#${String(loc.id ?? "")}`,
-            users: "—",
+            name: String(loc.name ?? "—"),
+            code: String(loc.code ?? ""),
             status: loc.is_active ? "Active" : "Inactive",
           })),
         )
-        setSubCompanies(
-          (companiesRes.data ?? []).map((c: RestRow) => ({
-            name: String(c.name ?? "—"),
-            code: String(c.code ?? ""),
-            locations: "—",
-            status: c.is_active ? "Active" : "Inactive",
-          })),
-        )
+        setRoles((rolesRes.data ?? []).map((r: RestRow) => ({ name: String(r.name ?? "—") })))
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -84,8 +74,7 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
   const filtered = users.filter(
     (u) =>
       u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.location.toLowerCase().includes(search.toLowerCase()) ||
-      u.subCompany.toLowerCase().includes(search.toLowerCase()),
+      u.role.toLowerCase().includes(search.toLowerCase()),
   )
 
   const toggleSection = (section: string) => {
@@ -102,7 +91,7 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
                 <ArrowLeft className="h-3 w-3" /> Control Panel / Admin
               </a>
               <h2 className="text-3xl font-bold tracking-tight">Micro-Level Permissions</h2>
-              <p className="text-muted-foreground mt-1 text-sm">Granular access control by user, location, and sub-company.</p>
+              <p className="text-muted-foreground mt-1 text-sm">Granular access control by user, role, and location.</p>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" className="gap-2" onClick={() => toast.info("Bulk assignment dialog coming soon")}>
@@ -135,18 +124,18 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-foreground">{loading ? "—" : locations.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">Operation locations</p>
+              <p className="text-xs text-muted-foreground mt-1">Factory & office locations</p>
             </CardContent>
           </Card>
 
           <Card className="bg-white border-border/50 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <CardHeader className="flex flex-row items-start justify-between space-y-0">
-              <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Sub-Companies</CardTitle>
-              <Building2 className="h-4 w-4 text-amber-500" />
+              <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Roles</CardTitle>
+              <Shield className="h-4 w-4 text-amber-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{loading ? "—" : subCompanies.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">Registered entities</p>
+              <div className="text-3xl font-bold text-foreground">{loading ? "—" : roles.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">Defined system roles</p>
             </CardContent>
           </Card>
         </div>
@@ -163,18 +152,17 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
                 </div>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="grid grid-cols-[1.5fr_1fr_1.2fr_1.2fr_1.5fr_0.8fr] text-xs font-bold text-muted-foreground uppercase tracking-wider px-6 py-3 border-b border-border bg-muted/20">
+                <div className="grid grid-cols-[1.5fr_1fr_1.2fr_1.5fr_0.8fr] text-xs font-bold text-muted-foreground uppercase tracking-wider px-6 py-3 border-b border-border bg-muted/20">
                   <div>User</div>
                   <div>Role</div>
                   <div>Location</div>
-                  <div>Sub-Company</div>
                   <div>Modules</div>
                   <div>Access</div>
                 </div>
                 {loading && <div className="px-6 py-8 text-xs text-muted-foreground text-center">Loading users…</div>}
                 {!loading && filtered.length === 0 && <div className="px-6 py-8 text-xs text-muted-foreground text-center">No users found.</div>}
                 {filtered.map((u, i) => (
-                  <div key={i} className="grid grid-cols-[1.5fr_1fr_1.2fr_1.2fr_1.5fr_0.8fr] items-center px-6 py-3 border-b border-border last:border-0 hover:bg-muted/10 transition-colors text-sm">
+                  <div key={i} className="grid grid-cols-[1.5fr_1fr_1.2fr_1.5fr_0.8fr] items-center px-6 py-3 border-b border-border last:border-0 hover:bg-muted/10 transition-colors text-sm">
                     <div className="flex items-center gap-2">
                       <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary shrink-0">
                         {u.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
@@ -183,7 +171,6 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
                     </div>
                     <div className="text-xs text-muted-foreground">{u.role}</div>
                     <div className="text-xs text-muted-foreground">{u.location}</div>
-                    <div className="text-xs text-muted-foreground">{u.subCompany}</div>
                     <div className="flex flex-wrap gap-1">
                       {u.modules.length === 0 && <span className="text-[10px] text-muted-foreground">—</span>}
                       {u.modules.map((m, j) => (
@@ -201,7 +188,7 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
             </Card>
           </div>
 
-          {/* Right: Locations & Sub-Companies */}
+          {/* Right: Locations & Roles */}
           <div className="space-y-4">
             {/* Locations */}
             <Card className="bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
@@ -222,7 +209,7 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
                     <div key={i} className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/10 transition-colors">
                       <div>
                         <div className="text-sm font-medium text-foreground">{loc.name}</div>
-                        <p className="text-xs text-muted-foreground">{loc.code} • {loc.users} users</p>
+                        <p className="text-xs text-muted-foreground">{loc.code}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded border", loc.status === "Active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200")}>{loc.status}</span>
@@ -236,35 +223,27 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
               )}
             </Card>
 
-            {/* Sub-Companies */}
+            {/* Roles */}
             <Card className="bg-white border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
               <div
                 className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/10 transition-colors border-b border-border"
-                onClick={() => toggleSection("subcompanies")}
+                onClick={() => toggleSection("roles")}
               >
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-amber-500" /> Sub-Companies ({subCompanies.length})
+                  <Shield className="h-4 w-4 text-amber-500" /> Roles ({roles.length})
                 </CardTitle>
-                {expandedSection === "subcompanies" ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                {expandedSection === "roles" ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
               </div>
-              {expandedSection === "subcompanies" && (
+              {expandedSection === "roles" && (
                 <CardContent className="space-y-2 pt-4">
                   {loading && <div className="py-4 text-xs text-muted-foreground text-center">Loading…</div>}
-                  {!loading && subCompanies.length === 0 && <div className="py-4 text-xs text-muted-foreground text-center">No sub-companies defined.</div>}
-                  {subCompanies.map((sc, i) => (
+                  {!loading && roles.length === 0 && <div className="py-4 text-xs text-muted-foreground text-center">No roles defined.</div>}
+                  {roles.map((r, i) => (
                     <div key={i} className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/10 transition-colors">
-                      <div>
-                        <div className="text-sm font-medium text-foreground">{sc.name}</div>
-                        <p className="text-xs text-muted-foreground">{sc.code} • {sc.locations} location(s)</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded border", sc.status === "Active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200")}>
-                          {sc.status}
-                        </span>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => toast.info(`Editing ${sc.name} permissions`)}>
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                      </div>
+                      <div className="text-sm font-medium text-foreground">{r.name}</div>
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => toast.info(`Editing ${r.name} permissions`)}>
+                        <Edit className="h-3 w-3" />
+                      </Button>
                     </div>
                   ))}
                 </CardContent>
@@ -279,9 +258,6 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
               <CardContent className="space-y-2 pt-4">
                 <Button variant="outline" size="sm" className="w-full justify-start gap-2 h-9 text-xs" onClick={() => toast.info("Location assignment dialog opening...")}>
                   <MapPin className="h-3.5 w-3.5" /> Assign User to Location
-                </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start gap-2 h-9 text-xs" onClick={() => toast.info("Sub-company transfer dialog opening...")}>
-                  <Building2 className="h-3.5 w-3.5" /> Transfer to Sub-Company
                 </Button>
                 <Button variant="outline" size="sm" className="w-full justify-start gap-2 h-9 text-xs" onClick={() => toast.info("Permission audit report generated")}>
                   <Shield className="h-3.5 w-3.5" /> Generate Audit Report

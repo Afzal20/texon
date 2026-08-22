@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Search, FileText, TrendingUp, TrendingDown, Clock, Download, Plus } from "lucide-react"
+import { ArrowLeft, Search, FileText, TrendingUp, Clock, Download, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { getFixedAssets } from "@/lib/api/fixed-assets"
@@ -23,15 +23,6 @@ type FixedAsset = {
   location?: string
   status?: string
 }
-
-const defaultAssets: FixedAsset[] = [
-  { id: 1, name: "Sewing Machine Juki 5550", asset_tag: "FA-001", category: "Machinery", purchase_date: "2023-01-15", purchase_cost: "4500", current_value: "3600", location: "Unit A", status: "In use" },
-  { id: 2, name: "Cutting Table C-12", asset_tag: "FA-002", category: "Equipment", purchase_date: "2023-03-20", purchase_cost: "2800", current_value: "2100", location: "Cutting Room", status: "In use" },
-  { id: 3, name: "Industrial Boiler", asset_tag: "FA-003", category: "Utility", purchase_date: "2022-11-01", purchase_cost: "12500", current_value: "8500", location: "Utility Room", status: "Maintenance" },
-  { id: 4, name: "Forklift Toyota", asset_tag: "FA-004", category: "Vehicle", purchase_date: "2023-06-10", purchase_cost: "22000", current_value: "18500", location: "Warehouse", status: "In use" },
-  { id: 5, name: "Air Compressor", asset_tag: "FA-005", category: "Utility", purchase_date: "2022-08-05", purchase_cost: "6800", current_value: "4200", location: "Unit B", status: "In use" },
-  { id: 6, name: "Generator 500kVA", asset_tag: "FA-006", category: "Utility", purchase_date: "2021-12-20", purchase_cost: "35000", current_value: "18000", location: "Power Room", status: "In use" },
-]
 
 const statusStyles: Record<string, string> = {
   "In use": "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -49,13 +40,11 @@ export default function FixedAssetManagementPage() {
     getFixedAssets().then((res) => {
       const items = Array.isArray(res.data?.results) ? res.data.results : Array.isArray(res.data) ? res.data : []
       setRawItems(items as Record<string, unknown>[])
-      if (items.length > 0) setAssets(items)
-      else setAssets(defaultAssets)
-    }).catch(() => setAssets(defaultAssets))
+      setAssets(items)
+    }).catch(() => {})
   }, [])
 
   const totalValue = assets.reduce((s, a) => s + Number(a.current_value ?? a.purchase_cost ?? 0), 0)
-  const totalCost = assets.reduce((s, a) => s + Number(a.purchase_cost ?? 0), 0)
   const inUse = assets.filter(a => a.status === "In use").length
   const maintenance = assets.filter(a => a.status === "Maintenance").length
 
@@ -149,6 +138,9 @@ export default function FixedAssetManagementPage() {
               <div>Current Value</div>
               <div>Status</div>
             </div>
+            {filtered.length === 0 && (
+              <div className="px-6 py-8 text-center text-xs text-muted-foreground">No fixed assets found.</div>
+            )}
             {filtered.map((a) => (
               <div key={a.id} className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr_1fr_1fr] items-center px-6 py-4 border-b border-border last:border-0 hover:bg-muted/10 transition-colors text-sm">
                 <div>

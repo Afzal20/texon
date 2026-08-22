@@ -299,19 +299,6 @@ export const texonModules = [
     ],
   },
   {
-    title: "Multi-Company / Multi-Location",
-    slug: "multi-company-multi-location",
-    group: "Platform & Reporting",
-    accent: "indigo",
-    icon: "shield",
-    items: [
-      "Group-company & multi-company",
-      "Multi-currency support",
-      "Location-based operations",
-      "Inter-modules integrated system",
-    ],
-  },
-  {
     title: "Subcontract Management",
     slug: "subcontract-management",
     group: "Factory Operations",

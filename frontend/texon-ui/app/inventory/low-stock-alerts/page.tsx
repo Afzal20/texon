@@ -21,7 +21,7 @@ export default function LowStockAlertsPage() {
           { label: "Active alerts", value: String(items.length), note: "Below reorder point", trend: "down" as const },
           { label: "Critical alerts", value: String(critical), note: "Below safety stock", trend: "down" as const },
           { label: "Resolved", value: String(items.filter((i: any) => i.status === "resolved" || i.status === "Resolved").length), note: "Restocked", trend: "up" as const },
-          { label: "Alert response", value: "2.4 hrs", note: "Alert to action", trend: "up" as const },
+          { label: "Pending alerts", value: String(items.filter((i: any) => String(i.status ?? "").toLowerCase() === "pending").length), note: "Awaiting restock", trend: "down" as const },
         ],
         rows: items.slice(0, 4).map((i: any) => [i.alert_no ?? i.id ?? "-", i.name ?? i.item_name ?? "-", i.category ?? "-", String(i.in_stock ?? i.quantity ?? ""), String(i.reorder_point ?? ""), i.severity ?? i.status ?? "-"]),
       })

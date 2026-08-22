@@ -21,7 +21,7 @@ export default function QualityAssurancePage() {
           { label: "Defect categories", value: String(items.length), note: "Tracked", trend: "neutral" as const },
           { label: "Total defects", value: String(totalDefects), note: "From API", trend: "down" as const },
           { label: "Major defects", value: String(items.filter((i: any) => i.severity === "major" || i.severity === "Major").reduce((s: number, i: any) => s + Number(i.count ?? i.defect_count ?? 0), 0)), note: "Needs attention", trend: "down" as const },
-          { label: "Defect rate", value: "2.4%", note: "Below 3% target", trend: "up" as const },
+          { label: "Minor defects", value: String(items.filter((i: any) => ["minor", "Minor"].includes(String(i.severity ?? ""))).reduce((s: number, i: any) => s + Number(i.count ?? i.defect_count ?? 1), 0)), note: "Low severity", trend: "neutral" as const },
         ],
         rows: items.slice(0, 4).map((i: any) => [i.category ?? i.name ?? "-", i.line ?? "-", String(i.count ?? i.defect_count ?? ""), i.severity ?? "-", i.order ?? "-", i.trend ?? "-"]),
       })

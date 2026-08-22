@@ -22,7 +22,7 @@ export default function LeavePage() {
           { label: "On leave today", value: String(onLeaveToday.length || onLeave.length), note: "Approved leaves", trend: "neutral" as const },
           { label: "Pending requests", value: String(pending.length), note: "Awaiting approval", trend: "neutral" as const },
           { label: "Leave balance", value: "-", note: "Avg. remaining", trend: "neutral" as const },
-          { label: "Absent without leave", value: "0", note: "Unauthorized", trend: "down" as const },
+          { label: "Pending approvals", value: String(items.filter((i: any) => String(i.status ?? "").toLowerCase() === "pending").length), note: "Awaiting manager", trend: "neutral" as const },
         ],
         rows: items.slice(0, 4).map((i: any) => [i.leave_id ?? i.id ?? "-", i.employee ?? i.employee_name ?? "-", i.type ?? i.leave_type ?? "-", String(i.days ?? i.duration ?? 0), i.period ?? `${i.start_date ?? "-"} – ${i.end_date ?? "-"}`, i.status ?? "Pending"]),
       })

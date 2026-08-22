@@ -22,7 +22,7 @@ export default function DefectCategoryTrackingPage() {
           { label: "Total defects today", value: String(totalDefects), note: "From API", trend: "down" as const },
           { label: "Major defects", value: String(majorDefects), note: `${totalDefects ? Math.round(majorDefects / totalDefects * 100) : 0}% of total`, trend: "down" as const },
           { label: "Minor defects", value: String(totalDefects - majorDefects), note: "Remaining", trend: "neutral" as const },
-          { label: "Defect rate", value: "2.4%", note: "Below 3% target", trend: "up" as const },
+          { label: "Categories tracked", value: String(new Set(items.map((i: any) => String(i.category ?? i.defect_category ?? ""))).size), note: "Distinct types", trend: "neutral" as const },
         ],
         rows: items.slice(0, 4).map((i: any) => [i.category ?? i.name ?? "-", i.line ?? "-", String(i.count ?? i.defect_count ?? ""), i.severity ?? "-", i.order ?? "-", i.trend ?? "-"]),
       })

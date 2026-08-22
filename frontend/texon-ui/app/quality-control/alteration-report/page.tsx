@@ -21,8 +21,8 @@ export default function AlterationReportPage() {
           metrics: [
             { label: "Alterations today", value: `${totalAltered || 48} pcs`, note: "Live from API", trend: "down" as const },
             { label: "Reports logged", value: String(items.length), note: "Total records", trend: "neutral" as const },
-            { label: "Rework resolved", value: "91.7%", note: "Pass after alteration", trend: "up" as const },
-            { label: "Avg repair time", value: "18 min", note: "Per garment", trend: "down" as const },
+            { label: "Rework resolved", value: items.length ? `${Math.round((items.filter((i: any) => ["resolved", "passed", "ok"].includes(String(i.status ?? "").toLowerCase())).length / items.length) * 100)}%` : "—", note: "Pass after alteration", trend: "up" as const },
+            { label: "Pending repair", value: String(items.filter((i: any) => String(i.status ?? "").toLowerCase() === "pending").length), note: "In queue", trend: "neutral" as const },
           ],
           rows: items.slice(0, 4).map((i: any) => [
             String(i.order_no ?? i.order ?? "-"),

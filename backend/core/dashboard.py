@@ -41,7 +41,6 @@ APP_ICONS = {
     "hr": "badge",
     "fixed_assets": "warehouse",
     "tna": "schedule",
-    "multi_company": "corporate_fare",
     "costing": "calculate",
     "orders": "receipt_long",
     "compliance": "gavel",

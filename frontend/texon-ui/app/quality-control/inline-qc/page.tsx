@@ -21,7 +21,7 @@ export default function InlineQCPage() {
           { label: "Inspections today", value: String(items.length), note: "From API", trend: "up" as const },
           { label: "Pass rate", value: items.length ? `${Math.round(passed / items.length * 100)}%` : "0%", note: "Above 95% target", trend: "up" as const },
           { label: "Defects found", value: String(items.reduce((s: number, i: any) => s + Number(i.defects ?? i.defect_count ?? 0), 0)), note: "From API", trend: "down" as const },
-          { label: "Open CARs", value: "3", note: "Corrective actions", trend: "neutral" as const },
+          { label: "Pending review", value: String(items.filter((i: any) => String(i.status ?? "").toLowerCase() === "pending").length), note: "Awaiting action", trend: "neutral" as const },
         ],
         rows: items.slice(0, 4).map((i: any) => [i.inspection_no ?? i.id ?? "-", i.line ?? "-", i.checkpoint ?? i.stage ?? "-", String(i.sample ?? i.sample_size ?? ""), String(i.defects ?? i.defect_count ?? ""), i.status ?? "-"]),
       })

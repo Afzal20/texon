@@ -19,8 +19,8 @@ export default function ShiftSchedulePage() {
         metrics: [
           { label: "Active shifts", value: String(shifts.size), note: `${[...shifts].join(", ")}`, trend: "neutral" as const },
           { label: "Workers scheduled", value: String(active.length), note: "Today", trend: "neutral" as const },
-          { label: "Shift changes", value: "0", note: "This week", trend: "neutral" as const },
-          { label: "Overtime workers", value: "0", note: "Extended shift", trend: "up" as const },
+          { label: "Shift types in use", value: String(new Set(active.map((a: any) => String(a.shift ?? ""))).size), note: "This week", trend: "neutral" as const },
+          { label: "Night shift workers", value: String(active.filter((a: any) => String(a.shift ?? "").toLowerCase().includes("night")).length), note: "Extended coverage", trend: "up" as const },
         ],
         rows: items.slice(0, 4).map((i: any) => [i.shift ?? i.shift_type ?? "-", i.time ?? i.shift_time ?? "-", i.line ?? i.line_number ?? "-", String(i.workers ?? i.worker_count ?? 0), i.supervisor ?? "-", i.status ?? "Active"]),
       })

@@ -7,7 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { ArrowLeft, ArrowUpRight, CalendarDays, Download, FileText, Filter, Plus, Search, TrendingDown, TrendingUp, Package } from "lucide-react"
 import { toast } from "sonner"
+import { tallyBy } from "@/lib/api/module-data"
 import { RawItemsViewer } from "@/components/data/RawDataViewer"
+
+const PENDING_STATUSES = new Set([
+  "pending", "draft", "submitted", "under_review", "expected",
+  "booked", "requested", "in_progress", "resubmitted",
+])
+
+type Metric = { label: string; value: string; note: string; trend: "up" | "down" | "neutral" }
 
 type ModuleKey =
   | "raw-materials-booking"
@@ -23,16 +31,12 @@ type WorkspaceConfig = {
   eyebrow: string
   description: string
   action: string
-  metrics: { label: string; value: string; note: string; trend: "up" | "down" | "neutral" }[]
   tableTitle: string
   tableDescription: string
   columns: string[]
-  rows: string[][]
   statusIndex?: number
   sideTitle: string
   sideDescription: string
-  progress: { label: string; value: string; percent: number; tone: string }[]
-  notices: { title: string; detail: string; tone: "amber" | "rose" | "emerald" }[]
 }
 
 const configs: Record<ModuleKey, WorkspaceConfig> = {
@@ -41,214 +45,88 @@ const configs: Record<ModuleKey, WorkspaceConfig> = {
     eyebrow: "Material booking",
     description: "Book and track raw material reservations against purchase orders and production plans.",
     action: "New booking",
-    metrics: [
-      { label: "Active bookings", value: "24", note: "Across 12 suppliers", trend: "neutral" },
-      { label: "Booked value", value: "$1.8M", note: "Pending delivery", trend: "up" },
-      { label: "Bookings confirmed", value: "18", note: "75% confirmation rate", trend: "up" },
-      { label: "Pending confirmation", value: "6", note: "Awaiting supplier", trend: "down" },
-    ],
     tableTitle: "Booking register",
     tableDescription: "Raw material bookings with supplier and delivery status.",
     columns: ["Booking #", "Material", "Supplier", "Qty", "Delivery", "Status"],
-    rows: [
-      ["BK-2418", "100% Cotton Poplin", "Envoy Textiles", "24,800 m", "20 Oct 2024", "Confirmed"],
-      ["BK-2415", "Polyester Blend", "DBL Group", "18,200 m", "25 Oct 2024", "Confirmed"],
-      ["BK-2412", "Elastane 40S", "Noman Group", "6,400 m", "22 Oct 2024", "Pending"],
-      ["BK-2408", "Denim 7oz", "Epic Group", "12,600 m", "28 Oct 2024", "Pending"],
-    ],
     statusIndex: 5,
     sideTitle: "Booking pipeline",
     sideDescription: "Current booking confirmation status.",
-    progress: [
-      { label: "Confirmed", value: "18 bookings", percent: 75, tone: "bg-emerald-500" },
-      { label: "Pending", value: "4 bookings", percent: 17, tone: "bg-amber-500" },
-      { label: "On hold", value: "2 bookings", percent: 8, tone: "bg-rose-500" },
-    ],
-    notices: [{ title: "6 bookings pending confirmation", detail: "Follow up with Noman Group for elastane confirmation.", tone: "amber" }],
   },
   "knitting-dyeing-program": {
     title: "Knitting & Dyeing Program",
     eyebrow: "KD program",
     description: "Plan and track knitting and dyeing programs for fabric production.",
     action: "New program",
-    metrics: [
-      { label: "Active programs", value: "18", note: "Across 6 units", trend: "neutral" },
-      { label: "On schedule", value: "14", note: "78% adherence", trend: "up" },
-      { label: "Behind schedule", value: "3", note: "Need catch-up", trend: "down" },
-      { label: "Completion rate", value: "82%", note: "Monthly target", trend: "up" },
-    ],
     tableTitle: "KD program tracker",
     tableDescription: "Knitting and dyeing programs with schedule tracking.",
     columns: ["Program #", "Fabric", "Type", "Start date", "End date", "Status"],
-    rows: [
-      ["KD-2418", "Cotton Poplin", "Knitting", "14 Oct 2024", "18 Oct 2024", "Running"],
-      ["KD-2415", "Poly Blend", "Dyeing", "12 Oct 2024", "16 Oct 2024", "Running"],
-      ["KD-2412", "Denim 7oz", "Knitting", "15 Oct 2024", "20 Oct 2024", "Scheduled"],
-      ["KD-2408", "Rib Fabric", "Dyeing", "10 Oct 2024", "14 Oct 2024", "Complete"],
-    ],
     statusIndex: 5,
     sideTitle: "Program status",
     sideDescription: "Current KD pipeline.",
-    progress: [
-      { label: "Complete", value: "8 programs", percent: 44, tone: "bg-emerald-500" },
-      { label: "Running", value: "7 programs", percent: 39, tone: "bg-primary" },
-      { label: "Scheduled", value: "3 programs", percent: 17, tone: "bg-amber-500" },
-    ],
-    notices: [{ title: "3 programs behind schedule", detail: "KD-2412 denim knitting delayed by 2 days.", tone: "amber" }],
   },
   "raw-materials-requisition": {
     title: "Raw Materials Requisition",
     eyebrow: "RM requisition",
     description: "Request and approve raw materials from inventory for production orders.",
     action: "New requisition",
-    metrics: [
-      { label: "Requisitions raised", value: "42", note: "This month", trend: "up" },
-      { label: "Approved", value: "36", note: "86% approval rate", trend: "up" },
-      { label: "Pending approval", value: "4", note: "Awaiting manager", trend: "neutral" },
-      { label: "Rejected", value: "2", note: "Insufficient stock", trend: "down" },
-    ],
     tableTitle: "Requisition register",
     tableDescription: "Raw material requisitions with approval workflow.",
     columns: ["Req #", "Order", "Material", "Qty", "Requested", "Status"],
-    rows: [
-      ["REQ-2418", "PO-84920", "Cotton Poplin", "4,800 m", "14 Oct 2024", "Approved"],
-      ["REQ-2415", "PO-85107", "Poly Blend", "3,200 m", "13 Oct 2024", "Approved"],
-      ["REQ-2412", "PO-85241", "Rib Fabric", "2,400 m", "12 Oct 2024", "Pending"],
-      ["REQ-2408", "PO-85322", "Denim 7oz", "1,800 m", "10 Oct 2024", "Rejected"],
-    ],
     statusIndex: 5,
     sideTitle: "Requisition pipeline",
     sideDescription: "Monthly requisition status.",
-    progress: [
-      { label: "Approved & issued", value: "36 requisitions", percent: 86, tone: "bg-emerald-500" },
-      { label: "Pending approval", value: "4 requisitions", percent: 9, tone: "bg-amber-500" },
-      { label: "Rejected", value: "2 requisitions", percent: 5, tone: "bg-rose-500" },
-    ],
-    notices: [{ title: "REQ-2408 rejected", detail: "Denim 7oz stock insufficient — raise purchase order.", tone: "rose" }],
   },
   "procurement-management": {
     title: "Procurement Management",
     eyebrow: "Purchase management",
     description: "Manage purchase orders, supplier negotiations, and procurement workflows.",
     action: "New PO",
-    metrics: [
-      { label: "Active POs", value: "32", note: "Total value $4.2M", trend: "neutral" },
-      { label: "POs issued", value: "24", note: "This month", trend: "up" },
-      { label: "Pending approval", value: "5", note: "$680K value", trend: "down" },
-      { label: "PO completion", value: "78%", note: "On-time delivery", trend: "up" },
-    ],
     tableTitle: "Purchase order register",
     tableDescription: "Active purchase orders with supplier and status.",
     columns: ["PO #", "Supplier", "Material", "Amount", "Delivery", "Status"],
-    rows: [
-      ["PO-7753", "Envoy Textiles", "Cotton Poplin", "$186,420", "20 Oct 2024", "In transit"],
-      ["PO-7748", "Coats Bangladesh", "Thread", "$94,800", "22 Oct 2024", "Confirmed"],
-      ["PO-7739", "YKK Bangladesh", "Zippers", "$22,760", "25 Oct 2024", "Pending"],
-      ["PO-7724", "Pacific Accessories", "Labels", "$54,980", "28 Oct 2024", "Draft"],
-    ],
     statusIndex: 5,
     sideTitle: "PO status",
     sideDescription: "Current procurement pipeline.",
-    progress: [
-      { label: "Confirmed / in transit", value: "24 POs", percent: 75, tone: "bg-emerald-500" },
-      { label: "Pending approval", value: "5 POs", percent: 16, tone: "bg-amber-500" },
-      { label: "Draft", value: "3 POs", percent: 9, tone: "bg-slate-400" },
-    ],
-    notices: [{ title: "5 POs pending approval", detail: "PO-7739 YKK zippers needs procurement manager sign-off.", tone: "amber" }],
   },
   "stock-loan-management": {
     title: "Stock Loan Management",
     eyebrow: "Stock loans",
     description: "Track stock loans between suppliers, internal transfers, and return schedules.",
     action: "New loan",
-    metrics: [
-      { label: "Active loans", value: "8", note: "Across 4 suppliers", trend: "neutral" },
-      { label: "Loan value", value: "$320K", note: "Outstanding balance", trend: "neutral" },
-      { label: "Returns due", value: "3", note: "Within 7 days", trend: "down" },
-      { label: "Overdue returns", value: "1", note: "5 days past due", trend: "down" },
-    ],
     tableTitle: "Stock loan register",
     tableDescription: "Active stock loans with return tracking.",
     columns: ["Loan #", "Supplier", "Material", "Qty", "Loan date", "Status"],
-    rows: [
-      ["LN-2418", "Envoy Textiles", "Cotton Poplin", "4,200 m", "01 Oct 2024", "Active"],
-      ["LN-2415", "DBL Group", "Poly Blend", "2,800 m", "05 Oct 2024", "Active"],
-      ["LN-2412", "Noman Group", "Elastane", "1,200 m", "08 Oct 2024", "Return due"],
-      ["LN-2408", "Epic Group", "Denim", "3,600 m", "12 Oct 2024", "Overdue"],
-    ],
     statusIndex: 5,
     sideTitle: "Loan status",
     sideDescription: "Current stock loan pipeline.",
-    progress: [
-      { label: "Active", value: "5 loans", percent: 63, tone: "bg-primary" },
-      { label: "Return due", value: "2 loans", percent: 25, tone: "bg-amber-500" },
-      { label: "Overdue", value: "1 loan", percent: 12, tone: "bg-rose-500" },
-    ],
-    notices: [{ title: "LN-2408 overdue return", detail: "Epic Group denim loan 5 days past due — follow up.", tone: "rose" }],
   },
   "quotation-vs-actual-analysis": {
     title: "Quotation vs Actual Analysis",
     eyebrow: "Price variance",
     description: "Compare supplier quotations against actual invoice amounts to track price variances.",
     action: "New analysis",
-    metrics: [
-      { label: "Analyses completed", value: "28", note: "This month", trend: "up" },
-      { label: "Positive variances", value: "18", note: "Actual below quote", trend: "up" },
-      { label: "Negative variances", value: "8", note: "Actual above quote", trend: "down" },
-      { label: "Avg. variance", value: "+2.4%", note: "Favorable overall", trend: "up" },
-    ],
     tableTitle: "Variance report",
     tableDescription: "Quotation vs actual price comparison by material.",
     columns: ["Material", "Supplier", "Quoted", "Actual", "Variance", "Status"],
-    rows: [
-      ["Cotton Poplin", "Envoy Textiles", "$4.20/m", "$4.08/m", "-2.9%", "Favorable"],
-      ["Thread", "Coats Bangladesh", "$2.80/cone", "$2.84/cone", "+1.4%", "Unfavorable"],
-      ["Zippers", "YKK Bangladesh", "$0.42/pc", "$0.40/pc", "-4.8%", "Favorable"],
-      ["Labels", "Pacific Accessories", "$0.08/pc", "$0.09/pc", "+12.5%", "Unfavorable"],
-    ],
     statusIndex: 5,
     sideTitle: "Variance distribution",
     sideDescription: "Monthly price variance breakdown.",
-    progress: [
-      { label: "Favorable (below quote)", value: "18 items", percent: 64, tone: "bg-emerald-500" },
-      { label: "On target (±2%)", value: "4 items", percent: 14, tone: "bg-primary" },
-      { label: "Unfavorable", value: "6 items", percent: 21, tone: "bg-rose-500" },
-    ],
-    notices: [{ title: "Labels 12.5% above quote", detail: "Pacific Accessories needs price correction — renegotiate.", tone: "rose" }],
   },
   "supplier-selection-price-quality-delivery-grade": {
     title: "Supplier Selection",
     eyebrow: "Supplier evaluation",
     description: "Evaluate and select suppliers based on price, quality, delivery performance, and grade.",
     action: "Evaluate supplier",
-    metrics: [
-      { label: "Suppliers evaluated", value: "18", note: "Active supplier pool", trend: "neutral" },
-      { label: "Avg. score", value: "7.8 / 10", note: "Across all criteria", trend: "up" },
-      { label: "Top rated", value: "4", note: "Score > 8.5", trend: "up" },
-      { label: "Under review", value: "2", note: "Performance decline", trend: "down" },
-    ],
     tableTitle: "Supplier scorecard",
     tableDescription: "Supplier evaluation across price, quality, delivery, and grade.",
     columns: ["Supplier", "Price", "Quality", "Delivery", "Grade", "Score"],
-    rows: [
-      ["Envoy Textiles", "8.2", "9.1", "8.6", "A", "8.6"],
-      ["DBL Group", "7.8", "8.4", "7.2", "B+", "7.8"],
-      ["Noman Group", "8.6", "7.8", "6.8", "B", "7.7"],
-      ["Epic Group", "7.4", "8.8", "8.0", "B+", "8.1"],
-    ],
     statusIndex: 5,
     sideTitle: "Grade distribution",
     sideDescription: "Supplier grade breakdown.",
-    progress: [
-      { label: "Grade A (8.5+)", value: "4 suppliers", percent: 22, tone: "bg-emerald-500" },
-      { label: "Grade B+ (7.5–8.4)", value: "8 suppliers", percent: 44, tone: "bg-primary" },
-      { label: "Grade B and below", value: "6 suppliers", percent: 33, tone: "bg-amber-500" },
-    ],
-    notices: [{ title: "2 suppliers under review", detail: "Noman Group delivery score dropped — schedule performance review.", tone: "amber" }],
   },
 }
 
-function noticeClass(tone: WorkspaceConfig["notices"][number]["tone"]) {
+function noticeClass(tone: string) {
   return tone === "rose" ? "border-rose-200 bg-rose-50" : tone === "emerald" ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"
 }
 
@@ -261,8 +139,8 @@ export function ProcurementWorkspace({
   error 
 }: { 
   module: ModuleKey
-  metrics?: WorkspaceConfig["metrics"]
-  rows?: WorkspaceConfig["rows"]
+  metrics?: Metric[]
+  rows?: string[][]
   rawItems?: Record<string, unknown>[]
   isLoading?: boolean
   error?: string | null
@@ -270,8 +148,6 @@ export function ProcurementWorkspace({
   const baseConfig = configs[module]
   const config = {
     ...baseConfig,
-    metrics: metrics ?? baseConfig.metrics,
-    rows: rows ?? baseConfig.rows,
   }
 
   if (isLoading) {
@@ -325,7 +201,7 @@ export function ProcurementWorkspace({
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {config.metrics.map((metric) => (
+          {(metrics ?? []).map((metric) => (
             <Card key={metric.label} className="gap-3 border-border/70 py-4 shadow-none">
               <CardContent className="p-0">
                 <p className="text-xs font-medium text-muted-foreground">{metric.label}</p>
@@ -361,7 +237,10 @@ export function ProcurementWorkspace({
                     <tr>{config.columns.map((column) => <th key={column} className="px-3 py-2.5 font-semibold whitespace-nowrap">{column}</th>)}</tr>
                   </thead>
                   <tbody>
-                    {config.rows.map((row, rowIndex) => (
+                    {rows !== undefined && rows.length === 0 && (
+                      <tr><td colSpan={config.columns.length} className="px-3 py-8 text-center text-xs text-muted-foreground">No records yet.</td></tr>
+                    )}
+                    {(rows ?? []).map((row, rowIndex) => (
                       <tr key={rowIndex} className="border-t transition-colors hover:bg-muted/30">
                         {row.map((cell, index) => (
                           <td key={`${row[0]}-${index}`} className={`px-3 py-2.5 whitespace-nowrap ${index === 0 ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
@@ -374,7 +253,7 @@ export function ProcurementWorkspace({
                 </table>
               </div>
               <div className="flex items-center justify-between border-t px-5 py-3 text-xs text-muted-foreground">
-                <span>Showing 4 of 24 records</span>
+                <span>{(rows ?? []).length} record(s)</span>
                 <button className="flex items-center gap-1 font-medium text-primary hover:underline" onClick={() => toast.info("Opening full register")}>View all <ArrowUpRight className="size-3" /></button>
               </div>
             </CardContent>
@@ -387,12 +266,19 @@ export function ProcurementWorkspace({
                 <CardDescription>{config.sideDescription}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 p-0">
-                {config.progress.map((item) => (
-                  <div key={item.label}>
-                    <div className="mb-1.5 flex items-center justify-between text-xs"><span className="text-muted-foreground">{item.label}</span><span className="font-medium text-foreground">{item.value}</span></div>
-                    <div className="h-2 overflow-hidden rounded-full bg-muted"><div className={`h-full rounded-full ${item.tone}`} style={{ width: `${item.percent}%` }} /></div>
-                  </div>
-                ))}
+                {(() => {
+                  const items = rawItems ?? []
+                  const field = items.some((i) => "status_display" in i) ? "status_display" : "status"
+                  const dist = tallyBy(items, field).slice(0, 3)
+                  const total = items.length || 1
+                  if (dist.length === 0) return <p className="text-xs text-muted-foreground">No data yet.</p>
+                  return dist.map((item) => (
+                    <div key={item.value}>
+                      <div className="mb-1.5 flex items-center justify-between text-xs"><span className="capitalize text-muted-foreground">{item.value.replace(/_/g, " ")}</span><span className="font-medium text-foreground">{item.count} · {Math.round((item.count / total) * 100)}%</span></div>
+                      <div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${(item.count / total) * 100}%` }} /></div>
+                    </div>
+                  ))
+                })()}
               </CardContent>
             </Card>
             <Card className="gap-4">
@@ -400,7 +286,16 @@ export function ProcurementWorkspace({
                 <CardTitle className="flex items-center gap-2 text-base"><CalendarDays className="size-4 text-primary" /> Procurement attention</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 p-0">
-                {config.notices.map((notice) => <div key={notice.title} className={`rounded-lg border p-3 ${noticeClass(notice.tone)}`}><p className="text-sm font-medium">{notice.title}</p><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{notice.detail}</p></div>)}
+                {(() => {
+                  const items = rawItems ?? []
+                  const out: { title: string; detail: string; tone: "amber" | "rose" | "emerald" }[] = []
+                  const rejectedCount = items.filter((i) => String(i.status ?? "") === "rejected").length
+                  const pendingCount = items.filter((i) => PENDING_STATUSES.has(String(i.status ?? ""))).length
+                  if (rejectedCount > 0) out.push({ title: `${rejectedCount} record(s) rejected`, detail: `Follow up on rejected entries in ${config.tableTitle.toLowerCase()}.`, tone: "rose" })
+                  if (pendingCount > 0) out.push({ title: `${pendingCount} record(s) pending`, detail: `Review open items in ${config.tableTitle.toLowerCase()}.`, tone: "amber" })
+                  if (out.length === 0) out.push({ title: "Nothing needs attention", detail: `No open items found in ${config.tableTitle.toLowerCase()}.`, tone: "emerald" })
+                  return out.map((notice) => <div key={notice.title} className={`rounded-lg border p-3 ${noticeClass(notice.tone)}`}><p className="text-sm font-medium">{notice.title}</p><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{notice.detail}</p></div>)
+                })()}
                 <button className="flex items-center gap-1 text-xs font-medium text-primary hover:underline" onClick={() => toast.info("Opening procurement task center")}>Open task center <ArrowUpRight className="size-3" /></button>
               </CardContent>
             </Card>

@@ -42,6 +42,8 @@ export const createLc = (data: Record<string, unknown>) => restCreate("commercia
 export const updateLc = (id: number, data: Record<string, unknown>) => restUpdate("commercial", "LetterOfCredit", id, data)
 export const patchLc = (id: number, data: Record<string, unknown>) => restUpdate("commercial", "LetterOfCredit", id, data)
 export const deleteLc = (id: number) => restDelete("commercial", "LetterOfCredit", id)
+export const getSodFcTransfers = (params?: Record<string, unknown>) => restList("commercial", "SODFCTransfer", params)
+export const getSupplierDocuments = (params?: Record<string, unknown>) => restList("commercial", "SupplierDocument", params)
 export const getExpenses = (params?: Record<string, unknown>) => restList("accounts", "Expense", params)
 export const getExpense = (id: number) => restGet("accounts", "Expense", id)
 export const createExpense = (data: Record<string, unknown>) => restCreate("accounts", "Expense", data)
