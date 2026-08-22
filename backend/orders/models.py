@@ -41,6 +41,7 @@ class Order(models.Model):
         verbose_name = "Order"
         verbose_name_plural = "Orders"
         unique_together = ("order_number",)
+        ordering = ["-created_at"]
 
     def __str__(self):
         return f"Order {self.order_number} - {self.buyer.name}"

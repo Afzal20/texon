@@ -33,6 +33,7 @@ class ProductionLine(models.Model):
         verbose_name = "Production Line"
         verbose_name_plural = "Production Lines"
         unique_together = ("code",)
+        ordering = ["name"]
 
     def __str__(self):
         return f"{self.name} ({self.code})"
@@ -72,6 +73,7 @@ class ProductionOrder(models.Model):
         verbose_name = "Production Order"
         verbose_name_plural = "Production Orders"
         unique_together = ("order_number",)
+        ordering = ["-created_at"]
 
     def __str__(self):
         return f"PO {self.order_number} - {self.style.style_number}"
@@ -114,6 +116,7 @@ class SewingRecord(models.Model):
     class Meta:
         verbose_name = "Sewing Record"
         verbose_name_plural = "Sewing Records"
+        ordering = ["-date", "-id"]
 
     def __str__(self):
         return f"Sewing {self.production_order.order_number} - {self.date}"

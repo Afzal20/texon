@@ -180,6 +180,7 @@ class SampleOrder(models.Model):
     class Meta:
         verbose_name = "Sample Order"
         verbose_name_plural = "Sample Orders"
+        ordering = ["-created_at"]
 
     def __str__(self):
         return f"{self.sample_type} - {self.style.style_number}"
