@@ -40,8 +40,8 @@ class ComplianceRecord(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Compliance Record"
-        verbose_name_plural = "Compliance Records"
+        verbose_name = "ComplianceRecord"
+        verbose_name_plural = "ComplianceRecords"
 
     def __str__(self):
         return f"{self.compliance_type} - {self.title} - {self.audit_date}"

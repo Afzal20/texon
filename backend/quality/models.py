@@ -10,8 +10,8 @@ class DefectCategory(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = "Defect Category"
-        verbose_name_plural = "Defect Categories"
+        verbose_name = "DefectCategory"
+        verbose_name_plural = "DefectCategorys"
         unique_together = ("code",)
 
     def __str__(self):
@@ -39,8 +39,8 @@ class FabricInspection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Fabric Inspection"
-        verbose_name_plural = "Fabric Inspections"
+        verbose_name = "FabricInspection"
+        verbose_name_plural = "FabricInspections"
 
     def __str__(self):
         return f"Fabric Inspection - {self.inspection_date}"
@@ -68,8 +68,8 @@ class InlineQC(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Inline QC"
-        verbose_name_plural = "Inline QC"
+        verbose_name = "InlineQC"
+        verbose_name_plural = "InlineQCs"
 
     def __str__(self):
         return f"Inline QC - {self.production_order.order_number} - {self.check_date}"
@@ -96,8 +96,8 @@ class EndLineQC(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "End Line QC"
-        verbose_name_plural = "End Line QC"
+        verbose_name = "EndLineQC"
+        verbose_name_plural = "EndLineQCs"
 
     def __str__(self):
         return f"End Line QC - {self.production_order.order_number} - {self.check_date}"
@@ -128,8 +128,8 @@ class RejectionReport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Rejection Report"
-        verbose_name_plural = "Rejection Reports"
+        verbose_name = "RejectionReport"
+        verbose_name_plural = "RejectionReports"
 
     def __str__(self):
         return f"Rejection - {self.production_order.order_number} - {self.stage}"
@@ -157,8 +157,8 @@ class FinalInspection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Final Inspection"
-        verbose_name_plural = "Final Inspections"
+        verbose_name = "FinalInspection"
+        verbose_name_plural = "FinalInspections"
 
     def __str__(self):
         return f"Final Inspection - {self.production_order.order_number} - {self.inspection_date}"

@@ -129,8 +129,8 @@ class LetterOfCredit(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Letter of Credit"
-        verbose_name_plural = "Letters of Credit"
+        verbose_name = "LetterOfCredit"
+        verbose_name_plural = "LetterOfCredits"
         unique_together = ("lc_number",)
 
     def __str__(self):
@@ -187,8 +187,8 @@ class Invoice(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Commercial Invoice"
-        verbose_name_plural = "Commercial Invoices"
+        verbose_name = "Invoice"
+        verbose_name_plural = "Invoices"
         unique_together = ("invoice_number",)
 
     def __str__(self):
@@ -230,8 +230,8 @@ class BillOfExchange(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Bill of Exchange"
-        verbose_name_plural = "Bills of Exchange"
+        verbose_name = "BillOfExchange"
+        verbose_name_plural = "BillOfExchanges"
         unique_together = ("bill_number",)
 
     def __str__(self):
@@ -280,8 +280,8 @@ class SupplierDocument(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Supplier Document"
-        verbose_name_plural = "Supplier Documents"
+        verbose_name = "SupplierDocument"
+        verbose_name_plural = "SupplierDocuments"
         unique_together = ("document_number",)
 
     def __str__(self):
@@ -374,8 +374,8 @@ class SODFCTransfer(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "SOD/FC Transfer"
-        verbose_name_plural = "SOD/FC Transfers"
+        verbose_name = "SODFCTransfer"
+        verbose_name_plural = "SODFCTransfers"
         unique_together = ("transfer_number",)
 
     def __str__(self):

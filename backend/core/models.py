@@ -29,7 +29,7 @@ class Currency(models.Model):
 
     class Meta:
         verbose_name = "Currency"
-        verbose_name_plural = "Currencies"
+        verbose_name_plural = "Currencys"
 
     def __str__(self):
         return f"{self.code} - {self.name}"

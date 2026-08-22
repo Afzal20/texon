@@ -33,8 +33,8 @@ class BuyerCommunication(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Buyer Communication"
-        verbose_name_plural = "Buyer Communications"
+        verbose_name = "BuyerCommunication"
+        verbose_name_plural = "BuyerCommunications"
 
     def __str__(self):
         return f"{self.communication_type} - {self.subject}"
@@ -53,8 +53,8 @@ class BuyerProfitability(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Buyer Profitability"
-        verbose_name_plural = "Buyer Profitability"
+        verbose_name = "BuyerProfitability"
+        verbose_name_plural = "BuyerProfitabilitys"
 
     def __str__(self):
         return f"{self.buyer.name} - {self.period_start} to {self.period_end}"
@@ -72,8 +72,8 @@ class OrderAmendmentHistory(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Order Amendment History"
-        verbose_name_plural = "Order Amendment Histories"
+        verbose_name = "OrderAmendmentHistory"
+        verbose_name_plural = "OrderAmendmentHistorys"
 
     def __str__(self):
         return f"Amendment - {self.purchase_order.po_number} - {self.amendment_date}"

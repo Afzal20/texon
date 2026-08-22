@@ -10,8 +10,8 @@ class ProductionUnit(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Production Unit"
-        verbose_name_plural = "Production Units"
+        verbose_name = "ProductionUnit"
+        verbose_name_plural = "ProductionUnits"
 
     def __str__(self):
         return self.name
@@ -30,8 +30,8 @@ class ProductionLine(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Production Line"
-        verbose_name_plural = "Production Lines"
+        verbose_name = "ProductionLine"
+        verbose_name_plural = "ProductionLines"
         unique_together = ("code",)
         ordering = ["name"]
 
@@ -70,8 +70,8 @@ class ProductionOrder(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Production Order"
-        verbose_name_plural = "Production Orders"
+        verbose_name = "ProductionOrder"
+        verbose_name_plural = "ProductionOrders"
         unique_together = ("order_number",)
         ordering = ["-created_at"]
 
@@ -91,8 +91,8 @@ class CuttingRecord(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Cutting Record"
-        verbose_name_plural = "Cutting Records"
+        verbose_name = "CuttingRecord"
+        verbose_name_plural = "CuttingRecords"
 
     def __str__(self):
         return f"Cutting {self.production_order.order_number} - {self.date}"
@@ -114,8 +114,8 @@ class SewingRecord(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Sewing Record"
-        verbose_name_plural = "Sewing Records"
+        verbose_name = "SewingRecord"
+        verbose_name_plural = "SewingRecords"
         ordering = ["-date", "-id"]
 
     def __str__(self):
@@ -135,8 +135,8 @@ class InspectionPacking(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Inspection & Packing"
-        verbose_name_plural = "Inspection & Packing"
+        verbose_name = "InspectionPacking"
+        verbose_name_plural = "InspectionPackings"
 
     def __str__(self):
         return f"Inspection {self.production_order.order_number} - {self.date}"
@@ -160,8 +160,8 @@ class FloorRequisition(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Floor Requisition"
-        verbose_name_plural = "Floor Requisitions"
+        verbose_name = "FloorRequisition"
+        verbose_name_plural = "FloorRequisitions"
 
     def __str__(self):
         return f"{self.production_order.order_number} - {self.item_type}"
@@ -176,8 +176,8 @@ class LineCapacity(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Line Capacity"
-        verbose_name_plural = "Line Capacities"
+        verbose_name = "LineCapacity"
+        verbose_name_plural = "LineCapacitys"
 
     def __str__(self):
         return f"{self.production_line.code} - {self.date} - {self.daily_capacity_pcs}"
@@ -194,8 +194,8 @@ class ProductionShift(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Production Shift"
-        verbose_name_plural = "Production Shifts"
+        verbose_name = "ProductionShift"
+        verbose_name_plural = "ProductionShifts"
 
     def __str__(self):
         return f"{self.name} ({self.start_time}-{self.end_time})"
@@ -211,8 +211,8 @@ class ProductionRecord(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Production Record"
-        verbose_name_plural = "Production Records"
+        verbose_name = "ProductionRecord"
+        verbose_name_plural = "ProductionRecords"
 
     def __str__(self):
         return f"{self.production_line.code} - {self.date} - {self.output_quantity}"
@@ -229,8 +229,8 @@ class OEELog(models.Model):
     oee_score = models.DecimalField(max_digits=5, decimal_places=2)
 
     class Meta:
-        verbose_name = "OEE Log"
-        verbose_name_plural = "OEE Logs"
+        verbose_name = "OEELog"
+        verbose_name_plural = "OEELogs"
 
     def __str__(self):
         return f"{self.production_line.code} - OEE {self.oee_score}%"
@@ -248,8 +248,8 @@ class DefectLog(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Defect Log"
-        verbose_name_plural = "Defect Logs"
+        verbose_name = "DefectLog"
+        verbose_name_plural = "DefectLogs"
 
     def __str__(self):
         return f"{self.production_line.code} - {self.date} - {self.defect_quantity} defects"
@@ -265,8 +265,8 @@ class HeatmapData(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Heatmap Data"
-        verbose_name_plural = "Heatmap Data"
+        verbose_name = "HeatmapData"
+        verbose_name_plural = "HeatmapDatas"
 
     def __str__(self):
         return f"{self.production_line.code} - {self.metric} = {self.value}"
@@ -282,8 +282,8 @@ class BottleneckAlert(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Bottleneck Alert"
-        verbose_name_plural = "Bottleneck Alerts"
+        verbose_name = "BottleneckAlert"
+        verbose_name_plural = "BottleneckAlerts"
 
     def __str__(self):
         return f"{self.production_line.code} - {self.alert_message[:50]}"

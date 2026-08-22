@@ -61,7 +61,7 @@ class Accessory(models.Model):
 
     class Meta:
         verbose_name = "Accessory"
-        verbose_name_plural = "Accessories"
+        verbose_name_plural = "Accessorys"
         unique_together = ("code",)
 
     def __str__(self):
@@ -120,8 +120,8 @@ class StockMovement(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Stock Movement"
-        verbose_name_plural = "Stock Movements"
+        verbose_name = "StockMovement"
+        verbose_name_plural = "StockMovements"
 
     def __str__(self):
         return f"{self.movement_type} - {self.item_type} #{self.item_id}"
@@ -144,8 +144,8 @@ class ShadeApproval(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Shade Approval"
-        verbose_name_plural = "Shade Approvals"
+        verbose_name = "ShadeApproval"
+        verbose_name_plural = "ShadeApprovals"
 
     def __str__(self):
         return f"{self.fabric.name} - {self.shade_name}"
@@ -167,8 +167,8 @@ class PhysicalInventory(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Physical Inventory"
-        verbose_name_plural = "Physical Inventories"
+        verbose_name = "PhysicalInventory"
+        verbose_name_plural = "PhysicalInventorys"
 
     def __str__(self):
         return f"{self.warehouse.name} - {self.inventory_date}"

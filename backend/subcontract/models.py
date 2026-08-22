@@ -45,8 +45,8 @@ class SubcontractOrder(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Subcontract Order"
-        verbose_name_plural = "Subcontract Orders"
+        verbose_name = "SubcontractOrder"
+        verbose_name_plural = "SubcontractOrders"
         unique_together = ("order_number",)
 
     def __str__(self):
@@ -66,8 +66,8 @@ class SubcontractTracking(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Subcontract Tracking"
-        verbose_name_plural = "Subcontract Tracking"
+        verbose_name = "SubcontractTracking"
+        verbose_name_plural = "SubcontractTrackings"
 
     def __str__(self):
         return f"{self.subcontract_order.order_number} - {self.tracking_date}"

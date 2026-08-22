@@ -60,8 +60,8 @@ class SocialAuthCallbackUrl(models.Model):
     callback_url = models.URLField(max_length=255)
 
     class Meta:
-        verbose_name = "Social Auth Callback URL"
-        verbose_name_plural = "Social Auth Callback URLs"
+        verbose_name = "SocialAuthCallbackUrl"
+        verbose_name_plural = "SocialAuthCallbackUrls"
 
     def __str__(self):
         return f"{self.get_provider_display()} - {self.callback_url}"

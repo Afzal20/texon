@@ -29,8 +29,8 @@ class PreCosting(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Pre Costing"
-        verbose_name_plural = "Pre Costings"
+        verbose_name = "PreCosting"
+        verbose_name_plural = "PreCostings"
 
     def __str__(self):
         return f"PreCosting - {self.style.style_number} - {self.cost_date}"
@@ -60,8 +60,8 @@ class CostSheet(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Cost Sheet"
-        verbose_name_plural = "Cost Sheets"
+        verbose_name = "CostSheet"
+        verbose_name_plural = "CostSheets"
 
     def __str__(self):
         return f"CostSheet - {self.style.style_number} - {self.cost_date}"

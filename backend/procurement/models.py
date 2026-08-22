@@ -61,8 +61,8 @@ class RawMaterialRequisition(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Raw Material Requisition"
-        verbose_name_plural = "Raw Material Requisitions"
+        verbose_name = "RawMaterialRequisition"
+        verbose_name_plural = "RawMaterialRequisitions"
         unique_together = ("requisition_number",)
 
     def __str__(self):
@@ -100,8 +100,8 @@ class RawMaterialBooking(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Raw Material Booking"
-        verbose_name_plural = "Raw Material Bookings"
+        verbose_name = "RawMaterialBooking"
+        verbose_name_plural = "RawMaterialBookings"
         unique_together = ("booking_number",)
 
     def __str__(self):
@@ -128,8 +128,8 @@ class QuotationAnalysis(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Quotation Analysis"
-        verbose_name_plural = "Quotation Analyses"
+        verbose_name = "QuotationAnalysis"
+        verbose_name_plural = "QuotationAnalysis"
 
     def __str__(self):
         return f"{self.supplier.name} - {self.item_type}"

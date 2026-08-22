@@ -33,8 +33,8 @@ class BuyerRating(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Buyer Rating"
-        verbose_name_plural = "Buyer Ratings"
+        verbose_name = "BuyerRating"
+        verbose_name_plural = "BuyerRatings"
 
     def __str__(self):
         return f"{self.buyer.name}: {self.rating}"
@@ -50,8 +50,8 @@ class BuyerPortfolio(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Buyer Portfolio"
-        verbose_name_plural = "Buyer Portfolios"
+        verbose_name = "BuyerPortfolio"
+        verbose_name_plural = "BuyerPortfolios"
 
     def __str__(self):
         return f"{self.buyer.name} Portfolio"

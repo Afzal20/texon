@@ -72,8 +72,8 @@ class JobOrder(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Job Order"
-        verbose_name_plural = "Job Orders"
+        verbose_name = "JobOrder"
+        verbose_name_plural = "JobOrders"
         unique_together = ("job_order_number",)
 
     def __str__(self):
@@ -127,8 +127,8 @@ class AlarmNotification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Alarm Notification"
-        verbose_name_plural = "Alarm Notifications"
+        verbose_name = "AlarmNotification"
+        verbose_name_plural = "AlarmNotifications"
 
     def __str__(self):
         return f"{self.alarm_type} - {self.recipient} - {self.scheduled_at}"

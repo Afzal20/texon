@@ -25,8 +25,8 @@ class ChartOfAccount(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Chart of Account"
-        verbose_name_plural = "Chart of Accounts"
+        verbose_name = "ChartOfAccount"
+        verbose_name_plural = "ChartOfAccounts"
         unique_together = ("account_code",)
 
     def __str__(self):
@@ -46,8 +46,8 @@ class JournalEntry(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Journal Entry"
-        verbose_name_plural = "Journal Entries"
+        verbose_name = "JournalEntry"
+        verbose_name_plural = "JournalEntrys"
 
     def __str__(self):
         return f"JE {self.entry_number} - {self.entry_date}"
@@ -67,8 +67,8 @@ class AccountsPayable(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Accounts Payable"
-        verbose_name_plural = "Accounts Payable"
+        verbose_name = "AccountsPayable"
+        verbose_name_plural = "AccountsPayables"
 
     def __str__(self):
         return f"AP - {self.supplier.name} - {self.invoice_number}"
@@ -94,8 +94,8 @@ class AccountsReceivable(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Accounts Receivable"
-        verbose_name_plural = "Accounts Receivable"
+        verbose_name = "AccountsReceivable"
+        verbose_name_plural = "AccountsReceivables"
 
     def __str__(self):
         return f"AR - {self.buyer.name} - {self.invoice_number}"
@@ -141,8 +141,8 @@ class CostCenter(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Cost Center"
-        verbose_name_plural = "Cost Centers"
+        verbose_name = "CostCenter"
+        verbose_name_plural = "CostCenters"
         unique_together = ("code",)
 
     def __str__(self):

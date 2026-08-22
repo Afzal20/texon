@@ -20,8 +20,8 @@ class CapacityBooking(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Capacity Booking"
-        verbose_name_plural = "Capacity Bookings"
+        verbose_name = "CapacityBooking"
+        verbose_name_plural = "CapacityBookings"
 
     def __str__(self):
         return f"{self.style.style_number} - Line {self.line}"
@@ -44,8 +44,8 @@ class LinePlan(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Line Plan"
-        verbose_name_plural = "Line Plans"
+        verbose_name = "LinePlan"
+        verbose_name_plural = "LinePlans"
 
     def __str__(self):
         return f"{self.style.style_number} - {self.line} - {self.plan_date}"
@@ -78,8 +78,8 @@ class ProductionPlan(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Production Plan"
-        verbose_name_plural = "Production Plans"
+        verbose_name = "ProductionPlan"
+        verbose_name_plural = "ProductionPlans"
 
     def __str__(self):
         return f"{self.style.style_number} - {self.planned_start_date}"
@@ -108,8 +108,8 @@ class RiskAssessment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Risk Assessment"
-        verbose_name_plural = "Risk Assessments"
+        verbose_name = "RiskAssessment"
+        verbose_name_plural = "RiskAssessments"
 
     def __str__(self):
         return f"{self.style.style_number} - {self.risk_type}"
@@ -135,8 +135,8 @@ class StyleAnalysis(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Style Analysis"
-        verbose_name_plural = "Style Analyses"
+        verbose_name = "StyleAnalysis"
+        verbose_name_plural = "StyleAnalysis"
 
     def __str__(self):
         return f"{self.style.style_number} - {self.analysis_type}"

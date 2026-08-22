@@ -64,8 +64,8 @@ class BuyerEnquiry(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Buyer Enquiry"
-        verbose_name_plural = "Buyer Enquiries"
+        verbose_name = "BuyerEnquiry"
+        verbose_name_plural = "BuyerEnquirys"
 
     def __str__(self):
         return f"Enquiry from {self.buyer.name} on {self.enquiry_date}"
@@ -101,8 +101,8 @@ class PurchaseOrder(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Purchase Order"
-        verbose_name_plural = "Purchase Orders"
+        verbose_name = "PurchaseOrder"
+        verbose_name_plural = "PurchaseOrders"
         unique_together = ("po_number",)
 
     def __str__(self):
@@ -118,8 +118,8 @@ class OrderItem(models.Model):
     qty = models.PositiveIntegerField()
 
     class Meta:
-        verbose_name = "Order Item"
-        verbose_name_plural = "Order Items"
+        verbose_name = "OrderItem"
+        verbose_name_plural = "OrderItems"
 
     def __str__(self):
         return f"{self.purchase_order.po_number} - {self.color}/{self.size} x {self.qty}"
@@ -134,8 +134,8 @@ class OrderStageLog(models.Model):
     notes = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = "Order Stage Log"
-        verbose_name_plural = "Order Stage Logs"
+        verbose_name = "OrderStageLog"
+        verbose_name_plural = "OrderStageLogs"
 
     def __str__(self):
         return f"{self.purchase_order.po_number} -> {self.stage}"
@@ -178,8 +178,8 @@ class SampleOrder(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Sample Order"
-        verbose_name_plural = "Sample Orders"
+        verbose_name = "SampleOrder"
+        verbose_name_plural = "SampleOrders"
         ordering = ["-created_at"]
 
     def __str__(self):
@@ -197,8 +197,8 @@ class SMVRecord(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "SMV Record"
-        verbose_name_plural = "SMV Records"
+        verbose_name = "SMVRecord"
+        verbose_name_plural = "SMVRecords"
 
     def __str__(self):
         return f"{self.style.style_number}: {self.smv} SMV"
@@ -222,8 +222,8 @@ class DevelopmentMonitoring(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Development Monitoring"
-        verbose_name_plural = "Development Monitoring"
+        verbose_name = "DevelopmentMonitoring"
+        verbose_name_plural = "DevelopmentMonitorings"
 
     def __str__(self):
         return f"{self.style.style_number} - {self.stage}"
@@ -248,8 +248,8 @@ class BudgetDemandAssessment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Budget Demand Assessment"
-        verbose_name_plural = "Budget Demand Assessments"
+        verbose_name = "BudgetDemandAssessment"
+        verbose_name_plural = "BudgetDemandAssessments"
 
     def __str__(self):
         return f"{self.buyer.name} - {self.assessment_date}"
@@ -280,8 +280,8 @@ class IeSuggestion(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "IE Suggestion"
-        verbose_name_plural = "IE Suggestions"
+        verbose_name = "IeSuggestion"
+        verbose_name_plural = "IeSuggestions"
 
     def __str__(self):
         return f"IE-{self.id} - {self.operation}"
@@ -308,8 +308,8 @@ class SkillInventory(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Skill Inventory"
-        verbose_name_plural = "Skill Inventories"
+        verbose_name = "SkillInventory"
+        verbose_name_plural = "SkillInventorys"
 
     def __str__(self):
         name = self.operator_name or str(self.employee) or f"Operator #{self.id}"
@@ -336,8 +336,8 @@ class ProductionDowntime(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Production Downtime"
-        verbose_name_plural = "Production Downtimes"
+        verbose_name = "ProductionDowntime"
+        verbose_name_plural = "ProductionDowntimes"
 
     def __str__(self):
         return f"DT-{self.id} - {self.cause}"
@@ -359,8 +359,8 @@ class ProcessWiseTarget(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Process Wise Target"
-        verbose_name_plural = "Process Wise Targets"
+        verbose_name = "ProcessWiseTarget"
+        verbose_name_plural = "ProcessWiseTargets"
 
     def __str__(self):
         return f"{self.process_name} - {self.target_date}"

@@ -19,8 +19,8 @@ class PerformanceRecord(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Performance Record"
-        verbose_name_plural = "Performance Records"
+        verbose_name = "PerformanceRecord"
+        verbose_name_plural = "PerformanceRecords"
 
     def __str__(self):
         return f"{self.metric} - {self.record_date}: {self.value}"

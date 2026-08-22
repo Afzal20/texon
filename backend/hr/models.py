@@ -120,7 +120,7 @@ class Attendance(models.Model):
 
     class Meta:
         verbose_name = "Attendance"
-        verbose_name_plural = "Attendance"
+        verbose_name_plural = "Attendances"
         unique_together = ("employee", "date")
 
     def __str__(self):
@@ -183,7 +183,7 @@ class Overtime(models.Model):
 
     class Meta:
         verbose_name = "Overtime"
-        verbose_name_plural = "Overtime"
+        verbose_name_plural = "Overtimes"
 
     def __str__(self):
         return f"{self.employee.employee_id} - {self.date} - {self.hours}h"
@@ -211,8 +211,8 @@ class SalarySheet(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Salary Sheet"
-        verbose_name_plural = "Salary Sheets"
+        verbose_name = "SalarySheet"
+        verbose_name_plural = "SalarySheets"
 
     def __str__(self):
         return f"{self.employee.employee_id} - {self.month}"
@@ -244,7 +244,7 @@ class Bonus(models.Model):
 
     class Meta:
         verbose_name = "Bonus"
-        verbose_name_plural = "Bonuses"
+        verbose_name_plural = "Bonus"
 
     def __str__(self):
         return f"{self.employee.employee_id} - {self.bonus_type} - {self.amount}"

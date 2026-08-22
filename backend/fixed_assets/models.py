@@ -20,8 +20,8 @@ class AssetCategory(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = "Asset Category"
-        verbose_name_plural = "Asset Categories"
+        verbose_name = "AssetCategory"
+        verbose_name_plural = "AssetCategorys"
         unique_together = ("code",)
 
     def __str__(self):
@@ -59,8 +59,8 @@ class FixedAsset(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Fixed Asset"
-        verbose_name_plural = "Fixed Assets"
+        verbose_name = "FixedAsset"
+        verbose_name_plural = "FixedAssets"
         unique_together = ("asset_code",)
 
     def __str__(self):
@@ -79,8 +79,8 @@ class DepreciationSchedule(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Depreciation Schedule"
-        verbose_name_plural = "Depreciation Schedules"
+        verbose_name = "DepreciationSchedule"
+        verbose_name_plural = "DepreciationSchedules"
 
     def __str__(self):
         return f"{self.fixed_asset.asset_code} - {self.period}"

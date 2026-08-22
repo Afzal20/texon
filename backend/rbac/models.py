@@ -42,8 +42,8 @@ class RolePermission(models.Model):
 
     class Meta:
         unique_together = ("role", "permission")
-        verbose_name = "Role permission"
-        verbose_name_plural = "Role permissions"
+        verbose_name = "RolePermission"
+        verbose_name_plural = "RolePermissions"
 
     def __str__(self):
         return f"{self.role.name} → {self.permission.codename}"
@@ -59,8 +59,8 @@ class UserRole(models.Model):
 
     class Meta:
         unique_together = ("user", "role")
-        verbose_name = "User role"
-        verbose_name_plural = "User roles"
+        verbose_name = "UserRole"
+        verbose_name_plural = "UserRoles"
 
     def __str__(self):
         return f"{self.user.email} → {self.role.name}"
