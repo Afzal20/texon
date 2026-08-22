@@ -20,6 +20,7 @@ class AssetCategory(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "AssetCategory"
         verbose_name_plural = "AssetCategorys"
         unique_together = ("code",)
@@ -59,6 +60,7 @@ class FixedAsset(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "FixedAsset"
         verbose_name_plural = "FixedAssets"
         unique_together = ("asset_code",)
@@ -79,6 +81,7 @@ class DepreciationSchedule(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "DepreciationSchedule"
         verbose_name_plural = "DepreciationSchedules"
 

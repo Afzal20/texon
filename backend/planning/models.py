@@ -33,6 +33,7 @@ class Plan(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Plan"
         verbose_name_plural = "Plans"
 

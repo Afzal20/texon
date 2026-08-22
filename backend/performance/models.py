@@ -19,6 +19,7 @@ class PerformanceRecord(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "PerformanceRecord"
         verbose_name_plural = "PerformanceRecords"
 

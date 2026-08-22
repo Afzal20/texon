@@ -28,6 +28,7 @@ class Report(models.Model):
     notes = models.TextField(blank=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Report"
         verbose_name_plural = "Reports"
 
@@ -53,6 +54,7 @@ class Dashboard(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Dashboard"
         verbose_name_plural = "Dashboards"
 

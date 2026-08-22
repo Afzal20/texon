@@ -25,6 +25,7 @@ class ChartOfAccount(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "ChartOfAccount"
         verbose_name_plural = "ChartOfAccounts"
         unique_together = ("account_code",)
@@ -46,6 +47,7 @@ class JournalEntry(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "JournalEntry"
         verbose_name_plural = "JournalEntrys"
 
@@ -67,6 +69,7 @@ class AccountsPayable(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "AccountsPayable"
         verbose_name_plural = "AccountsPayables"
 
@@ -94,6 +97,7 @@ class AccountsReceivable(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "AccountsReceivable"
         verbose_name_plural = "AccountsReceivables"
 
@@ -124,6 +128,7 @@ class Expense(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Expense"
         verbose_name_plural = "Expenses"
 
@@ -141,6 +146,7 @@ class CostCenter(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "CostCenter"
         verbose_name_plural = "CostCenters"
         unique_together = ("code",)

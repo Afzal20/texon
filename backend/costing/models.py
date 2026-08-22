@@ -29,6 +29,7 @@ class PreCosting(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "PreCosting"
         verbose_name_plural = "PreCostings"
 
@@ -60,6 +61,7 @@ class CostSheet(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "CostSheet"
         verbose_name_plural = "CostSheets"
 

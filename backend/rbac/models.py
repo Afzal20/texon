@@ -41,6 +41,7 @@ class RolePermission(models.Model):
     permission = models.ForeignKey(Permission, on_delete=models.CASCADE, related_name="role_permissions")
 
     class Meta:
+        ordering = ["-id"]
         unique_together = ("role", "permission")
         verbose_name = "RolePermission"
         verbose_name_plural = "RolePermissions"
@@ -58,6 +59,7 @@ class UserRole(models.Model):
     role = models.ForeignKey(Role, on_delete=models.CASCADE, related_name="user_roles")
 
     class Meta:
+        ordering = ["-id"]
         unique_together = ("user", "role")
         verbose_name = "UserRole"
         verbose_name_plural = "UserRoles"

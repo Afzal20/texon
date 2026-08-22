@@ -20,6 +20,7 @@ class CapacityBooking(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "CapacityBooking"
         verbose_name_plural = "CapacityBookings"
 
@@ -44,6 +45,7 @@ class LinePlan(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "LinePlan"
         verbose_name_plural = "LinePlans"
 
@@ -78,6 +80,7 @@ class ProductionPlan(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "ProductionPlan"
         verbose_name_plural = "ProductionPlans"
 
@@ -108,6 +111,7 @@ class RiskAssessment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "RiskAssessment"
         verbose_name_plural = "RiskAssessments"
 
@@ -135,6 +139,7 @@ class StyleAnalysis(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "StyleAnalysis"
         verbose_name_plural = "StyleAnalysis"
 

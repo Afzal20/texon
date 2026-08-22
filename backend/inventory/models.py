@@ -10,6 +10,7 @@ class Warehouse(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Warehouse"
         verbose_name_plural = "Warehouses"
         unique_together = ("code",)
@@ -36,6 +37,7 @@ class Fabric(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Fabric"
         verbose_name_plural = "Fabrics"
         unique_together = ("code",)
@@ -60,6 +62,7 @@ class Accessory(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Accessory"
         verbose_name_plural = "Accessorys"
         unique_together = ("code",)
@@ -83,6 +86,7 @@ class Trim(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Trim"
         verbose_name_plural = "Trims"
         unique_together = ("code",)
@@ -120,6 +124,7 @@ class StockMovement(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "StockMovement"
         verbose_name_plural = "StockMovements"
 
@@ -144,6 +149,7 @@ class ShadeApproval(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "ShadeApproval"
         verbose_name_plural = "ShadeApprovals"
 
@@ -167,6 +173,7 @@ class PhysicalInventory(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "PhysicalInventory"
         verbose_name_plural = "PhysicalInventorys"
 

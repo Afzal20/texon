@@ -40,6 +40,7 @@ class Task(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Task"
         verbose_name_plural = "Tasks"
 
@@ -72,6 +73,7 @@ class JobOrder(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "JobOrder"
         verbose_name_plural = "JobOrders"
         unique_together = ("job_order_number",)
@@ -100,6 +102,7 @@ class Timeline(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Timeline"
         verbose_name_plural = "Timelines"
 
@@ -127,6 +130,7 @@ class AlarmNotification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "AlarmNotification"
         verbose_name_plural = "AlarmNotifications"
 

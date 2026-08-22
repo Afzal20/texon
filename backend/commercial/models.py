@@ -74,6 +74,7 @@ class Shipment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Shipment"
         verbose_name_plural = "Shipments"
         unique_together = ("shipment_number",)
@@ -129,6 +130,7 @@ class LetterOfCredit(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "LetterOfCredit"
         verbose_name_plural = "LetterOfCredits"
         unique_together = ("lc_number",)
@@ -187,6 +189,7 @@ class Invoice(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Invoice"
         verbose_name_plural = "Invoices"
         unique_together = ("invoice_number",)
@@ -230,6 +233,7 @@ class BillOfExchange(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "BillOfExchange"
         verbose_name_plural = "BillOfExchanges"
         unique_together = ("bill_number",)
@@ -280,6 +284,7 @@ class SupplierDocument(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "SupplierDocument"
         verbose_name_plural = "SupplierDocuments"
         unique_together = ("document_number",)
@@ -333,6 +338,7 @@ class Realization(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Realization"
         verbose_name_plural = "Realizations"
         unique_together = ("realization_number",)
@@ -374,6 +380,7 @@ class SODFCTransfer(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "SODFCTransfer"
         verbose_name_plural = "SODFCTransfers"
         unique_together = ("transfer_number",)
@@ -428,6 +435,7 @@ class Disbursement(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Disbursement"
         verbose_name_plural = "Disbursements"
         unique_together = ("disbursement_number",)

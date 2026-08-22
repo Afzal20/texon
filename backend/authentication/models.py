@@ -44,6 +44,7 @@ class OTP(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "OTP"
         verbose_name_plural = "OTPs"
 
@@ -60,6 +61,7 @@ class SocialAuthCallbackUrl(models.Model):
     callback_url = models.URLField(max_length=255)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "SocialAuthCallbackUrl"
         verbose_name_plural = "SocialAuthCallbackUrls"
 

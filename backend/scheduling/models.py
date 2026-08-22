@@ -29,6 +29,7 @@ class Schedule(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Schedule"
         verbose_name_plural = "Schedules"
 

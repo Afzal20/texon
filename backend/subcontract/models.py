@@ -45,6 +45,7 @@ class SubcontractOrder(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "SubcontractOrder"
         verbose_name_plural = "SubcontractOrders"
         unique_together = ("order_number",)
@@ -66,6 +67,7 @@ class SubcontractTracking(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "SubcontractTracking"
         verbose_name_plural = "SubcontractTrackings"
 

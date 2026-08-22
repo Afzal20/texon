@@ -8,6 +8,7 @@ class Season(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Season"
         verbose_name_plural = "Seasons"
         unique_together = ("name", "year")
@@ -32,6 +33,7 @@ class Style(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Style"
         verbose_name_plural = "Styles"
         unique_together = ("style_number",)
@@ -64,6 +66,7 @@ class BuyerEnquiry(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "BuyerEnquiry"
         verbose_name_plural = "BuyerEnquirys"
 
@@ -101,6 +104,7 @@ class PurchaseOrder(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "PurchaseOrder"
         verbose_name_plural = "PurchaseOrders"
         unique_together = ("po_number",)
@@ -118,6 +122,7 @@ class OrderItem(models.Model):
     qty = models.PositiveIntegerField()
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "OrderItem"
         verbose_name_plural = "OrderItems"
 
@@ -134,6 +139,7 @@ class OrderStageLog(models.Model):
     notes = models.TextField(blank=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "OrderStageLog"
         verbose_name_plural = "OrderStageLogs"
 
@@ -197,6 +203,7 @@ class SMVRecord(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "SMVRecord"
         verbose_name_plural = "SMVRecords"
 
@@ -222,6 +229,7 @@ class DevelopmentMonitoring(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "DevelopmentMonitoring"
         verbose_name_plural = "DevelopmentMonitorings"
 
@@ -248,6 +256,7 @@ class BudgetDemandAssessment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "BudgetDemandAssessment"
         verbose_name_plural = "BudgetDemandAssessments"
 
@@ -280,6 +289,7 @@ class IeSuggestion(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "IeSuggestion"
         verbose_name_plural = "IeSuggestions"
 
@@ -308,6 +318,7 @@ class SkillInventory(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "SkillInventory"
         verbose_name_plural = "SkillInventorys"
 
@@ -336,6 +347,7 @@ class ProductionDowntime(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "ProductionDowntime"
         verbose_name_plural = "ProductionDowntimes"
 
@@ -359,6 +371,7 @@ class ProcessWiseTarget(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "ProcessWiseTarget"
         verbose_name_plural = "ProcessWiseTargets"
 

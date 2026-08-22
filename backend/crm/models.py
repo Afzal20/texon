@@ -33,6 +33,7 @@ class BuyerCommunication(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "BuyerCommunication"
         verbose_name_plural = "BuyerCommunications"
 
@@ -53,6 +54,7 @@ class BuyerProfitability(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "BuyerProfitability"
         verbose_name_plural = "BuyerProfitabilitys"
 
@@ -72,6 +74,7 @@ class OrderAmendmentHistory(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "OrderAmendmentHistory"
         verbose_name_plural = "OrderAmendmentHistorys"
 

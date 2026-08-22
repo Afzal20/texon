@@ -33,6 +33,7 @@ class BuyerRating(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "BuyerRating"
         verbose_name_plural = "BuyerRatings"
 
@@ -50,6 +51,7 @@ class BuyerPortfolio(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "BuyerPortfolio"
         verbose_name_plural = "BuyerPortfolios"
 

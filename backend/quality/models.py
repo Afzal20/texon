@@ -10,6 +10,7 @@ class DefectCategory(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "DefectCategory"
         verbose_name_plural = "DefectCategorys"
         unique_together = ("code",)
@@ -39,6 +40,7 @@ class FabricInspection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "FabricInspection"
         verbose_name_plural = "FabricInspections"
 
@@ -68,6 +70,7 @@ class InlineQC(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "InlineQC"
         verbose_name_plural = "InlineQCs"
 
@@ -96,6 +99,7 @@ class EndLineQC(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "EndLineQC"
         verbose_name_plural = "EndLineQCs"
 
@@ -128,6 +132,7 @@ class RejectionReport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "RejectionReport"
         verbose_name_plural = "RejectionReports"
 
@@ -157,6 +162,7 @@ class FinalInspection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "FinalInspection"
         verbose_name_plural = "FinalInspections"
 

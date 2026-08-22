@@ -11,6 +11,7 @@ class Department(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Department"
         verbose_name_plural = "Departments"
         unique_together = ("code",)
@@ -31,6 +32,7 @@ class Designation(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Designation"
         verbose_name_plural = "Designations"
         unique_together = ("code",)
@@ -87,6 +89,7 @@ class Employee(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Employee"
         verbose_name_plural = "Employees"
         unique_together = ("employee_id",)
@@ -119,6 +122,7 @@ class Attendance(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Attendance"
         verbose_name_plural = "Attendances"
         unique_together = ("employee", "date")
@@ -156,6 +160,7 @@ class Leave(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Leave"
         verbose_name_plural = "Leaves"
 
@@ -182,6 +187,7 @@ class Overtime(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Overtime"
         verbose_name_plural = "Overtimes"
 
@@ -211,6 +217,7 @@ class SalarySheet(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "SalarySheet"
         verbose_name_plural = "SalarySheets"
 
@@ -243,6 +250,7 @@ class Bonus(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Bonus"
         verbose_name_plural = "Bonus"
 

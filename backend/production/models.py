@@ -10,6 +10,7 @@ class ProductionUnit(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "ProductionUnit"
         verbose_name_plural = "ProductionUnits"
 
@@ -91,6 +92,7 @@ class CuttingRecord(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "CuttingRecord"
         verbose_name_plural = "CuttingRecords"
 
@@ -135,6 +137,7 @@ class InspectionPacking(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "InspectionPacking"
         verbose_name_plural = "InspectionPackings"
 
@@ -160,6 +163,7 @@ class FloorRequisition(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "FloorRequisition"
         verbose_name_plural = "FloorRequisitions"
 
@@ -176,6 +180,7 @@ class LineCapacity(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "LineCapacity"
         verbose_name_plural = "LineCapacitys"
 
@@ -194,6 +199,7 @@ class ProductionShift(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "ProductionShift"
         verbose_name_plural = "ProductionShifts"
 
@@ -211,6 +217,7 @@ class ProductionRecord(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "ProductionRecord"
         verbose_name_plural = "ProductionRecords"
 
@@ -229,6 +236,7 @@ class OEELog(models.Model):
     oee_score = models.DecimalField(max_digits=5, decimal_places=2)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "OEELog"
         verbose_name_plural = "OEELogs"
 
@@ -248,6 +256,7 @@ class DefectLog(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "DefectLog"
         verbose_name_plural = "DefectLogs"
 
@@ -265,6 +274,7 @@ class HeatmapData(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "HeatmapData"
         verbose_name_plural = "HeatmapDatas"
 
@@ -282,6 +292,7 @@ class BottleneckAlert(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "BottleneckAlert"
         verbose_name_plural = "BottleneckAlerts"
 

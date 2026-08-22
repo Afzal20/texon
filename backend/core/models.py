@@ -12,6 +12,7 @@ class Location(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Location"
         verbose_name_plural = "Locations"
 
@@ -28,6 +29,7 @@ class Currency(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Currency"
         verbose_name_plural = "Currencys"
 

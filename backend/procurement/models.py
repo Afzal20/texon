@@ -25,6 +25,7 @@ class Supplier(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "Supplier"
         verbose_name_plural = "Suppliers"
         unique_together = ("code",)
@@ -61,6 +62,7 @@ class RawMaterialRequisition(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "RawMaterialRequisition"
         verbose_name_plural = "RawMaterialRequisitions"
         unique_together = ("requisition_number",)
@@ -100,6 +102,7 @@ class RawMaterialBooking(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "RawMaterialBooking"
         verbose_name_plural = "RawMaterialBookings"
         unique_together = ("booking_number",)
@@ -128,6 +131,7 @@ class QuotationAnalysis(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = "QuotationAnalysis"
         verbose_name_plural = "QuotationAnalysis"
 
