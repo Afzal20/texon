@@ -1369,6 +1369,10 @@ class Command(BaseCommand):
     # ── OTP ─────────────────────────────────────────────────────────
     def _seed_otps(self):
         from authentication.models import OTP, User
+        # SECURITY: never create usable (unused) OTP rows in production — a
+        # seeded password_reset code enables an account-takeover bypass.
+        if not settings.DEBUG:
+            return
         if OTP.objects.exists():
             return
         user_ids = list(User.objects.values_list("id", flat=True))

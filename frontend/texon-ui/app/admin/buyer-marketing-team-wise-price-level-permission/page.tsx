@@ -11,7 +11,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
-import { gqlList, type GqlRow } from "@/lib/api/graphql"
+import { restList, type RestRow } from "@/lib/api/rest"
 
 interface BuyerRow {
   name: string
@@ -29,10 +29,10 @@ export default function BuyerMarketingTeamwisePriceLevelPermissionPage() {
   const [search, setSearch] = useState("")
 
   useEffect(() => {
-    gqlList("buyers", "Buyer")
+    restList("buyers", "Buyer")
       .then((res) => {
         setBuyers(
-          (res.data ?? []).map((b: GqlRow) => ({
+          (res.data ?? []).map((b: RestRow) => ({
             name: String(b.name ?? "—"),
             code: String(b.code ?? ""),
             team: String(b.contact_person ?? "") || "—",

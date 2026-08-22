@@ -22,18 +22,45 @@ def get_department_tier(user):
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
+    """Authenticated read access; writes require staff.
+
+    NOTE: safe methods still require an authenticated user (the previous
+    version allowed anonymous reads, which is never desirable for ERP data).
+    """
+
     def has_permission(self, request, view):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
         if request.method in permissions.SAFE_METHODS:
             return True
-        return request.user and request.user.is_staff
+        return user.is_staff
 
 
-class IsOwnerOrReadOnly(permissions.BasePermission):
+class IsObjectOwnerOrStaff(permissions.BasePermission):
+    """Object-level guard: only the row's owner (or staff) may touch it.
+
+    Works together with OwnerQuerysetMixin: the mixin scopes the queryset so
+    foreign rows 404 on retrieve/update/delete; this permission additionally
+    blocks writes to objects the user can see but does not own.
+    """
+
     def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+        if user.is_staff or user.is_superuser:
             return True
-        owner = getattr(obj, "user", None) or getattr(obj, "owner", None)
-        return owner == request.user
+        from core.mixins import get_owner_field
+
+        owner_field = get_owner_field(type(obj))
+        if owner_field is None:
+            # No ownership relation: fall back to model-level permissions.
+            return True
+        owner = getattr(obj, owner_field)
+        if owner is None:
+            return False
+        return owner.id == user.id
 
 
 class _TierPermission(permissions.BasePermission):

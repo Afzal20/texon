@@ -1,3 +1,5 @@
+from urllib.parse import urlparse
+
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.github.views import GitHubOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
@@ -7,7 +9,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+from django.conf import settings
 from django.utils import timezone
 
 
@@ -15,6 +20,55 @@ from allauth.socialaccount.models import SocialApp
 from rest_framework.permissions import AllowAny
 import uuid
 from .models import SocialAuthCallbackUrl
+
+
+# ── OAuth callback_url allowlisting (open-redirect defence) ──────────────────
+# The frontend may request a specific callback_url, but it is NEVER trusted
+# blindly: the URL must match the SOCIAL_CALLBACK_ALLOWLIST (host:port entries
+# from settings/env). https is enforced everywhere except localhost dev.
+LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1", "[::1]"}
+
+
+def _validate_callback_url(callback_url):
+    """Return ``callback_url`` when it points at an allowlisted host, else None."""
+    if not callback_url or not isinstance(callback_url, str):
+        return None
+    try:
+        parsed = urlparse(callback_url)
+    except ValueError:
+        return None
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        return None
+    # Reject embedded credentials (https://user:pass@evil.com style tricks).
+    if parsed.username or parsed.password:
+        return None
+    allowlist = {
+        entry.strip().lower()
+        for entry in getattr(settings, "SOCIAL_CALLBACK_ALLOWLIST", [])
+        if entry.strip()
+    }
+    if parsed.netloc.lower() not in allowlist:
+        return None
+    host = (parsed.hostname or "").lower()
+    if parsed.scheme == "http" and host not in LOCAL_HOSTS:
+        # Plain http is only acceptable for local development callbacks.
+        return None
+    return callback_url
+
+
+def _fallback_callback_url(provider):
+    """Admin-configured callback URL (validated), else the local dev default."""
+    db_callback = SocialAuthCallbackUrl.objects.filter(provider=provider).first()
+    candidate = db_callback.callback_url if db_callback else f"http://localhost:3000/auth/{provider}/callback"
+    return _validate_callback_url(candidate) or f"http://localhost:3000/auth/{provider}/callback"
+
+# ── Brute-force defence on the JWT login endpoint ────────────────────────────
+# Scoped throttle (see "auth_login" in settings.DEFAULT_THROTTLE_RATES) keeps
+# credential-stuffing attempts per IP/credentials bounded.
+class ThrottledTokenObtainPairView(TokenObtainPairView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_login"
+
 
 class LoggedInDevicesView(APIView):
     permission_classes = [IsAuthenticated]
@@ -55,25 +109,27 @@ class SocialAuthURLView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, provider):
-        callback_url = request.GET.get("callback_url")
-        
         if provider == "google":
             adapter_class = GoogleOAuth2Adapter
         elif provider == "github":
             adapter_class = GitHubOAuth2Adapter
         else:
             return Response({"error": "Unsupported provider"}, status=status.HTTP_400_BAD_REQUEST)
-            
+
         adapter = adapter_class(request)
         provider_obj = adapter.get_provider()
         app = provider_obj.app
         
         if not app:
             return Response({"error": f"SocialApp for {provider} not configured in admin"}, status=status.HTTP_400_BAD_REQUEST)
-            
-        if not callback_url:
-            db_callback = SocialAuthCallbackUrl.objects.filter(provider=provider).first()
-            callback_url = db_callback.callback_url if db_callback else f"http://localhost:3000/auth/{provider}/callback"
+
+        # Only allowlisted callback URLs are accepted; anything else falls back
+        # to the admin-configured (or local dev) URL. Prevents open redirects
+        # and OAuth authorization-code interception.
+        callback_url = (
+            _validate_callback_url(request.GET.get("callback_url"))
+            or _fallback_callback_url(provider)
+        )
             
         scope = provider_obj.get_scope_from_request(request)
         auth_params = provider_obj.get_auth_params_from_request(request, "authenticate")
@@ -104,13 +160,11 @@ class GoogleLogin(SocialLoginView):
 
     @property
     def callback_url(self):
-        # 1. Check if provided by frontend in the POST request
-        if hasattr(self, "request") and self.request and "callback_url" in self.request.data:
-            return self.request.data["callback_url"]
-        
-        # 2. Fallback to database configuration
-        obj = SocialAuthCallbackUrl.objects.filter(provider="google").first()
-        return obj.callback_url if obj else "http://localhost:3000/auth/google/callback"
+        # 1. Frontend-provided callback_url — accepted only when allowlisted.
+        requested = None
+        if hasattr(self, "request") and self.request:
+            requested = self.request.data.get("callback_url")
+        return _validate_callback_url(requested) or _fallback_callback_url("google")
 
 class GitHubLogin(SocialLoginView):
     adapter_class = GitHubOAuth2Adapter
@@ -118,10 +172,8 @@ class GitHubLogin(SocialLoginView):
     
     @property
     def callback_url(self):
-        # 1. Check if provided by frontend in the POST request
-        if hasattr(self, "request") and self.request and "callback_url" in self.request.data:
-            return self.request.data["callback_url"]
-            
-        # 2. Fallback to database configuration
-        obj = SocialAuthCallbackUrl.objects.filter(provider="github").first()
-        return obj.callback_url if obj else "http://localhost:3000/auth/github/callback"
+        # 1. Frontend-provided callback_url — accepted only when allowlisted.
+        requested = None
+        if hasattr(self, "request") and self.request:
+            requested = self.request.data.get("callback_url")
+        return _validate_callback_url(requested) or _fallback_callback_url("github")

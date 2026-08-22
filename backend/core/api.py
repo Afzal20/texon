@@ -1,9 +1,10 @@
 """
 Generic REST API layer for all project models.
 
-One serializer + viewset factory introspects every model of the project apps,
-mirroring the GraphQL registry approach. The generated route set is documented
-in docs/backend/01-rest-api-design.md (103 model endpoints + infra).
+One serializer + viewset factory introspects every model of the project apps.
+The generated route set is documented in docs/backend/01-rest-api-design.md
+(103 model endpoints + infra). This is the single API gateway — every endpoint
+enforces authentication, model permissions and object-level ownership checks.
 """
 
 import re
@@ -11,7 +12,11 @@ import re
 from django.apps import apps
 from django.db import models
 from rest_framework import serializers, viewsets
-from rest_framework.permissions import DjangoModelPermissions
+from rest_framework.permissions import DjangoModelPermissions, IsAuthenticated
+
+from core.mixins import OwnerQuerysetMixin
+from core.permissions import IsFinanceRole, IsObjectOwnerOrStaff
+from rbac.permissions import require_perms_for_actions
 
 PROJECT_APPS = [
     "authentication",
@@ -43,12 +48,17 @@ PROJECT_APPS = [
 
 # Models that must never be exposed via REST (join tables, auth internals).
 # authentication.User is intentionally absent from the documented endpoint list
-# (docs/backend/01-rest-api-design.md): user management stays on the auth
-# endpoints and the GraphQL gateway.
+# (docs/backend/01-rest-api-design.md): user management lives behind the
+# RBAC-guarded /api/v1/users/ endpoint (authentication/api.py).
+# rbac.Permission/Role/RolePermission/UserRole are served by the dedicated
+# RBAC management API (rbac/views.py) with require_perms() enforcement —
+# never through the generic factory.
 SKIP_MODELS = {
     ("authentication", "OTP"),
     ("authentication", "SocialAuthCallbackUrl"),
     ("authentication", "User"),
+    ("rbac", "Permission"),
+    ("rbac", "Role"),
     ("rbac", "RolePermission"),
     ("rbac", "UserRole"),
 }
@@ -57,6 +67,25 @@ SKIP_MODELS = {
 READ_ONLY_MODELS = {
     ("core", "Location"),
     ("core", "Currency"),
+}
+
+# App-level tier guard (defence in depth on top of DjangoModelPermissions).
+# Users from other departments are rejected even if they hold model perms.
+TIER_REQUIRED = {
+    "accounts": IsFinanceRole,
+}
+
+# RBAC write guards for the generic layer (defence in depth on top of
+# DjangoModelPermissions). Unsafe actions on these apps additionally require
+# the matching seeded RBAC codename; reads stay governed by model perms +
+# owner scoping. Superusers bypass via the permission helper.
+APP_RBAC_WRITE_PERM = {
+    "orders": "orders.create",
+    "buyers": "buyers.manage",
+    "procurement": "procurement.manage",
+    "inventory": "inventory.manage",
+    "quality": "quality.manage",
+    "ie_planning": "ie.manage",
 }
 
 # Slug overrides — must match docs/backend/01-rest-api-design.md exactly.
@@ -200,19 +229,42 @@ def build_viewset(model, read_only=False):
             if name_field:
                 search_fields.append(f"{f.name}__{name_field}")
 
+    # Security stack (IDOR defence):
+    #   IsAuthenticated        — no anonymous access
+    #   DjangoModelPermissions — model-level add/change/delete/view perms
+    #   IsObjectOwnerOrStaff   — object-level: only the row owner (or staff)
+    # OwnerQuerysetMixin scopes the queryset so foreign rows 404 entirely.
+    permission_classes = [IsAuthenticated, DjangoModelPermissions, IsObjectOwnerOrStaff]
+    tier_class = TIER_REQUIRED.get(model._meta.app_label)
+    if tier_class is not None:
+        permission_classes = [IsAuthenticated, tier_class, DjangoModelPermissions, IsObjectOwnerOrStaff]
+    rbac_write_perm = APP_RBAC_WRITE_PERM.get(model._meta.app_label)
+    if rbac_write_perm is not None:
+        permission_classes = permission_classes + [
+            require_perms_for_actions(
+                {
+                    "create": (rbac_write_perm,),
+                    "update": (rbac_write_perm,),
+                    "partial_update": (rbac_write_perm,),
+                    "destroy": (rbac_write_perm,),
+                }
+            ),
+        ]
+
     attrs = {
         "queryset": model.objects.select_related(*fk_names).all(),
         "serializer_class": build_serializer(model),
-        "permission_classes": [DjangoModelPermissions],
+        "permission_classes": permission_classes,
         "filterset_fields": filterable_names,
         "search_fields": search_fields,
         "ordering_fields": filterable_names,
     }
 
     if read_only:
-        viewset_cls = type(f"{model.__name__}ViewSet", (viewsets.ReadOnlyModelViewSet,), attrs)
+        base = (OwnerQuerysetMixin, viewsets.ReadOnlyModelViewSet)
     else:
-        viewset_cls = type(f"{model.__name__}ViewSet", (viewsets.ModelViewSet,), attrs)
+        base = (OwnerQuerysetMixin, viewsets.ModelViewSet)
+    viewset_cls = type(f"{model.__name__}ViewSet", base, attrs)
     return viewset_cls
 
 

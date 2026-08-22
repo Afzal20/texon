@@ -2,13 +2,14 @@ import apiClient from "./client"
 import axios from "axios"
 
 /**
- * REST-backed data access helpers mirroring the GraphQL ones in ./graphql.
+ * REST-backed data access helpers (the only generic data layer — the former
+ * GraphQL gateway was removed).
  *
- * Same call signatures and return shapes as gqlList/gqlGet/gqlCreate/gqlUpdate/
- * gqlDelete, so existing page code (`res.data?.results ?? res.data`) keeps
- * working. List/get hit the generic layer documented in
- * docs/backend/01-rest-api-design.md. Optional `params` are applied as
- * client-side filters on the fetched rows (same semantics as gqlList).
+ * Same call signatures and return shapes as the old gqlList/gqlGet/gqlCreate/
+ * gqlUpdate/gqlDelete helpers, so existing page code
+ * (`res.data?.results ?? res.data`) keeps working. List/get hit the generic
+ * layer documented in docs/backend/01-rest-api-design.md. Optional `params`
+ * are applied as client-side filters on the fetched rows.
  */
 
 export type RestParams = Record<string, unknown>
@@ -27,6 +28,10 @@ const SLUGS: Record<string, Record<string, string>> = {
     CostCenter: "cost-centers",
     Expense: "expenses",
     JournalEntry: "journal-entries",
+  },
+  authentication: {
+    // RBAC-guarded management endpoint (backend authentication/api.py).
+    User: "users",
   },
   buyers: {
     Buyer: "buyers",
@@ -264,4 +269,53 @@ export async function restDelete(app: string, model: string, id: number | string
   const slug = restSlug(app, model)
   await requestJson(`/api/v1/${slug}/${id}/`, token, "DELETE")
   return { data: { success: true } }
+}
+
+// ── All-models registry + full fetch (REST data explorer support) ───────────
+
+export interface ModelEntry {
+  app: string
+  model: string
+  slug: string
+}
+
+/** app label -> model name -> rows (same shape the Data Explorer expects). */
+export type AllData = Record<string, Record<string, RestRow[]>>
+
+export const ALL_MODELS: ModelEntry[] = Object.entries(SLUGS).flatMap(([app, models]) =>
+  Object.entries(models).map(([model, slug]) => ({ app, model, slug })),
+)
+
+/** Fetch every registered model's list data via the generic REST endpoints. */
+export async function fetchAllData(token?: string): Promise<AllData> {
+  const entries = Object.entries(SLUGS) as [string, Record<string, string>][]
+  const results: [string, string, RestRow[] | null][] = []
+
+  const CONCURRENCY = 6
+  let cursor = 0
+
+  async function worker() {
+    while (cursor < entries.length) {
+      const current = entries[cursor++]
+      if (!current) return
+      const [app, models] = current
+      for (const model of Object.keys(models)) {
+        try {
+          const res = await restList(app, model, undefined, token)
+          results.push([app, model, res.data as RestRow[]])
+        } catch {
+          // Endpoint may be forbidden/absent for this user — surface empty.
+          results.push([app, model, []])
+        }
+      }
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, entries.length) }, worker))
+
+  const data: AllData = {}
+  for (const [app, model, rows] of results) {
+    ;(data[app] ??= {})[model] = rows ?? []
+  }
+  return data
 }

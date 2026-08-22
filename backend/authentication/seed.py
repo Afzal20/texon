@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import django
 django.setup()
 
+from django.conf import settings
 from django.utils import timezone
 
 from authentication.models import User, OTP
@@ -36,17 +37,21 @@ for email, first, last, is_staff, is_superuser, is_verified, phone in [
     users.append(u)
 
 # ── OTPs ────────────────────────────────────────────────────────────────────
-for email, purpose, code, minutes, is_used in [
-    ("merchant@texon.com", "password_reset", "482913", 10, False),
-    ("merchant@texon.com", "email_verify", "774521", 15, False),
-    ("hr@texon.com", "email_verify", "330987", 15, True),
-    ("finance@texon.com", "password_reset", "651204", 10, False),
-    ("admin@texon.com", "email_verify", "908172", 15, True),
-]:
-    OTP.objects.get_or_create(
-        user=User.objects.get(email=email), purpose=purpose, code=code, is_used=is_used,
-        defaults={"expires_at": timezone.now() + timedelta(minutes=minutes)},
-    )
+# SECURITY: hardcoded OTP codes must never reach a production database — an
+# attacker who knows them can bypass password reset / email verification.
+# Only seed them while DEBUG=True.
+if settings.DEBUG:
+    for email, purpose, code, minutes, is_used in [
+        ("merchant@texon.com", "password_reset", "482913", 10, False),
+        ("merchant@texon.com", "email_verify", "774521", 15, False),
+        ("hr@texon.com", "email_verify", "330987", 15, True),
+        ("finance@texon.com", "password_reset", "651204", 10, False),
+        ("admin@texon.com", "email_verify", "908172", 15, True),
+    ]:
+        OTP.objects.get_or_create(
+            user=User.objects.get(email=email), purpose=purpose, code=code, is_used=is_used,
+            defaults={"expires_at": timezone.now() + timedelta(minutes=minutes)},
+        )
 
 # ── Summary ──────────────────────────────────────────────────────────────────
 for model, label in [

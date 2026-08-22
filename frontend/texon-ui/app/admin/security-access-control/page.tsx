@@ -11,7 +11,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
-import { gqlList } from "@/lib/api/graphql"
+import { restList } from "@/lib/api/rest"
 
 interface RoleRow {
   name: string
@@ -35,7 +35,7 @@ export default function SecurityAccessControlPage() {
   const [selectedRole, setSelectedRole] = useState("")
 
   useEffect(() => {
-    Promise.all([gqlList("rbac", "Role"), gqlList("rbac", "Permission"), gqlList("authentication", "User")])
+    Promise.all([restList("rbac", "Role"), restList("rbac", "Permission"), restList("authentication", "User")])
       .then(([rolesRes, permsRes, usersRes]) => {
         const roleRows: RoleRow[] = (rolesRes.data ?? []).map((role) => ({
           name: String(role.name ?? ""),

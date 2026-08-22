@@ -11,7 +11,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
-import { gqlList } from "@/lib/api/graphql"
+import { restList } from "@/lib/api/rest"
 
 interface PermMatrix {
   read: boolean
@@ -36,7 +36,7 @@ export default function RolebasedPermissionsPage() {
   const [expandedRole, setExpandedRole] = useState<string | null>(null)
 
   useEffect(() => {
-    Promise.all([gqlList("rbac", "Role"), gqlList("rbac", "Permission"), gqlList("authentication", "User")])
+    Promise.all([restList("rbac", "Role"), restList("rbac", "Permission"), restList("authentication", "User")])
       .then(([rolesRes, permsRes, usersRes]) => {
         const groups = new Map<string, PermMatrix>()
         for (const perm of permsRes.data ?? []) {

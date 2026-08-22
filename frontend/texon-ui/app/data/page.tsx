@@ -1,10 +1,10 @@
 import { Suspense } from "react"
-import { fetchAllFromGraphQL } from "./actions"
+import { fetchAllFromRest } from "./actions"
 import DataExplorer from "./_components/data-explorer"
 import { Skeleton } from "@/components/ui/skeleton"
 
 async function DataLoader() {
-  const data = await fetchAllFromGraphQL()
+  const data = await fetchAllFromRest()
   return <DataExplorer data={data} />
 }
 

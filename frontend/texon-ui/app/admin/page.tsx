@@ -9,7 +9,7 @@ import {
   Lock, MapPin, DollarSign, Settings, BarChart3
 } from "lucide-react"
 import { toast } from "sonner"
-import { gqlList } from "@/lib/api/graphql"
+import { restList } from "@/lib/api/rest"
 
 interface PageStat {
   users: number
@@ -35,10 +35,10 @@ export default function ControlPanelAdminIndexPage() {
 
   useEffect(() => {
     Promise.all([
-      gqlList("authentication", "User"),
-      gqlList("rbac", "Role"),
-      gqlList("multi_company", "LocationBasedOperation"),
-      gqlList("buyers", "Buyer"),
+      restList("authentication", "User"),
+      restList("rbac", "Role"),
+      restList("multi_company", "LocationBasedOperation"),
+      restList("buyers", "Buyer"),
     ])
       .then(([users, roles, locations, buyers]) => {
         setStats({

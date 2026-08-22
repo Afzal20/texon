@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ShieldCheck, Edit, Plus } from "lucide-react"
 import { toast } from "sonner"
-import { gqlList } from "@/lib/api/graphql"
+import { restList } from "@/lib/api/rest"
 
 interface RoleRow {
   name: string
@@ -26,8 +26,8 @@ export default function Security() {
 
   useEffect(() => {
     Promise.all([
-      gqlList("rbac", "Role"),
-      gqlList("rbac", "Permission"),
+      restList("rbac", "Role"),
+      restList("rbac", "Permission"),
     ])
       .then(([rolesRes, permsRes]) => {
         const roleRows: RoleRow[] = (rolesRes.data ?? []).map((role) => ({

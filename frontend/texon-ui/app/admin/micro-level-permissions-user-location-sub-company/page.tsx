@@ -12,7 +12,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
-import { gqlList, type GqlRow } from "@/lib/api/graphql"
+import { restList, type RestRow } from "@/lib/api/rest"
 
 interface UserRow {
   name: string
@@ -40,12 +40,12 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
 
   useEffect(() => {
     Promise.all([
-      gqlList("authentication", "User"),
-      gqlList("multi_company", "LocationBasedOperation"),
-      gqlList("multi_company", "MultiCompany"),
+      restList("authentication", "User"),
+      restList("multi_company", "LocationBasedOperation"),
+      restList("multi_company", "MultiCompany"),
     ])
       .then(([usersRes, locsRes, companiesRes]) => {
-        const userRows: UserRow[] = (usersRes.data ?? []).map((u: GqlRow) => {
+        const userRows: UserRow[] = (usersRes.data ?? []).map((u: RestRow) => {
           const firstName = String(u.first_name ?? "")
           const lastName = String(u.last_name ?? "")
           const name = `${firstName} ${lastName}`.trim() || String(u.email ?? "")
@@ -61,7 +61,7 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
         })
         setUsers(userRows)
         setLocations(
-          (locsRes.data ?? []).map((loc: GqlRow) => ({
+          (locsRes.data ?? []).map((loc: RestRow) => ({
             name: String(loc.operation_type ?? "—"),
             code: `#${String(loc.id ?? "")}`,
             users: "—",
@@ -69,7 +69,7 @@ export default function MicrolevelPermissionsUserLocationSubCompanyPage() {
           })),
         )
         setSubCompanies(
-          (companiesRes.data ?? []).map((c: GqlRow) => ({
+          (companiesRes.data ?? []).map((c: RestRow) => ({
             name: String(c.name ?? "—"),
             code: String(c.code ?? ""),
             locations: "—",

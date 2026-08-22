@@ -14,6 +14,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from decouple import Csv, config
+from django.core.exceptions import ImproperlyConfigured
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
@@ -24,13 +25,30 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("DJANGO_SECRET_KEY", default="django-insecure-8t2p2rgxfg!2x0%1d6(a@k2lc==5!wlnv%vfucqc!d79@f8nim")
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DJANGO_DEBUG", default=True, cast=bool)
 
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*", cast=Csv())
+# SECURITY WARNING: keep the secret key used in production secret!
+# A hardcoded insecure fallback is only acceptable while DEBUG=True; in
+# production a missing DJANGO_SECRET_KEY must fail loudly instead of silently
+# running with a publicly-known key (session/OTP/JWT forgery risk).
+if DEBUG:
+    SECRET_KEY = config(
+        "DJANGO_SECRET_KEY",
+        default="django-insecure-8t2p2rgxfg!2x0%1d6(a@k2lc==5!wlnv%vfucqc!d79@f8nim",
+    )
+else:
+    SECRET_KEY = config("DJANGO_SECRET_KEY", default="")
+    if not SECRET_KEY:
+        raise ImproperlyConfigured(
+            "DJANGO_SECRET_KEY must be set via environment when DEBUG=False."
+        )
+
+ALLOWED_HOSTS = config(
+    "ALLOWED_HOSTS",
+    default="localhost,127.0.0.1,testserver" if DEBUG else "localhost",
+    cast=Csv(),
+)
 
 
 # Application definition
@@ -51,7 +69,6 @@ INSTALLED_APPS = [
     'drf_spectacular_sidecar',
     'django_filters',
     'crispy_forms',
-    'graphene_django',
     'authentication',
     'core',
     'buyers',
@@ -384,6 +401,7 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "100/hour",
         "user": "1000/hour",
+        "auth_login": "30/hour",
     },
     "DEFAULT_PARSER_CLASSES": (
         "rest_framework.parsers.JSONParser",
@@ -431,7 +449,8 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
 }
 
-CORS_ALLOW_ALL_ORIGINS = config("CORS_ALLOW_ALL_ORIGINS", default=True, cast=bool)
+# Never allow all origins with credentials in production; set explicitly via env.
+CORS_ALLOW_ALL_ORIGINS = config("CORS_ALLOW_ALL_ORIGINS", default=False, cast=bool)
 CORS_ALLOWED_ORIGINS = config("CORS_ALLOWED_ORIGINS", default="http://localhost:3000,http://127.0.0.1:3000", cast=Csv())
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
@@ -483,12 +502,6 @@ AI_LLM_CONFIG = {
     },
 }
 
-# GraphQL gateway configuration
-GRAPHENE = {
-    "SCHEMA": "config.graphql.schema.schema",
-    "MIDDLEWARE": ["config.graphql.middleware.JWTAuthMiddleware"],
-}
-
 # dj-rest-auth and allauth settings
 SITE_ID = 1
 
@@ -498,7 +511,12 @@ ACCOUNT_USER_MODEL = 'authentication.User'
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
-ACCOUNT_EMAIL_VERIFICATION = 'none'
+# 'none' is only acceptable in development. Production must verify emails
+# (override via the ACCOUNT_EMAIL_VERIFICATION env var if needed).
+ACCOUNT_EMAIL_VERIFICATION = config(
+    "ACCOUNT_EMAIL_VERIFICATION",
+    default="none" if DEBUG else "mandatory",
+)
 
 REST_AUTH = {
     'USE_JWT': True,
@@ -507,6 +525,17 @@ REST_AUTH = {
     'TOKEN_MODEL': None,
     'USER_DETAILS_SERIALIZER': 'authentication.serializers.UserDetailsSerializer',
 }
+
+# Allowlisted redirect targets for OAuth callback_url overrides. The frontend
+# may request a specific callback_url, but only host:port entries listed here
+# are accepted (open-redirect / authorization-code interception defence).
+# Add your production frontend origin(s) via the SOCIAL_CALLBACK_ALLOWLIST env
+# var, e.g. "app.texon.com:443,localhost:3000".
+SOCIAL_CALLBACK_ALLOWLIST = config(
+    "SOCIAL_CALLBACK_ALLOWLIST",
+    default="localhost:3000,127.0.0.1:3000",
+    cast=Csv(),
+)
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {

@@ -11,7 +11,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
-import { gqlList, type GqlRow } from "@/lib/api/graphql"
+import { restList, type RestRow } from "@/lib/api/rest"
 
 interface UserRow {
   name: string
@@ -38,7 +38,7 @@ function formatLastLogin(value: unknown): string {
   return date.toLocaleDateString()
 }
 
-function mapUser(row: GqlRow): UserRow {
+function mapUser(row: RestRow): UserRow {
   const firstName = String(row.first_name ?? "")
   const lastName = String(row.last_name ?? "")
   const email = String(row.email ?? "")
@@ -75,7 +75,7 @@ export default function UserManagementPage() {
   const [search, setSearch] = useState("")
 
   useEffect(() => {
-    gqlList("authentication", "User")
+    restList("authentication", "User")
       .then((res) => setUsers((res.data ?? []).map(mapUser)))
       .catch(() => {})
       .finally(() => setLoading(false))

@@ -10,14 +10,19 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { ChevronDown, ChevronRight } from "lucide-react"
-import { ALL_MODELS } from "@/lib/graphql/registry"
-import type { AllData, ModelRow } from "@/lib/graphql/client"
+import { ALL_MODELS, type AllData, type RestRow } from "@/lib/api/rest"
 
 function formatValue(value: unknown): string {
   if (value === null || value === undefined) return "—"
   if (typeof value === "boolean") return value ? "true" : "false"
   if (typeof value === "object") return JSON.stringify(value)
   return String(value)
+}
+
+function rowFields(rows: RestRow[]): string[] {
+  const first = rows[0]
+  if (!first) return []
+  return Object.keys(first).filter((k) => k !== "id")
 }
 
 function ModelTable({
@@ -27,7 +32,7 @@ function ModelTable({
 }: {
   model: string
   fields: string[]
-  rows: ModelRow[]
+  rows: RestRow[]
 }) {
   const [detailId, setDetailId] = useState<string | null>(null)
 
@@ -53,7 +58,7 @@ function ModelTable({
           <tbody>
             {rows.map((row) => (
               <tr
-                key={row.id}
+                key={String(row.id)}
                 className="border-t hover:bg-muted/40 cursor-pointer"
                 onClick={() => setDetailId(detailId === String(row.id) ? null : String(row.id))}
               >
@@ -116,7 +121,7 @@ export default function DataExplorer({ data }: { data: AllData }) {
         <div>
           <h1 className="text-2xl font-semibold">Data Explorer</h1>
           <p className="text-sm text-muted-foreground">
-            All ERP data fetched from <code>/graphql/</code> in a single request
+            All ERP data fetched via the generic REST endpoints (<code>/api/v1/&lt;model&gt;/</code>)
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -154,14 +159,17 @@ export default function DataExplorer({ data }: { data: AllData }) {
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <CardContent className="space-y-6">
-                  {models.map(({ model, fields }) => (
-                    <ModelTable
-                      key={model}
-                      model={model}
-                      fields={fields}
-                      rows={data[app]?.[model] ?? []}
-                    />
-                  ))}
+                  {models.map(({ model }) => {
+                    const rows = data[app]?.[model] ?? []
+                    return (
+                      <ModelTable
+                        key={model}
+                        model={model}
+                        fields={rowFields(rows)}
+                        rows={rows}
+                      />
+                    )
+                  })}
                 </CardContent>
               </CollapsibleContent>
             </Collapsible>
