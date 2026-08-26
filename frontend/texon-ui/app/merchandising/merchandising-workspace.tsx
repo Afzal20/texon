@@ -11,6 +11,7 @@ import { ArrowLeft, ArrowUpRight, CalendarDays, ChevronLeft, ChevronRight, FileT
 import { toast } from "sonner"
 import { tallyBy } from "@/lib/api/module-data"
 import { RawItemsViewer } from "@/components/data/RawDataViewer"
+import { MerchandisingTaskCenter } from "./task-center"
 
 const PENDING_STATUSES = new Set([
   "pending", "draft", "submitted", "under_review", "expected",
@@ -270,6 +271,7 @@ export function MerchandisingWorkspace({ module, metrics, rows, isLoading, error
   const resolvedMetrics = metrics ?? []
   const resolvedRows = rows ?? []
   const [page, setPage] = useState(1)
+  const [taskCenterOpen, setTaskCenterOpen] = useState(false)
   const totalPages = Math.max(1, Math.ceil(resolvedRows.length / ROWS_PER_PAGE))
   const paginatedRows = useMemo(() => resolvedRows.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE), [resolvedRows, page])
 
@@ -462,7 +464,7 @@ export function MerchandisingWorkspace({ module, metrics, rows, isLoading, error
                   if (out.length === 0) out.push({ title: "Nothing needs attention", detail: `No open items found in ${config.tableTitle.toLowerCase()}.`, tone: "emerald" })
                   return out.map((notice) => <div key={notice.title} className={`rounded-lg border p-3 ${noticeClass(notice.tone)}`}><p className="text-sm font-medium">{notice.title}</p><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{notice.detail}</p></div>)
                 })()}
-                <button className="flex items-center gap-1 text-xs font-medium text-primary hover:underline" onClick={() => toast.info("Opening merchandising task center")}>Open task center <ArrowUpRight className="size-3" /></button>
+                <button className="flex items-center gap-1 text-xs font-medium text-primary hover:underline" onClick={() => setTaskCenterOpen(true)}>Open task center <ArrowUpRight className="size-3" /></button>
               </CardContent>
             </Card>
             <Card className="gap-3 bg-muted/30">
@@ -472,6 +474,8 @@ export function MerchandisingWorkspace({ module, metrics, rows, isLoading, error
         </div>
 
         {rawItems && <RawItemsViewer items={rawItems} />}
+
+        <MerchandisingTaskCenter open={taskCenterOpen} onOpenChange={setTaskCenterOpen} />
       </main>
     </AppLayout>
   )

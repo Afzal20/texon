@@ -23,6 +23,12 @@ def search_callback(request, search_term):
             icon="dynamic_form",
         ),
         SearchResult(
+            title="Logs",
+            description="Recent application log records (in-memory buffer)",
+            link=reverse_lazy("admin:logs"),
+            icon="receipt_long",
+        ),
+        SearchResult(
             title="Operations Site",
             description="Secondary admin site",
             link=reverse_lazy("operations:index"),

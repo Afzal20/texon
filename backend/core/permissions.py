@@ -99,3 +99,20 @@ class IsSalesRole(_TierPermission):
 
 class IsAdminRole(_TierPermission):
     tier = "admin"
+
+class StaffWritesOnly(permissions.BasePermission):
+    """Deny-by-default writes for apps without a dedicated RBAC write perm.
+
+    Reads stay available to any authenticated user (subject to read gating);
+    unsafe methods require staff/superuser. This replaces DjangoModelPermissions,
+    which silently blocked ALL writes for non-superusers (nobody holds Django
+    model perms) while leaving reads unchecked.
+    """
+
+    def has_permission(self, request, view):
+        user = getattr(request, "user", None)
+        if not user or not user.is_authenticated:
+            return False
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return bool(user.is_staff or user.is_superuser)

@@ -2,10 +2,20 @@ import "server-only"
 import { cookies } from "next/headers"
 import { jwtVerify, SignJWT } from "jose"
 import type { NextRequest } from "next/server"
+import { isJwtExpired } from "@/lib/jwt"
 
 const SESSION_NAME = "__session"
+// Session-signing secret. MUST be provided via the AUTH_SECRET env var in
+// production — a known hardcoded fallback would let anyone forge session
+// cookies (full auth bypass), so we refuse to boot without it.
+const AUTH_SECRET = process.env.AUTH_SECRET
+if (!AUTH_SECRET && process.env.NODE_ENV === "production") {
+  throw new Error(
+    "AUTH_SECRET is not set. Refusing to start in production with a known fallback signing key.",
+  )
+}
 const ENCRYPTION_KEY = new TextEncoder().encode(
-  process.env.AUTH_SECRET ?? "texon-dev-secret-min-32-chars-long!!",
+  AUTH_SECRET ?? "texon-dev-secret-min-32-chars-long!!",
 )
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 7 // 7 days
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"
@@ -65,12 +75,7 @@ export async function getSession(): Promise<SessionPayload | null> {
 }
 
 function isTokenExpired(token: string): boolean {
-  try {
-    const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString())
-    return payload.exp * 1000 < Date.now()
-  } catch {
-    return true
-  }
+  return isJwtExpired(token)
 }
 
 async function refreshAccessToken(refresh: string): Promise<{ access: string; refresh: string } | null> {

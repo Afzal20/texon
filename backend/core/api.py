@@ -12,10 +12,10 @@ import re
 from django.apps import apps
 from django.db import models
 from rest_framework import serializers, viewsets
-from rest_framework.permissions import DjangoModelPermissions, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 
 from core.mixins import OwnerQuerysetMixin
-from core.permissions import IsFinanceRole, IsObjectOwnerOrStaff
+from core.permissions import IsFinanceRole, IsObjectOwnerOrStaff, StaffWritesOnly
 from rbac.permissions import require_perms_for_actions
 
 PROJECT_APPS = [
@@ -85,6 +85,16 @@ APP_RBAC_WRITE_PERM = {
     "inventory": "inventory.manage",
     "quality": "quality.manage",
     "ie_planning": "ie.manage",
+}
+
+# Sensitive apps: list/retrieve additionally require the matching RBAC read
+# codename (superusers bypass). Apps absent here stay authenticated-readable.
+# Backed by seeded codenames in rbac/seed.py — e.g. payroll data must never be
+# readable by users without salary.view.
+APP_RBAC_READ_PERM = {
+    "hr": "salary.view",
+    "accounts": "accounts.view",
+    "authentication": "users.view",
 }
 
 # Slug overrides — must match docs/backend/01-rest-api-design.md exactly.
@@ -230,13 +240,18 @@ def build_viewset(model, read_only=False):
 
     # Security stack (IDOR defence):
     #   IsAuthenticated        — no anonymous access
-    #   DjangoModelPermissions — model-level add/change/delete/view perms
     #   IsObjectOwnerOrStaff   — object-level: only the row owner (or staff)
-    # OwnerQuerysetMixin scopes the queryset so foreign rows 404 entirely.
-    permission_classes = [IsAuthenticated, DjangoModelPermissions, IsObjectOwnerOrStaff]
+    #   OwnerQuerysetMixin     — scopes the queryset so foreign rows 404 entirely
+    # Reads on sensitive apps additionally require the app's RBAC read codename
+    # (APP_RBAC_READ_PERM). Writes require the app's RBAC write codename
+    # (APP_RBAC_WRITE_PERM) or staff/superuser when unmapped — deny by default.
+    # NOTE: DjangoModelPermissions was deliberately removed: it never restricted
+    # GET (empty perms_map entry) yet blocked ALL writes for non-superusers
+    # because no role-holder is granted Django model perms.
+    permission_classes = [IsAuthenticated, IsObjectOwnerOrStaff]
     tier_class = TIER_REQUIRED.get(model._meta.app_label)
     if tier_class is not None:
-        permission_classes = [IsAuthenticated, tier_class, DjangoModelPermissions, IsObjectOwnerOrStaff]
+        permission_classes = [IsAuthenticated, tier_class, IsObjectOwnerOrStaff]
     rbac_write_perm = APP_RBAC_WRITE_PERM.get(model._meta.app_label)
     if rbac_write_perm is not None:
         permission_classes = permission_classes + [
@@ -246,6 +261,18 @@ def build_viewset(model, read_only=False):
                     "update": (rbac_write_perm,),
                     "partial_update": (rbac_write_perm,),
                     "destroy": (rbac_write_perm,),
+                }
+            ),
+        ]
+    else:
+        permission_classes = permission_classes + [StaffWritesOnly]
+    rbac_read_perm = APP_RBAC_READ_PERM.get(model._meta.app_label)
+    if rbac_read_perm is not None:
+        permission_classes = permission_classes + [
+            require_perms_for_actions(
+                {
+                    "list": (rbac_read_perm,),
+                    "retrieve": (rbac_read_perm,),
                 }
             ),
         ]

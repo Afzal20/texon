@@ -27,6 +27,7 @@ urlpatterns = [
 
     # RBAC + user management (roles.manage / users.* permission guarded).
     path("api/v1/", include("rbac.urls")),
+    path("api/v1/ai/", include("ai.urls")),
     path("api/v1/", include("authentication.api_urls")),
 
     # JWT token endpoints

@@ -35,12 +35,19 @@ Test login (seeded): `admin@texon.com` / `Test@123`
 
 ## API Access
 
-- **GraphQL** (`POST <API_URL>/graphql/`) is the primary data API — full ERP
-  CRUD. See `docs/frontend/03-graphql-api.md` and `frontend_graphql_guide.md`
-  (repo root).
-- REST auth: `/api/v1/auth/*` (login, refresh, user, password, registration).
-- ⚠️ The per-module REST clients in `lib/api/*.ts` target `/api/v1/<module>/`
-  routes that are **not registered** on the backend — use GraphQL instead.
+The app talks to the Django REST API (`NEXT_PUBLIC_API_URL`, default
+`http://localhost:8000`; production: https://texon-backend.vercel.app).
+OpenAPI schema: `<API_URL>/api/schema/` (Swagger UI: `/swagger-ui/`).
+
+- **Auth**: JWT bearer tokens (SimpleJWT + dj-rest-auth):
+  - Login: `POST /api/users/api/token/` or `POST /api/v1/auth/login/`
+  - Refresh: `POST /api/users/api/token/refresh/` or `POST /api/v1/auth/token/refresh/`
+  - User/password/social: `/api/v1/auth/*` — see `lib/api/auth.ts`
+- **Data**: generic CRUD via `/api/v1/<slug>/` — registry in
+  `lib/api/rest.ts` maps `(app, model)` → slug 1:1 against the live schema
+  (`lib/api/all_endpoints.txt`). Helpers: `restList/restGet/restCreate/
+  restUpdate/restDelete`.
+
 
 ## Documentation
 

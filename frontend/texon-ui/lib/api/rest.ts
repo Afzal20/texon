@@ -153,6 +153,8 @@ const SLUGS: Record<string, Record<string, string>> = {
   rbac: {
     Permission: "permissions",
     Role: "roles",
+    RolePermission: "role-permissions",
+    UserRole: "user-roles",
   },
   reporting: {
     Dashboard: "dashboards",

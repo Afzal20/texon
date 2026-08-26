@@ -2,7 +2,7 @@ from django.urls import path
 
 from unfold.sites import UnfoldAdminSite
 
-from core.admin_pages import CrispyDemoPage, ReportsPage
+from core.admin_pages import CrispyDemoPage, LogsPage, ReportsPage
 
 
 class TexonAdminSite(UnfoldAdminSite):
@@ -18,6 +18,7 @@ class TexonAdminSite(UnfoldAdminSite):
                 CrispyDemoPage.as_view(admin_site=self),
                 name="crispy-demo",
             ),
+            path("logs/", LogsPage.as_view(admin_site=self), name="logs"),
         ]
 
 

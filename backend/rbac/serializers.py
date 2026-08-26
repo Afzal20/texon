@@ -4,9 +4,25 @@ from .models import Permission, Role, RolePermission, UserRole
 
 
 class PermissionSerializer(serializers.ModelSerializer):
+    content_type_app_label = serializers.CharField(
+        source="content_type.app_label", read_only=True, default=None
+    )
+    content_type_model = serializers.CharField(
+        source="content_type.model", read_only=True, default=None
+    )
+
     class Meta:
         model = Permission
-        fields = ("id", "codename", "label", "group")
+        fields = (
+            "id",
+            "codename",
+            "label",
+            "group",
+            "content_type",
+            "object_id",
+            "content_type_app_label",
+            "content_type_model",
+        )
         read_only_fields = ("id",)
 
 
@@ -42,7 +58,9 @@ class UserRoleSerializer(serializers.ModelSerializer):
 
 class RolePermissionSerializer(serializers.ModelSerializer):
     role_name = serializers.CharField(source="role.name", read_only=True)
-    permission_codename = serializers.CharField(source="permission.codename", read_only=True)
+    permission_codename = serializers.CharField(
+        source="permission.codename", read_only=True
+    )
 
     class Meta:
         model = RolePermission

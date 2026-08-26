@@ -63,7 +63,9 @@ export function AppHeader() {
         {/* AI Command button */}
         <Button
           data-ai-trigger
-          className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 font-semibold text-sm px-4 h-9"
+          aria-label="AI Command"
+          title="AI Command (Ctrl+K)"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground h-9 w-9 rounded-full p-0"
           onClick={() => {
             // Trigger Ctrl+K
             const event = new KeyboardEvent("keydown", { key: "k", metaKey: true, ctrlKey: true, bubbles: true })
@@ -71,7 +73,6 @@ export function AppHeader() {
           }}
         >
           <Sparkles className="h-4 w-4" />
-          AI Command
         </Button>
 
         {/* Avatar */}

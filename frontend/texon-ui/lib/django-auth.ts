@@ -1,3 +1,6 @@
+import { decodeJwtPayload } from "@/lib/jwt"
+import { getSessionTokens } from "@/auth/actions/session-tokens"
+
 export const DJANGO_API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"
 export const TOKEN_KEY = "django_access_token"
 export const REFRESH_KEY = "django_refresh_token"
@@ -49,22 +52,56 @@ export function getStoredRefreshToken(): string | null {
   return localStorage.getItem(REFRESH_KEY)
 }
 
+/**
+ * Store tokens in localStorage for client-side API access.
+ *
+ * Security note: JWTs are deliberately NOT mirrored into document.cookie.
+ * A JS-readable cookie adds zero value (nothing reads it — route protection
+ * uses the server-only, httpOnly `__session` cookie set by auth/lib/session.ts)
+ * while giving XSS an extra place to steal long-lived credentials from.
+ */
 export function storeTokens(access: string, refresh: string) {
   localStorage.setItem(TOKEN_KEY, access)
   localStorage.setItem(REFRESH_KEY, refresh)
-  document.cookie = `${TOKEN_KEY}=${access}; path=/; max-age=86400; SameSite=Lax`
-  document.cookie = `${REFRESH_KEY}=${refresh}; path=/; max-age=86400; SameSite=Lax`
 }
 
 export function clearTokens() {
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(REFRESH_KEY)
-  document.cookie = `${TOKEN_KEY}=; path=/; max-age=0`
-  document.cookie = `${REFRESH_KEY}=; path=/; max-age=0`
+  // Expire legacy mirrored cookies from older builds (best effort cleanup).
+  if (typeof document !== "undefined") {
+    document.cookie = `${TOKEN_KEY}=; path=/; max-age=0`
+    document.cookie = `${REFRESH_KEY}=; path=/; max-age=0`
+  }
 }
 
 export function isAuthenticated(): boolean {
   return !!getStoredAccessToken()
+}
+
+let hydrationAttempted = false
+
+/**
+ * Rehydrates the token pair from the signed httpOnly session cookie when
+ * localStorage has lost them (cleared manually, storage pressure, or Safari's
+ * 7-day ITP eviction). Attempted at most once per page load; returns true when
+ * a usable refresh token is available afterwards.
+ */
+export async function ensureTokensAvailable(): Promise<boolean> {
+  if (getStoredAccessToken() && getStoredRefreshToken()) return true
+  if (hydrationAttempted) return false
+  hydrationAttempted = true
+
+  try {
+    const tokens = await getSessionTokens()
+    if (tokens.accessToken && tokens.refreshToken) {
+      storeTokens(tokens.accessToken, tokens.refreshToken)
+      return true
+    }
+  } catch {
+    // session invalid or network issue — fall through
+  }
+  return false
 }
 
 export async function loginWithDjango(
@@ -153,12 +190,7 @@ export async function refreshDjangoToken(): Promise<string | null> {
     }
 
     const data: { access: string; refresh?: string } = await res.json()
-    localStorage.setItem(TOKEN_KEY, data.access)
-    document.cookie = `${TOKEN_KEY}=${data.access}; path=/; max-age=86400; SameSite=Lax`
-    if (data.refresh) {
-      localStorage.setItem(REFRESH_KEY, data.refresh)
-      document.cookie = `${REFRESH_KEY}=${data.refresh}; path=/; max-age=86400; SameSite=Lax`
-    }
+    storeTokens(data.access, data.refresh ?? refresh)
     return data.access
   } catch {
     clearTokens()
@@ -167,17 +199,17 @@ export async function refreshDjangoToken(): Promise<string | null> {
 }
 
 export async function getValidAccessToken(): Promise<string | null> {
-  const access = getStoredAccessToken()
+  let access = getStoredAccessToken()
+  if (!access) {
+    await ensureTokensAvailable()
+    access = getStoredAccessToken()
+  }
   if (!access) return null
 
-  try {
-    const payload = JSON.parse(atob(access.split(".")[1]))
-    const exp = payload.exp * 1000
-    if (Date.now() < exp - 30000) return access
-    return refreshDjangoToken()
-  } catch {
-    return refreshDjangoToken()
-  }
+  const payload = decodeJwtPayload(access)
+  const exp = payload && typeof payload.exp === "number" ? payload.exp * 1000 : null
+  if (exp && Date.now() < exp - 30000) return access
+  return refreshDjangoToken()
 }
 
 export async function fetchMe(): Promise<DjangoUser> {
@@ -266,16 +298,16 @@ export async function forgotPassword(email: string): Promise<void> {
 }
 
 export async function resetPassword(
-  email: string,
-  otp: string,
+  uid: string,
+  token: string,
   password: string,
 ): Promise<void> {
   const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/password/reset/confirm/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      uid: email,
-      token: otp,
+      uid,
+      token,
       new_password1: password,
       new_password2: password,
     }),
@@ -333,9 +365,5 @@ export async function logout(): Promise<void> {
 }
 
 export function decodeToken(token: string): Record<string, unknown> | null {
-  try {
-    return JSON.parse(atob(token.split(".")[1]))
-  } catch {
-    return null
-  }
+  return decodeJwtPayload(token)
 }

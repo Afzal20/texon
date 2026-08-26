@@ -3,6 +3,7 @@ from rest_framework.permissions import DjangoModelPermissions, IsAuthenticated
 
 from core.mixins import OwnerQuerysetMixin
 from core.permissions import IsFinanceRole, IsObjectOwnerOrStaff
+from rbac.permissions import ObjectPermission
 
 from .models import (
     AccountsPayable,
@@ -22,10 +23,11 @@ from .serializers import (
 )
 
 # Finance data is department-restricted: finance tier (or superuser) only,
-# plus Django model permissions and object-level ownership checks.
+# plus Django model permissions and object-level RBAC checks.
 PERMISSION_CLASSES = [
     IsAuthenticated,
     IsFinanceRole,
+    ObjectPermission,
     DjangoModelPermissions,
     IsObjectOwnerOrStaff,
 ]

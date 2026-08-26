@@ -12,11 +12,10 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from datetime import timedelta
 from pathlib import Path
+import warnings
 
 from decouple import Csv, config
 from django.core.exceptions import ImproperlyConfigured
-from django.urls import reverse_lazy
-from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +25,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("DJANGO_DEBUG", default=True, cast=bool)
+# Secure by default: DEBUG pages disclose the full URL map and settings.
+# Local dev must opt in via DJANGO_DEBUG=True in backend/.env.
+DEBUG = config("DJANGO_DEBUG", default=False, cast=bool)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # A hardcoded insecure fallback is only acceptable while DEBUG=True; in
@@ -49,6 +50,28 @@ ALLOWED_HOSTS = config(
     default="localhost,127.0.0.1,testserver" if DEBUG else "localhost",
     cast=Csv(),
 )
+
+# ---------------------------------------------------------------------------
+# Vercel deployment
+# ---------------------------------------------------------------------------
+# Vercel injects VERCEL=1 into its serverless runtime. When running there we
+# additionally trust the *.vercel.app preview/production domains and the
+# platform's TLS-terminating proxy.
+IS_VERCEL = config("VERCEL", default=False, cast=bool)
+
+if IS_VERCEL:
+    ALLOWED_HOSTS += [".vercel.app"]
+
+if not DEBUG:
+    # Trust the X-Forwarded-Proto header from Vercel's edge proxy so Django
+    # knows requests arrived over HTTPS (required for secure cookies/CSRF).
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Extra origins trusted for POSTing (admin login, OAuth callbacks) when the
+# site is served behind a proxy/domain other than the request host.
+CSRF_TRUSTED_ORIGINS = [
+    origin for origin in config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv()) if origin
+]
 
 
 # Application definition
@@ -93,6 +116,7 @@ INSTALLED_APPS = [
     'planning',
     'scheduling',
     'rbac',
+    'ai',
     'django.contrib.sites',
     'allauth',
     'allauth.account',
@@ -119,6 +143,7 @@ INSTALLED_APPS += [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -128,6 +153,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'django.middleware.csp.ContentSecurityPolicyMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -170,6 +196,10 @@ if config("SUPABASE_DB_HOST", default=""):
                 # Supabase uses a connection pooler on port 6543 that requires
                 # disabling prepared statements; harmless on direct connections.
                 'sslmode': config('SUPABASE_DB_SSLMODE', default='require'),
+                # Disable server-side prepared statements when using a
+                # Supavisor/pgbouncer pooler which doesn't support them.
+                # Can be overridden via SUPABASE_DB_OPTIONS in .env
+                'options': config('SUPABASE_DB_OPTIONS', default='-c prepare_threshold=0'),
             },
         }
     }
@@ -190,7 +220,9 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
+        # OWASP A07: require a 12+ character passphrase (was Django's default 8).
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {'min_length': 12},
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -207,8 +239,8 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'en-us'
 
 LANGUAGES = [
-    ("en", _("English")),
-    ("bn", _("Bengali")),
+    ("en", "English"),
+    ("bn", "Bengali"),
 ]
 
 LOCALE_PATHS = [BASE_DIR / "locale"]
@@ -241,8 +273,8 @@ UNFOLD = {
     "SITE_URL": "/admin/",
     # Site dropdown - switch between multiple admin sites
     "SITE_DROPDOWN": [
-        {"title": _("Backoffice"), "link": reverse_lazy("admin:index")},
-        {"title": _("Operations"), "link": reverse_lazy("operations:index")},
+        {"title": "Backoffice", "link": "/admin/"},
+        {"title": "Operations", "link": "/operations/"},
     ],
     # Command palette
     "COMMAND": {
@@ -261,8 +293,8 @@ UNFOLD = {
     },
     "LANGUAGES": {
         "navigation": [
-            {"title": _("English"), "name_local": "English", "link": "/", "code": "en"},
-            {"title": _("Bengali"), "name_local": "বাংলা", "link": "/", "code": "bn"},
+            {"title": "English", "name_local": "English", "link": "/", "code": "en"},
+            {"title": "Bengali", "name_local": "বাংলা", "link": "/", "code": "bn"},
         ],
     },
     "ENVIRONMENT": "development" if DEBUG else "production",
@@ -289,53 +321,53 @@ UNFOLD = {
         "show_all_applications": True,
         "navigation": [
             {
-                "title": _("Operations"),
+                "title": "Operations",
                 "separator": True,
                 "collapsible": True,
                 "items": [
                     {
-                        "title": _("Orders"),
+                        "title": "Orders",
                         "icon": "receipt_long",
-                        "link": reverse_lazy("admin:orders_order_changelist"),
+                        "link": "/admin/orders/order/",
                     },
                     {
-                        "title": _("Buyers"),
+                        "title": "Buyers",
                         "icon": "handshake",
-                        "link": reverse_lazy("admin:buyers_buyer_changelist"),
+                        "link": "/admin/buyers/buyer/",
                     },
                 ],
             },
             {
-                "title": _("People"),
+                "title": "People",
                 "separator": True,
                 "collapsible": True,
                 "items": [
                     {
-                        "title": _("Users"),
+                        "title": "Users",
                         "icon": "person",
-                        "link": reverse_lazy("admin:authentication_user_changelist"),
+                        "link": "/admin/authentication/user/",
                     },
                     {
-                        "title": _("Groups"),
+                        "title": "Groups",
                         "icon": "group",
-                        "link": reverse_lazy("admin:auth_group_changelist"),
+                        "link": "/admin/auth/group/",
                     },
                 ],
             },
             {
-                "title": _("Pages"),
+                "title": "Pages",
                 "separator": True,
                 "collapsible": True,
                 "items": [
                     {
-                        "title": _("Reports"),
+                        "title": "Reports",
                         "icon": "monitoring",
-                        "link": reverse_lazy("admin:reports"),
+                        "link": "/admin/reports/",
                     },
                     {
-                        "title": _("Crispy Form Demo"),
+                        "title": "Crispy Form Demo",
                         "icon": "dynamic_form",
-                        "link": reverse_lazy("admin:crispy-demo"),
+                        "link": "/admin/crispy-demo/",
                     },
                 ],
             },
@@ -347,38 +379,38 @@ UNFOLD = {
             "models": ["orders.order"],
             "items": [
                 {
-                    "title": _("All orders"),
-                    "link": reverse_lazy("admin:orders_order_changelist"),
+                    "title": "All orders",
+                    "link": "/admin/orders/order/",
                 },
                 {
-                    "title": _("Pending"),
-                    "link": _changelist_tab(reverse_lazy("admin:orders_order_changelist"), "?status__exact=pending"),
+                    "title": "Pending",
+                    "link": _changelist_tab("/admin/orders/order/", "?status__exact=pending"),
                 },
                 {
-                    "title": _("Confirmed"),
-                    "link": _changelist_tab(reverse_lazy("admin:orders_order_changelist"), "?status__exact=confirmed"),
+                    "title": "Confirmed",
+                    "link": _changelist_tab("/admin/orders/order/", "?status__exact=confirmed"),
                 },
                 {
-                    "title": _("In production"),
-                    "link": _changelist_tab(reverse_lazy("admin:orders_order_changelist"), "?status__exact=in_production"),
+                    "title": "In production",
+                    "link": _changelist_tab("/admin/orders/order/", "?status__exact=in_production"),
                 },
                 {
-                    "title": _("Shipped"),
-                    "link": _changelist_tab(reverse_lazy("admin:orders_order_changelist"), "?status__exact=shipped"),
+                    "title": "Shipped",
+                    "link": _changelist_tab("/admin/orders/order/", "?status__exact=shipped"),
                 },
                 {
-                    "title": _("Delivered"),
-                    "link": _changelist_tab(reverse_lazy("admin:orders_order_changelist"), "?status__exact=delivered"),
+                    "title": "Delivered",
+                    "link": _changelist_tab("/admin/orders/order/", "?status__exact=delivered"),
                 },
             ],
         },
     ],
     "ACCOUNT": {
         "navigation": [
-            {"title": _("Profile"), "link": reverse_lazy("admin:index")},
+            {"title": "Profile", "link": "/admin/"},
             {
-                "title": _("Logout"),
-                "link": reverse_lazy("admin:logout"),
+                "title": "Logout",
+                "link": "/admin/logout/",
             },
         ],
     },
@@ -394,6 +426,23 @@ UNFOLD = {
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Static files settings for deployment (WhiteNoise)
+# `collectstatic` will place files into `STATIC_ROOT` during build.
+# Lambda's deployment bundle (/var/task) is read-only, so on Vercel we
+# collect static files into the writable /tmp filesystem instead (see
+# api/index.py, which runs collectstatic on first boot).
+STATIC_ROOT = Path('/tmp/staticfiles') if IS_VERCEL else BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+# Use WhiteNoise's compressed manifest storage for cache-friendly assets.
+# NOTE: the manifest variant raises at boot if `collectstatic` hasn't run.
+# On ephemeral serverless platforms (Vercel) we therefore use the non-manifest
+# variant so a missing manifest never breaks cold starts.
+STATICFILES_STORAGE = (
+    'whitenoise.storage.CompressedStaticFilesStorage'
+    if IS_VERCEL
+    else 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+)
 
 ASGI_APPLICATION = "config.asgi.application"
 
@@ -473,6 +522,15 @@ SIMPLE_JWT = {
 CORS_ALLOW_ALL_ORIGINS = config("CORS_ALLOW_ALL_ORIGINS", default=False, cast=bool)
 CORS_ALLOWED_ORIGINS = config("CORS_ALLOWED_ORIGINS", default="http://localhost:3000,http://127.0.0.1:3000", cast=Csv())
 CORS_ALLOW_CREDENTIALS = True
+
+# Guardrail (OWASP A05): reflecting any Origin together with credentials lets
+# malicious sites read authenticated responses from a victim's browser.
+if CORS_ALLOW_ALL_ORIGINS and not DEBUG:
+    raise ImproperlyConfigured(
+        "CORS_ALLOW_ALL_ORIGINS=True combined with CORS_ALLOW_CREDENTIALS=True "
+        "is an exploitable configuration and is refused while DEBUG=False. "
+        "Remove the env var and whitelist origins in CORS_ALLOWED_ORIGINS instead."
+    )
 CORS_ALLOW_METHODS = [
     "DELETE",
     "GET",
@@ -497,8 +555,13 @@ EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@texon.com")
 
-AI_LLM_PROVIDER = config("AI_LLM_PROVIDER", default="lm_studio")
+AI_LLM_PROVIDER = config("AI_LLM_PROVIDER", default="openrouter")
 AI_LLM_CONFIG = {
+    "openrouter": {
+        "base_url": config("OPENROUTER_BASE_URL", default="https://openrouter.ai/api/v1"),
+        "model": config("OPENROUTER_MODEL", default="openai/gpt-4o-mini"),
+        "api_key": config("OPEN_ROUTER_API_KEY", default="") or config("OPENROUTER_API_KEY", default=""),
+    },
     "lm_studio": {
         "base_url": config("LM_STUDIO_BASE_URL", default="http://localhost:1234/v1"),
         "model": config("LM_STUDIO_MODEL", default="local-model"),
@@ -542,8 +605,14 @@ REST_AUTH = {
     'USE_JWT': True,
     'JWT_AUTH_COOKIE': 'jwt-auth',
     'JWT_AUTH_REFRESH_COOKIE': 'jwt-refresh-token',
+    # OWASP A02/A05: JWT cookies are HttpOnly, Secure (when not DEBUG) and
+    # SameSite=Lax so they are never readable by JS and never sent cross-site.
+    'JWT_AUTH_SECURE': not DEBUG,
+    'JWT_AUTH_HTTPONLY': True,
+    'JWT_AUTH_SAMESITE': 'Lax',
     'TOKEN_MODEL': None,
     'USER_DETAILS_SERIALIZER': 'authentication.serializers.UserDetailsSerializer',
+    'REGISTER_SERIALIZER': 'authentication.serializers.RegisterSerializer',
 }
 
 # Allowlisted redirect targets for OAuth callback_url overrides. The frontend
@@ -575,3 +644,118 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
     }
 }
+
+
+# ---------------------------------------------------------------------------
+# OWASP Top 10 hardening
+# ---------------------------------------------------------------------------
+# Transport security & browser hardening headers (A02, A05).
+# Active only when DEBUG=False so local HTTP development keeps working.
+# Individual flags can be overridden via environment variables.
+if not DEBUG:
+    SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=True, cast=bool)
+    SECURE_HSTS_SECONDS = config("SECURE_HSTS_SECONDS", default=31536000, cast=int)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+X_FRAME_OPTIONS = "DENY"
+
+# Cookie hardening (A02/A07): sessions and CSRF cookies are HttpOnly,
+# SameSite=Lax, and Secure in production.
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # Keep CSRF cookie readable by JS only if a SPA needs the X-CSRFToken
+    # header; JWT APIs typically don't. Flip to True via env if required.
+    if config("CSRF_COOKIE_HTTPONLY", default=True, cast=bool):
+        CSRF_COOKIE_HTTPONLY = True
+
+# Content Security Policy (A03/A05) - Django 6 native support.
+# Deployed in REPORT-ONLY mode first so any violation is logged by the browser
+# without breaking the Unfold admin; flip to SECURE_CSP once no violations are
+# reported (env: CSP_ENFORCE=1).
+_CSP_DIRECTIVES = {
+    "default-src": ("'self'",),
+    # Unfold admin templates rely on inline style/script attributes.
+    "script-src": ("'self'", "'unsafe-inline'"),
+    "style-src": ("'self'", "'unsafe-inline'"),
+    "img-src": ("'self'", "data:", "https:"),
+    "font-src": ("'self'",),
+    "connect-src": ("'self'",),
+    "frame-ancestors": ("'none'",),
+    "base-uri": ("'self'",),
+    "form-action": ("'self'",),
+    "object-src": ("'none'",),
+}
+if not DEBUG and config("CSP_ENFORCE", default=False, cast=bool):
+    SECURE_CSP = _CSP_DIRECTIVES
+else:
+    SECURE_CSP_REPORT_ONLY = _CSP_DIRECTIVES
+
+# Security logging & monitoring (A09). Auth lifecycle events are emitted by
+# core/security_logging.py signal receivers into the "texon.security" logger;
+# django.request captures 4xx/5xx, django.security catches suspicious ops.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+        # Ring buffer consumed by the admin panel "Logs" page
+        # (core/admin_pages.py LogsPage). Mirrors everything that goes to the
+        # console so staff can inspect recent logs without platform access.
+        "memory": {
+            "class": "core.log_buffer.MemoryLogHandler",
+            "capacity": 2000,
+            "level": "DEBUG",
+        },
+    },
+    "root": {"handlers": ["console", "memory"], "level": "WARNING"},
+    "loggers": {
+        "django.request": {
+            "handlers": ["console", "memory"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "django.security": {
+            "handlers": ["console", "memory"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "texon.security": {
+            "handlers": ["console", "memory"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
+
+# Fail loudly on insecure production configuration (A05). Registered as a
+# Django system check in core/apps.py - visible via `manage.py check` and at
+# boot on Vercel.
+if not DEBUG and "*" in ALLOWED_HOSTS:
+    warnings.warn(
+        "ALLOWED_HOSTS contains '*': host-header spoofing and cache poisoning "
+        "become possible. List your real domains instead.",
+        stacklevel=0,
+    )
+if not DEBUG and CORS_ALLOW_ALL_ORIGINS:
+    warnings.warn(
+        "CORS_ALLOW_ALL_ORIGINS=True with credentials enabled lets any site "
+        "make authenticated cross-origin calls. Set explicit origins in "
+        "CORS_ALLOWED_ORIGINS.",
+        stacklevel=0,
+    )

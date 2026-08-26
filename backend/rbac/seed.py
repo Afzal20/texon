@@ -9,6 +9,7 @@ django.setup()
 
 from authentication.models import User
 from rbac.models import Permission, Role, RolePermission, UserRole
+from django.contrib.contenttypes.models import ContentType
 
 print("Seeding rbac data...")
 
@@ -18,6 +19,7 @@ def get_user(email):
         return user
     return User.objects.create_user(email=email, password="Test@123")
 
+# ── Permissions (Global: no content_type/object_id) ─────────────────────────
 PERMISSIONS = [
     ("dashboard.view", "View Dashboard", "dashboard"),
     ("users.view", "View Users", "users"),
@@ -30,25 +32,44 @@ PERMISSIONS = [
     ("salary.manage", "Manage Salary Sheets", "salary"),
     ("orders.view", "View Orders", "orders"),
     ("orders.create", "Create Orders", "orders"),
+    ("orders.update", "Update Orders", "orders"),
+    ("orders.delete", "Delete Orders", "orders"),
     ("orders.approve", "Approve Orders", "orders"),
     ("buyers.view", "View Buyers", "buyers"),
+    ("buyers.create", "Create Buyers", "buyers"),
+    ("buyers.update", "Update Buyers", "buyers"),
+    ("buyers.delete", "Delete Buyers", "buyers"),
     ("buyers.manage", "Manage Buyers", "buyers"),
     ("procurement.view", "View Procurement", "procurement"),
+    ("procurement.create", "Create Procurement", "procurement"),
     ("procurement.manage", "Manage Procurement", "procurement"),
     ("inventory.view", "View Inventory", "inventory"),
+    ("inventory.create", "Create Inventory", "inventory"),
+    ("inventory.update", "Update Inventory", "inventory"),
+    ("inventory.delete", "Delete Inventory", "inventory"),
     ("inventory.manage", "Manage Inventory", "inventory"),
     ("quality.view", "View Quality", "quality"),
+    ("quality.create", "Create Quality Reports", "quality"),
     ("quality.manage", "Manage Quality Reports", "quality"),
     ("ie.view", "View IE Data", "ie"),
     ("ie.manage", "Manage IE Planning", "ie"),
     ("attendance.view", "View Attendance", "attendance"),
     ("attendance.approve", "Approve Attendance", "attendance"),
+    ("accounts.view", "View Accounts", "accounts"),
+    ("accounts.create", "Create Accounts", "accounts"),
+    ("accounts.update", "Update Accounts", "accounts"),
+    ("accounts.delete", "Delete Accounts", "accounts"),
+    ("accounts.manage", "Manage Accounts", "accounts"),
     ("reports.view", "View Reports", "reports"),
+    ("reports.create", "Create Reports", "reports"),
+    ("reports.manage", "Manage Reports", "reports"),
 ]
 
 # ── Permissions ─────────────────────────────────────────────────────────────
 for codename, label, group in PERMISSIONS:
-    Permission.objects.get_or_create(codename=codename, defaults={"label": label, "group": group})
+    Permission.objects.get_or_create(
+        codename=codename, defaults={"label": label, "group": group}
+    )
 
 # ── Roles ───────────────────────────────────────────────────────────────────
 roles = []
@@ -59,8 +80,11 @@ for name, desc, is_system in [
     ("HR Manager", "Manages employees, salary and attendance.", False),
     ("Quality Manager", "Oversees quality control and inspections.", False),
     ("IE Executive", "Industrial engineering and production planning.", False),
+    ("Accountant", "Manages financial records, accounts and journal entries.", False),
 ]:
-    r, _ = Role.objects.get_or_create(name=name, defaults={"description": desc, "is_system": is_system})
+    r, _ = Role.objects.get_or_create(
+        name=name, defaults={"description": desc, "is_system": is_system}
+    )
     roles.append(r)
 
 # ── Role Permissions ────────────────────────────────────────────────────────
@@ -70,16 +94,48 @@ def grant(role_name, *codenames):
         perm = Permission.objects.get(codename=codename)
         RolePermission.objects.get_or_create(role=role, permission=perm)
 
-grant("Admin", *[c for c, _, _ in PERMISSIONS])
-grant("Manager", "dashboard.view", "users.view", "orders.view", "orders.create", "orders.approve",
-      "buyers.view", "buyers.manage", "procurement.view", "procurement.manage", "inventory.view",
-      "inventory.manage", "attendance.view", "attendance.approve", "reports.view")
-grant("Merchandiser", "dashboard.view", "orders.view", "orders.create", "buyers.view", "procurement.view",
-      "inventory.view", "reports.view")
-grant("HR Manager", "dashboard.view", "users.view", "users.create", "users.update", "salary.view",
-      "salary.approve", "salary.manage", "attendance.view", "attendance.approve", "reports.view")
-grant("Quality Manager", "dashboard.view", "quality.view", "quality.manage", "orders.view", "reports.view")
-grant("IE Executive", "dashboard.view", "ie.view", "ie.manage", "orders.view", "reports.view")
+grant(
+    "Admin",
+    *[c for c, _, _ in PERMISSIONS]
+)
+
+grant(
+    "Manager",
+    "dashboard.view", "users.view", "orders.view", "orders.create", "orders.approve",
+    "buyers.view", "buyers.manage", "procurement.view", "procurement.manage", "inventory.view",
+    "inventory.manage", "attendance.view", "attendance.approve", "reports.view",
+)
+
+grant(
+    "Merchandiser",
+    "dashboard.view", "orders.view", "orders.create", "buyers.view",
+    "procurement.view", "inventory.view", "reports.view",
+)
+
+grant(
+    "HR Manager",
+    "dashboard.view", "users.view", "users.create", "users.update",
+    "salary.view", "salary.approve", "salary.manage",
+    "attendance.view", "attendance.approve", "reports.view",
+)
+
+grant(
+    "Quality Manager",
+    "dashboard.view", "quality.view", "quality.manage",
+    "orders.view", "reports.view",
+)
+
+grant(
+    "IE Executive",
+    "dashboard.view", "ie.view", "ie.manage",
+    "orders.view", "reports.view",
+)
+
+grant(
+    "Accountant",
+    "dashboard.view", "accounts.view", "accounts.create", "accounts.update",
+    "accounts.manage", "reports.view", "reports.create",
+)
 
 # ── User Roles ──────────────────────────────────────────────────────────────
 for email, role_name in [
@@ -88,7 +144,7 @@ for email, role_name in [
     ("hr@texon.com", "HR Manager"),
     ("quality@texon.com", "Quality Manager"),
     ("ie@texon.com", "IE Executive"),
-    ("finance@texon.com", "Manager"),
+    ("finance@texon.com", "Accountant"),
 ]:
     user = get_user(email)
     role = Role.objects.get(name=role_name)

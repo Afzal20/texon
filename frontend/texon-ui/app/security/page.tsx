@@ -4,9 +4,10 @@ import { useEffect, useState } from "react"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ShieldCheck, Edit, Plus } from "lucide-react"
+import { ShieldCheck, Edit, Plus, MonitorSmartphone, LogOut } from "lucide-react"
 import { toast } from "sonner"
 import { restList } from "@/lib/api/rest"
+import { listDevices, revokeDevice, type AuthDevice } from "@/lib/api/auth"
 
 interface RoleRow {
   name: string
@@ -23,6 +24,8 @@ export default function Security() {
   const [roles, setRoles] = useState<RoleRow[]>([])
   const [modules, setModules] = useState<{ title: string; perms: PermissionRow[] }[]>([])
   const [loading, setLoading] = useState(true)
+  const [devices, setDevices] = useState<AuthDevice[] | null>(null)
+  const [revokingId, setRevokingId] = useState<number | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -49,6 +52,28 @@ export default function Security() {
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    listDevices()
+      .then((res) => setDevices(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setDevices(null))
+  }, [])
+
+  const handleRevokeDevice = async (id: number) => {
+    setRevokingId(id)
+    try {
+      await revokeDevice(id)
+      setDevices((prev) => prev?.filter((d) => d.id !== id) ?? null)
+      toast.success("Session revoked")
+    } catch {
+      toast.error("Failed to revoke session")
+    } finally {
+      setRevokingId(null)
+    }
+  }
+
+  const formatDeviceDate = (value?: string) =>
+    value ? new Date(value).toLocaleString() : "—"
 
   const matrixRole = roles[0]?.name ?? "System Role"
 
@@ -178,7 +203,35 @@ export default function Security() {
                         <span className="text-foreground/80">Current session</span>
                         <span className="text-xs font-semibold text-primary">Active Now</span>
                       </div>
-                      <div className="text-xs text-muted-foreground px-1">Device history is not tracked on the backend.</div>
+                      {devices === null && (
+                        <div className="text-xs text-muted-foreground px-1 py-2">
+                          Device history is not available for your account.
+                        </div>
+                      )}
+                      {devices?.map((device) => (
+                        <div key={device.id} className="flex items-center justify-between text-sm p-3 border border-border rounded-lg">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <MonitorSmartphone className="h-4 w-4 shrink-0 text-muted-foreground" />
+                            <div className="min-w-0">
+                              <div className="text-foreground/80 truncate">
+                                {device.device_name || device.user_agent || `Device #${device.id}`}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Last active: {formatDeviceDate(device.last_activity ?? device.created_at)}
+                                {device.ip_address ? ` · ${device.ip_address}` : ""}
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleRevokeDevice(device.id)}
+                            disabled={revokingId === device.id}
+                            className="shrink-0 flex items-center gap-1 text-xs font-semibold text-destructive hover:underline disabled:opacity-50"
+                          >
+                            <LogOut className="h-3 w-3" />
+                            {revokingId === device.id ? "Revoking…" : "Revoke"}
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>

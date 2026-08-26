@@ -1,17 +1,9 @@
 import axios from 'axios'
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios'
-import { getStoredAccessToken, getStoredRefreshToken, storeTokens, clearTokens } from '@/lib/django-auth'
+import { getStoredAccessToken, getStoredRefreshToken, storeTokens, clearTokens, ensureTokensAvailable } from '@/lib/django-auth'
+import { isJwtExpired } from '@/lib/jwt'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
-
-function isTokenExpired(token: string): boolean {
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return payload.exp * 1000 < Date.now()
-  } catch {
-    return true
-  }
-}
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -21,9 +13,14 @@ const apiClient: AxiosInstance = axios.create({
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     let token = getStoredAccessToken()
-    if (token && isTokenExpired(token)) {
+    if (!token || isJwtExpired(token)) {
+      // localStorage may have lost its tokens while the httpOnly session
+      // cookie is still valid — try rehydrating before refreshing.
+      await ensureTokensAvailable()
+      token = getStoredAccessToken()
+      const needsRefresh = !token || isJwtExpired(token)
       const refresh = getStoredRefreshToken()
-      if (refresh) {
+      if (needsRefresh && refresh) {
         try {
           const res = await axios.post(`${API_BASE_URL}/api/users/api/token/refresh/`, { refresh })
           const newToken: string = res.data.access
@@ -33,7 +30,7 @@ apiClient.interceptors.request.use(
           clearTokens()
           token = null
         }
-      } else {
+      } else if (needsRefresh) {
         clearTokens()
         token = null
       }
@@ -79,8 +76,16 @@ apiClient.interceptors.response.use(
       isRefreshing = true
 
       try {
-        const refresh = getStoredRefreshToken()
-        if (!refresh) throw new Error('No refresh token')
+        let refresh = getStoredRefreshToken()
+        if (!refresh) {
+          await ensureTokensAvailable()
+          refresh = getStoredRefreshToken()
+        }
+        if (!refresh) {
+          clearTokens()
+          processQueue(new Error('Session expired — please sign in again'), null)
+          return Promise.reject(new Error('Session expired — please sign in again'))
+        }
         const res = await axios.post(`${API_BASE_URL}/api/users/api/token/refresh/`, { refresh })
         const newToken: string = res.data.access
         storeTokens(newToken, res.data.refresh ?? refresh)
