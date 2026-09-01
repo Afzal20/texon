@@ -1,164 +1,187 @@
-# Texon - RMG ERP System
+# Texon — RMG ERP System
 
-A comprehensive Enterprise Resource Planning (ERP) system tailored for the Ready-Made Garment (RMG) industry. This system streamlines production, inventory, order management, and various operational workflows specific to garment manufacturing.
+A comprehensive Enterprise Resource Planning (ERP) system for the
+Ready-Made Garment (RMG) industry. Texon streamlines production, inventory,
+order management, and the day-to-day operational workflows of garment
+manufacturing — from merchandising and cost sheets to shop-floor quality,
+HR, and finance.
 
-## 📸 Screenshots admin panel
+This repository is the main monorepo containing both applications:
 
-![Admin Home](ui-image/admin-home.png)
+| Directory | Application |
+|---|---|
+| `backend/` | Django 6 + Django REST Framework API — see [`backend/README.md`](backend/README.md) |
+| `frontend/texon-ui/` | Next.js (App Router) web client — see [`frontend/texon-ui/README.md`](frontend/texon-ui/README.md) |
 
-## 🚀 Getting Started
+The two applications were also copied into separate Git repositories so they
+can be deployed to Vercel independently.
 
-Follow these instructions to get a copy of the project up and running on your local machine.
+## Live Deployment
 
-### Prerequisites
+| | URL |
+|---|---|
+| **Web app (frontend)** | https://texon-ui.vercel.app |
+| **Backend API** | https://texon-backend.vercel.app |
+| **API docs (Swagger UI)** | https://texon-backend.vercel.app/swagger-ui/ |
 
-Ensure you have the following installed:
-- [Python 3.8+](https://www.python.org/downloads/)
-- [PostgreSQL](https://www.postgresql.org/download/) or [MySQL](https://dev.mysql.com/downloads/)
-- [Node.js](https://nodejs.org/) and [npm](https://www.npmjs.com/)
-- [uv](https://github.com/astral-sh/uv) (For Python dependency management)
-- [Docker](https://www.docker.com/) (Optional, for containerized deployment)
+## Features
 
-### Installation
+### Backend
+- 100+ REST resources under `/api/v1/` (full CRUD with filtering, search
+  and pagination) covering merchandising & commercial, production, inventory
+  & procurement, HR & payroll, finance & accounts, quality & compliance,
+  planning & reporting
+- JWT authentication (SimpleJWT) with registration, email verification,
+  password reset, Google & GitHub social login, and device/session management
+- Role-based access control (roles, permissions, user-role bulk assignment)
+- AI assistant (`/api/v1/ai/chat/`) with per-user conversation history,
+  backed by any OpenAI-compatible provider (OpenRouter, OpenAI, DeepSeek,
+  local LM Studio)
+- OpenAPI 3 schema + Swagger UI (drf-spectacular), Django admin, and
+  WebSocket AI streaming via Django Channels (local development)
 
-#### 1. Clone the repository
-```bash
-git clone https://github.com/Afzal20/texon
-cd texon/backend
-```
+### Frontend
+- Complete UI for every ERP module: merchandising, buyers & CRM, orders,
+  commercial management (LCs, invoices, shipments), production, planning &
+  scheduling, TNA, IE planning, inventory, procurement, costing, accounts &
+  finance, fixed assets, HR & payroll, performance, quality control,
+  compliance, subcontracting, reporting, security/RBAC, settings, admin
+- JWT auth with transparent token refresh and protected routes
+- Generic REST data layer mapping every module 1:1 to the backend endpoints
+- AI assistant chat with streaming (WebSocket) and automatic HTTP fallback
+- React 19, Tailwind CSS, shadcn/radix UI components, TanStack Table,
+  Recharts, react-hook-form + zod
 
-#### 2. Create and activate a virtual environment
-```bash
-uv venv
-source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
-```
-
-#### 3. Install Python dependencies
-```bash
-uv sync
-```
-
-#### 4. Configure Environment Variables
-Create a `.env` file in the `backend/` directory with the following variables:
-
-```env
-# Database Configuration
-DB_NAME=texon
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
-DB_HOST=[IP_ADDRESS]
-DB_PORT=5432
-
-# Django Settings
-SECRET_KEY=your_secret_key_here
-DEBUG=True
-ALLOWED_HOSTS=*
-
-# Email Configuration (Optional)
-EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-EMAIL_HOST=smtp.example.com
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_HOST_USER=your_email@example.com
-EMAIL_HOST_PASSWORD=your_email_password
-```
-
-#### 5. Run Database Migrations
-```bash
-uv run manage.py migrate
-```
-
-#### 6. Collect Static Files
-```bash
-uv run manage.py collectstatic
-```
-
-#### 7. Create Superuser (Optional)
-```bash
-uv run manage.py createsuperuser
-```
-
-#### 8. Start Development Server
-```bash
-uv run manage.py runserver
-```
-
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 backend/
-├── config/              # Django project settings and config
-├── authentication/      # User authentication and profile management
-├── operations/          # Core operations (Orders, Purchases, Sales, Production)
-├── inventory/           # Inventory and stock management
-├── master_data/         # Static and master data (Colors, Sizes, Fabrics, etc.)
-├── reports/             # Report generation
-├── settings/            # Settings modules
-└── static/              # Static files
+├── config/              # Django project settings and root URLs
+├── api/                 # Serverless entry point (Vercel)
+├── authentication/      # JWT auth, registration, social login, devices
+├── rbac/                # Roles, permissions, user-role assignments
+├── ai/                  # AI assistant (chat, conversations, LLM clients)
+├── buyers/ crm/ merchandising/ orders/    # Buy-side and order management
+├── commercial/          # LCs, invoices, shipments, realizations
+├── production/ planning/ scheduling/ ie_planning/ tna/  # Manufacturing
+├── inventory/ procurement/                # Materials and purchasing
+├── costing/ accounts/ fixed_assets/       # Finance and assets
+├── hr/ performance/                       # Workforce
+├── quality/ compliance/                   # QC and audits
+└── reporting/ subcontract/ core/ templates/ static/
+
+frontend/texon-ui/
+├── app/                 # One route folder per ERP module
+├── components/          # Shared UI components
+├── lib/api/             # Axios client, REST registry, auth helpers
+├── hooks/               # React hooks (AI chat, etc.)
+└── middleware.ts        # Session-cookie route protection
 ```
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Backend
-- **Framework**: Django 6.0
-- **API**: Django REST Framework
-- **Database**: PostgreSQL / MySQL
-- **Authentication**: JWT, Social Auth
-- **Documentation**: drf-spectacular (OpenAPI/Swagger)
+- **Framework**: Django 6, Django REST Framework
+- **Database**: PostgreSQL (Supabase in production), SQLite for local dev
+- **Auth**: SimpleJWT, dj-rest-auth, django-allauth
+- **Realtime**: Django Channels (WebSocket AI streaming, local dev)
+- **Docs**: drf-spectacular (OpenAPI 3 / Swagger UI)
 - **Validation**: Pydantic (via `pydantic-settings`)
-- **Deployment**: Gunicorn, Nginx (optional)
+- **Deployment**: Vercel serverless functions; Docker/Gunicorn optional
 
 ### Frontend
-- **Framework**: Django Templates + HTMX
-- **Styling**: Tailwind CSS (compiled via Django)
-- **UI Kit**: Unfold Admin (Custom Admin Interface)
+- **Framework**: Next.js (App Router), React 19, TypeScript
+- **Styling**: Tailwind CSS, shadcn/radix UI components
+- **Data**: Axios REST client, TanStack Table, Recharts
+- **Forms**: react-hook-form + zod
+- **Deployment**: Vercel
 
-## 🧪 Testing
+## Getting Started (Local Development)
 
-Run the test suite using pytest:
+Prerequisites: [Python](https://www.python.org/downloads/) 3.13+ with
+[uv](https://github.com/astral-sh/uv), [Node.js](https://nodejs.org/) 18+,
+and PostgreSQL (optional locally — SQLite works out of the box).
+
+### Backend
+
 ```bash
-uv run pytest
+cd backend
+uv sync
+uv run manage.py migrate
+uv run manage.py createsuperuser
+uv run manage.py runserver        # http://localhost:8000
 ```
 
-## 🚀 Deployment
+Create a `backend/.env` file (see [`backend/README.md`](backend/README.md)
+for the full list of variables). Swagger UI:
+http://localhost:8000/swagger-ui/
 
-### Docker Deployment
+### Frontend
 
-For a production deployment, use the provided Docker configuration.
+```bash
+cd frontend/texon-ui
+npm install
+cp .env.example .env.local
+npm run dev                       # http://localhost:3000
+```
 
-1. **Build and Run Containers**:
-   ```bash
-   docker-compose -f docker-compose.yml up -d --build
-   ```
+Set `NEXT_PUBLIC_API_URL=http://localhost:8000` in `.env.local` and keep the
+backend running. Seeded test login: `admin@texon.com` / `Test@123`
 
-2. **Access the Application**:
-   - **Frontend**: http://localhost:8000
-   - **Admin**: http://localhost:8000/admin
-   - **API Docs**: http://localhost:8000/swagger-ui/
+A step-by-step backend setup guide (uv, PostgreSQL, Redis) for Linux and
+Windows is included in the
+[Appendix](#appendix-backend-setup-guide-uv-only) below.
 
-3. **Stop Containers**:
-   ```bash
-   docker-compose -f docker-compose.yml down
-   ```
+## Deployment
 
-### Manual Production Setup
+The two applications are deployed to Vercel as separate projects, each from
+its own Git repository — the frontend as a Next.js app and the backend as a
+Python serverless function (see [`backend/vercel.json`](backend/vercel.json)
+and [`backend/DEPLOY.md`](backend/DEPLOY.md)).
 
-If deploying manually:
-1. Install Gunicorn: `pip install gunicorn`
-2. Configure Nginx as a reverse proxy
-3. Set up systemd service for Gunicorn
-4. Configure SSL/TLS certificates
+| | URL |
+|---|---|
+| Frontend | https://texon-ui.vercel.app |
+| Backend API | https://texon-backend.vercel.app |
+| Swagger UI | https://texon-backend.vercel.app/swagger-ui/ |
 
-## 📝 License
+For self-hosting, the backend also ships a Docker configuration:
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+```bash
+docker-compose -f docker-compose.yml up -d --build
+```
 
-## 🤝 Contributing
+- App: http://localhost:8000
+- Admin: http://localhost:8000/admin
+- API docs: http://localhost:8000/swagger-ui/
+
+## Known Limitations on the Deployed Demo
+
+- **WebSockets**: Vercel's Hobby (free) plan runs the backend as short-lived
+  serverless functions, so the Channels-based WebSocket AI streaming
+  (`/ws/ai/chat/`) is unavailable in production — clients fall back to the
+  non-streaming HTTP chat endpoint. Full streaming works when the project is
+  run locally or self-hosted.
+- **Free AI API**: the assistant runs on an OpenRouter free-tier key
+  (`deepseek/deepseek-chat`) that is rate-limited and occasionally
+  unavailable, so replies can be slow or fail intermittently. Configure a
+  paid provider via `AI_LLM_PROVIDER` for production use.
+
+Details: [`backend/README.md`](backend/README.md) and
+[`frontend/texon-ui/README.md`](frontend/texon-ui/README.md).
+
+## Testing
+
+```bash
+cd backend && uv run pytest
+```
+
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 
-# Texon Setup Guide (uv only)
+## Appendix: Backend Setup Guide (uv only)
 
 Setup guide for **Arch Linux**, **Debian/Ubuntu** and **Windows** using [uv](https://docs.astral.sh/uv/) as the only Python tool. Required services: **PostgreSQL** and **Redis**.
 
