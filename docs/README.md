@@ -6,6 +6,8 @@ Texon is an Odoo-powered ERP workspace for garment businesses, with a tailored i
 
 ## Current implementation plan
 
+- [UI components, navigation, workspaces, dashboards, buyer portal, and AI experience](UI_COMPONENTS_AND_SYSTEM_PLAN.md)
+
 - [Product narrative, scope, exclusions, and 13-module matrix](GARMENT_ERP_13_MODULES_MASTER_PLAN.md)
 - [Integration master plan and document precedence](ODOO_INTEGRATION_MASTER_PLAN.md)
 - [Milestone implementation roadmap](integration_design/04-200-commit-implementation-roadmap.md)
