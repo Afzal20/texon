@@ -1,0 +1,11 @@
+{
+  "name": "texon",
+  "private": true,
+  "packageManager": "pnpm@10.28.2",
+  "scripts": {
+    "test": "pnpm run test:backend",
+    "test:backend": "uv --directory backend run --frozen python manage.py test --noinput",
+    "check:backend": "uv --directory backend run --frozen python manage.py check",
+    "check:migrations": "uv --directory backend run --frozen python manage.py makemigrations --check --dry-run"
+  }
+}
