@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_texon_command_receipt_user,access.texon.command.receipt.user,model_texon_command_receipt,base.group_user,1,1,1,0
+access_texon_command_receipt_system,access.texon.command.receipt.system,model_texon_command_receipt,base.group_system,1,1,1,1
