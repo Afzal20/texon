@@ -10,7 +10,7 @@ IDs identify work, not a mandatory execution sequence. Respect milestone depende
 
 Completed entries link to local commit IDs as evidence. CI completion below means the workflow is authored and locally checked, not that a hosted run has passed. The root test command covers Django and frontend Vitest; real Odoo business integration tests remain separate work. PostgreSQL and SQLite backend suites now run in the CI matrix.
 
-Current implementation evidence: 17 completed parts; 145 remaining. Provider discovery is in progress; see the [runtime provider matrix](../odoo_research/03-module-provider-matrix.md). The tracker/documentation commit itself is not counted as one of the implementation parts.
+Current implementation evidence: 18 completed parts; 144 remaining. Provider discovery is in progress; see the [runtime provider matrix](../odoo_research/03-module-provider-matrix.md). The tracker/documentation commit itself is not counted as one of the implementation parts.
 
 ## M0 — Workflow and provider validation
 
@@ -56,7 +56,7 @@ Current implementation evidence: 17 completed parts; 145 remaining. Provider dis
 - [ ] **T031** Buyer-owned portal document and record authorization
 - [ ] **T032** Generic legacy write restrictions for migrated ERP domains
 - [ ] **T033** Typed pagination and bounded indexed filtering endpoints
-- [ ] **T034** Operation-status and replay endpoint actor/company authorization
+- [x] **T034** Operation-status and replay endpoint actor/company authorization
 - [ ] **T035** Protected attachment access and safe download headers
 - [ ] **T036** Audited permission administration and cross-company regression coverage
 

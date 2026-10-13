@@ -56,6 +56,7 @@ SKIP_MODELS = {
     ("authentication", "OTP"),
     ("authentication", "SocialAuthCallbackUrl"),
     ("authentication", "User"),
+    ("core", "OutboxCommand"),
     ("rbac", "Permission"),
     ("rbac", "Role"),
     ("rbac", "RolePermission"),

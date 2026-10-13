@@ -8,6 +8,7 @@ from buyers.models import Buyer
 from authentication.views import ThrottledTokenObtainPairView
 from core.sites import operations_site
 from core.health import liveness, readiness
+from core.views_operations import OperationReplayView, OperationStatusView
 from orders.admin import OrderAdmin
 from orders.models import Order
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -27,6 +28,10 @@ urlpatterns = [
     # Generic REST layer (docs/backend/01-rest-api-design.md) — the single API
     # gateway for all models (replaces the former GraphQL gateway).
     path("api/v1/", include("core.urls")),
+
+    # Integration Operations (truthful status tracking and safe replay)
+    path("api/v1/operations/<uuid:operation_uuid>/", OperationStatusView.as_view(), name="operation-status"),
+    path("api/v1/operations/<uuid:operation_uuid>/replay/", OperationReplayView.as_view(), name="operation-replay"),
 
     # RBAC + user management (roles.manage / users.* permission guarded).
     path("api/v1/", include("rbac.urls")),
