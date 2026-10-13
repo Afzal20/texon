@@ -18,3 +18,7 @@ This directory contains the complete technical research and static codebase anal
    - **Complete Model Inventory**: 105 model classes across 24 local Django applications and 103 REST endpoints.
    - **Migrations & Test Coverage**: 41 migration files, 16 concrete test methods in auth/RBAC.
    - **Pilot scope recommendation**: Single meaningful garment lifecycle (Style/variant order → Odoo sale/MRP → Lot receipt/QC → Consumption → Production → Shipment → Invoice).
+
+## Current runtime verification
+
+See the [module provider matrix](03-module-provider-matrix.md) and its captured source inventory for the local Odoo 20 build. Source presence is separate from installed/verified workflows. Helpdesk, Appraisals, Sign, Knowledge, and standalone Contracts require explicit provider resolution.

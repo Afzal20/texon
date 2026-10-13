@@ -1,0 +1,279 @@
+{
+  "modules": {
+    "account": {
+      "depends": [
+        "base_setup",
+        "onboarding",
+        "product",
+        "analytic",
+        "portal",
+        "digest"
+      ],
+      "installable": true,
+      "license": "LGPL-3",
+      "manifest_sha256": "44e871598c83615f67b9ef846fbfa8db240db3f8618fcae917be1aea64fe488b",
+      "manifest_version": "1.5",
+      "missing_dependency_sources": [],
+      "path": "/usr/lib/python3/dist-packages/odoo/addons/account/__manifest__.py",
+      "status": "source_present"
+    },
+    "calendar": {
+      "depends": [
+        "base",
+        "mail"
+      ],
+      "installable": true,
+      "license": "LGPL-3",
+      "manifest_sha256": "6a997f289f47f7ca20fb10c88520c52a4dd499f80c1eeebb8eb922948ab8bb28",
+      "manifest_version": "1.1",
+      "missing_dependency_sources": [],
+      "path": "/usr/lib/python3/dist-packages/odoo/addons/calendar/__manifest__.py",
+      "status": "source_present"
+    },
+    "crm": {
+      "depends": [
+        "base_setup",
+        "base_install_request",
+        "sales_team",
+        "mail",
+        "calendar",
+        "resource",
+        "utm",
+        "web_tour",
+        "contacts",
+        "digest",
+        "phone_validation"
+      ],
+      "installable": true,
+      "license": "LGPL-3",
+      "manifest_sha256": "2d1e8f146fcb2fc4e9a814789f7e6c0a5003147e44e4f8ea327a5e2755a9f584",
+      "manifest_version": "1.9",
+      "missing_dependency_sources": [],
+      "path": "/usr/lib/python3/dist-packages/odoo/addons/crm/__manifest__.py",
+      "status": "source_present"
+    },
+    "helpdesk": {
+      "status": "missing"
+    },
+    "helpdesk_mgmt": {
+      "status": "missing"
+    },
+    "hr": {
+      "depends": [
+        "auth_signup",
+        "base_setup",
+        "digest",
+        "phone_validation",
+        "resource_mail",
+        "web_hierarchy"
+      ],
+      "installable": true,
+      "license": "LGPL-3",
+      "manifest_sha256": "cd79ea0805b64df80b72fbb989940d6c41767a7d25fdcb9cd8dd0ebb2eb2ead2",
+      "manifest_version": "1.1",
+      "missing_dependency_sources": [],
+      "path": "/usr/lib/python3/dist-packages/odoo/addons/hr/__manifest__.py",
+      "status": "source_present"
+    },
+    "hr_appraisal": {
+      "status": "missing"
+    },
+    "hr_attendance": {
+      "depends": [
+        "hr",
+        "hr_work_entry",
+        "barcodes",
+        "base_geolocalize"
+      ],
+      "installable": true,
+      "license": "LGPL-3",
+      "manifest_sha256": "273c9c4ae59dc0a2a38fe9a91bee2cc9799f42990d9a5ba75510716be9772603",
+      "manifest_version": "2.0",
+      "missing_dependency_sources": [],
+      "path": "/usr/lib/python3/dist-packages/odoo/addons/hr_attendance/__manifest__.py",
+      "status": "source_present"
+    },
+    "hr_contract": {
+      "status": "missing"
+    },
+    "hr_holidays": {
+      "depends": [
+        "hr_work_entry",
+        "hr_calendar",
+        "resource"
+      ],
+      "installable": true,
+      "license": "LGPL-3",
+      "manifest_sha256": "3a479aecb50bdece56710761db71e1b68c2e3cf865106ea497e3e846b92e4b84",
+      "manifest_version": "1.6",
+      "missing_dependency_sources": [],
+      "path": "/usr/lib/python3/dist-packages/odoo/addons/hr_holidays/__manifest__.py",
+      "status": "source_present"
+    },
+    "hr_timesheet": {
+      "depends": [
+        "hr",
+        "analytic",
+        "project",
+        "uom"
+      ],
+      "installable": true,
+      "license": "LGPL-3",
+      "manifest_sha256": "767d3e3e88a4b02415cdac07ad6c2b42528198a986cd58aab685ca1be38f957b",
+      "manifest_version": null,
+      "missing_dependency_sources": [],
+      "path": "/usr/lib/python3/dist-packages/odoo/addons/hr_timesheet/__manifest__.py",
+      "status": "source_present"
+    },
+    "knowledge": {
+      "status": "missing"
+    },
+    "mass_mailing": {
+      "depends": [
+        "contacts",
+        "mail",
+        "html_builder",
+        "utm",
+        "link_tracker",
+        "social_media",
+        "web_tour",
+        "digest"
+      ],
+      "installable": true,
+      "license": "LGPL-3",
+      "manifest_sha256": "efb063562f3d1f4d160189be154589179c9535f0332742e20f28d2426c4c3970",
+      "manifest_version": "2.7",
+      "missing_dependency_sources": [],
+      "path": "/usr/lib/python3/dist-packages/odoo/addons/mass_mailing/__manifest__.py",
+      "status": "source_present"
+    },
+    "mrp": {
+      "depends": [
+        "product",
+        "stock",
+        "resource"
+      ],
+      "installable": true,
+      "license": "LGPL-3",
+      "manifest_sha256": "2d865d46fef465f7b7379dec6eda4a7d47bf4bf7399e023033140a4bb088f7ed",
+      "manifest_version": "2.0",
+      "missing_dependency_sources": [],
+      "path": "/usr/lib/python3/dist-packages/odoo/addons/mrp/__manifest__.py",
+      "status": "source_present"
+    },
+    "mrp_subcontracting": {
+      "depends": [
+        "mrp"
+      ],
+      "installable": true,
+      "license": "LGPL-3",
+      "manifest_sha256": "5af29cb7de6296caed29fafeec59aeb48fe7aafe0b5fcdc8befac0284dc2fd11",
+      "manifest_version": "0.1",
+      "missing_dependency_sources": [],
+      "path": "/usr/lib/python3/dist-packages/odoo/addons/mrp_subcontracting/__manifest__.py",
+      "status": "source_present"
+    },
+    "portal": {
+      "depends": [
+        "auth_signup",
+        "base_address_extended",
+        "html_editor",
+        "http_routing",
+        "mail",
+        "web"
+      ],
+      "installable": true,
+      "license": "LGPL-3",
+      "manifest_sha256": "07d255b2b1dc1b6440ab2d2fbbe3289b597f65fd91a40f0adbf5c3530fa962c0",
+      "manifest_version": null,
+      "missing_dependency_sources": [],
+      "path": "/usr/lib/python3/dist-packages/odoo/addons/portal/__manifest__.py",
+      "status": "source_present"
+    },
+    "project": {
+      "depends": [
+        "analytic",
+        "base_setup",
+        "mail",
+        "portal_rating",
+        "resource",
+        "web",
+        "web_tour",
+        "digest"
+      ],
+      "installable": true,
+      "license": "LGPL-3",
+      "manifest_sha256": "9d8ef109fd71b0135f609cafd2b5a6dff04fc7d1020f3921dfae82a3e65135e2",
+      "manifest_version": "1.4",
+      "missing_dependency_sources": [],
+      "path": "/usr/lib/python3/dist-packages/odoo/addons/project/__manifest__.py",
+      "status": "source_present"
+    },
+    "purchase": {
+      "depends": [
+        "account"
+      ],
+      "installable": true,
+      "license": "LGPL-3",
+      "manifest_sha256": "c47bd359caa677b42c8b2ee0f702aa533bad488bed43438cb32bac2a55e76588",
+      "manifest_version": "1.2",
+      "missing_dependency_sources": [],
+      "path": "/usr/lib/python3/dist-packages/odoo/addons/purchase/__manifest__.py",
+      "status": "source_present"
+    },
+    "sale": {
+      "depends": [
+        "sales_team",
+        "account_payment",
+        "utm"
+      ],
+      "installable": true,
+      "license": "LGPL-3",
+      "manifest_sha256": "6d5ef0d7b79ca0be7cb3349b5730c048772a01cb9ffc5fd4d9d3807c5aaeae5b",
+      "manifest_version": "1.2",
+      "missing_dependency_sources": [],
+      "path": "/usr/lib/python3/dist-packages/odoo/addons/sale/__manifest__.py",
+      "status": "source_present"
+    },
+    "sign": {
+      "status": "missing"
+    },
+    "stock": {
+      "depends": [
+        "product",
+        "barcodes_gs1_nomenclature",
+        "digest"
+      ],
+      "installable": true,
+      "license": "LGPL-3",
+      "manifest_sha256": "5984d9b668fcb8d271b16736da8cba9a7c606a80972d20fcd41e4795c37b3af2",
+      "manifest_version": "1.1",
+      "missing_dependency_sources": [],
+      "path": "/usr/lib/python3/dist-packages/odoo/addons/stock/__manifest__.py",
+      "status": "source_present"
+    },
+    "website": {
+      "depends": [
+        "digest",
+        "web",
+        "html_editor",
+        "http_routing",
+        "portal",
+        "social_media",
+        "auth_signup",
+        "mail",
+        "google_recaptcha",
+        "utm",
+        "html_builder"
+      ],
+      "installable": true,
+      "license": "LGPL-3",
+      "manifest_sha256": "7795de362b278382050c74871cf85da018434ef50c8beefb0b145a449eaa3498",
+      "manifest_version": null,
+      "missing_dependency_sources": [],
+      "path": "/usr/lib/python3/dist-packages/odoo/addons/website/__manifest__.py",
+      "status": "source_present"
+    }
+  },
+  "verification": "source_only"
+}

@@ -10,7 +10,7 @@ IDs identify work, not a mandatory execution sequence. Respect milestone depende
 
 Completed entries link to local commit IDs as evidence. CI completion below means the workflow is authored and locally checked, not that a hosted run has passed. The initial test harness currently covers Django; frontend, PostgreSQL, and real Odoo suites are separate parts.
 
-Current implementation evidence: 6 completed parts; 156 remaining. The tracker/documentation commit itself is not counted as one of the implementation parts.
+Current implementation evidence: 6 completed parts; 156 remaining. Provider discovery is in progress; see the [runtime provider matrix](../odoo_research/03-module-provider-matrix.md). The tracker/documentation commit itself is not counted as one of the implementation parts.
 
 ## M0 — Workflow and provider validation
 
