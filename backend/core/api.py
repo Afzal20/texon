@@ -12,10 +12,10 @@ import re
 from django.apps import apps
 from django.db import models
 from rest_framework import serializers, viewsets
-from rest_framework.permissions import DjangoModelPermissions, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 
 from core.mixins import OwnerQuerysetMixin
-from core.permissions import IsFinanceRole, IsObjectOwnerOrStaff
+from core.permissions import IsFinanceRole, IsObjectOwnerOrStaff, StrictModelPermissions
 from rbac.permissions import require_perms_for_actions
 
 PROJECT_APPS = [
@@ -68,14 +68,14 @@ READ_ONLY_MODELS = {
     ("core", "Currency"),
 }
 
-# App-level tier guard (defence in depth on top of DjangoModelPermissions).
+# App-level tier guard (defence in depth on top of StrictModelPermissions).
 # Users from other departments are rejected even if they hold model perms.
 TIER_REQUIRED = {
     "accounts": IsFinanceRole,
 }
 
 # RBAC write guards for the generic layer (defence in depth on top of
-# DjangoModelPermissions). Unsafe actions on these apps additionally require
+# StrictModelPermissions). Unsafe actions on these apps additionally require
 # the matching seeded RBAC codename; reads stay governed by model perms +
 # owner scoping. Superusers bypass via the permission helper.
 APP_RBAC_WRITE_PERM = {
@@ -230,13 +230,13 @@ def build_viewset(model, read_only=False):
 
     # Security stack (IDOR defence):
     #   IsAuthenticated        — no anonymous access
-    #   DjangoModelPermissions — model-level add/change/delete/view perms
+    #   StrictModelPermissions — model-level add/change/delete/view perms
     #   IsObjectOwnerOrStaff   — object-level: only the row owner (or staff)
     # OwnerQuerysetMixin scopes the queryset so foreign rows 404 entirely.
-    permission_classes = [IsAuthenticated, DjangoModelPermissions, IsObjectOwnerOrStaff]
+    permission_classes = [IsAuthenticated, StrictModelPermissions, IsObjectOwnerOrStaff]
     tier_class = TIER_REQUIRED.get(model._meta.app_label)
     if tier_class is not None:
-        permission_classes = [IsAuthenticated, tier_class, DjangoModelPermissions, IsObjectOwnerOrStaff]
+        permission_classes = [IsAuthenticated, tier_class, StrictModelPermissions, IsObjectOwnerOrStaff]
     rbac_write_perm = APP_RBAC_WRITE_PERM.get(model._meta.app_label)
     if rbac_write_perm is not None:
         permission_classes = permission_classes + [

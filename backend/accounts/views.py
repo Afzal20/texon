@@ -1,8 +1,8 @@
 from rest_framework import viewsets
-from rest_framework.permissions import DjangoModelPermissions, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 
 from core.mixins import OwnerQuerysetMixin
-from core.permissions import IsFinanceRole, IsObjectOwnerOrStaff
+from core.permissions import IsFinanceRole, IsObjectOwnerOrStaff, StrictModelPermissions
 
 from .models import (
     AccountsPayable,
@@ -26,7 +26,7 @@ from .serializers import (
 PERMISSION_CLASSES = [
     IsAuthenticated,
     IsFinanceRole,
-    DjangoModelPermissions,
+    StrictModelPermissions,
     IsObjectOwnerOrStaff,
 ]
 

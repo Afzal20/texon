@@ -1,5 +1,21 @@
 from rest_framework import permissions
 
+
+class StrictModelPermissions(permissions.DjangoModelPermissions):
+    """Require Django view permission for data and metadata reads.
+
+    DRF's default permits authenticated GET/HEAD/OPTIONS without a model
+    permission. Preserve its add/change/delete checks for unsafe requests.
+    """
+
+    perms_map = {
+        **permissions.DjangoModelPermissions.perms_map,
+        "GET": ["%(app_label)s.view_%(model_name)s"],
+        "HEAD": ["%(app_label)s.view_%(model_name)s"],
+        "OPTIONS": ["%(app_label)s.view_%(model_name)s"],
+    }
+
+
 DEPARTMENT_TIER_MAP = {
     "Cutting": "production",
     "Sewing": "production",
