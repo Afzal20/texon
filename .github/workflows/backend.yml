@@ -1,0 +1,36 @@
+name: Backend checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.13.0"
+          python-version: "3.14"
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - name: Install root tooling
+        run: pnpm install --frozen-lockfile
+      - name: Install locked backend dependencies
+        run: uv sync --directory backend --frozen
+      - name: Check Django configuration
+        run: pnpm check:backend
+      - name: Check migration drift
+        run: pnpm check:migrations
+      - name: Run backend regression suite
+        run: pnpm test

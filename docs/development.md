@@ -15,3 +15,7 @@ The root `pnpm test` currently runs the Django backend suite. It changes to `bac
 The backend test runner creates a separate test database. Do not run migrations or seed commands against the checked-in development database to test a change. Local virtual environments and generated backend artifacts are ignored.
 
 Run targeted backend checks with `uv --directory backend run --frozen python manage.py test core --noinput`. Use the full root test command before completing a part. A successful test command does not establish Odoo runtime or production readiness.
+
+## Continuous integration
+
+`.github/workflows/backend.yml` runs the root dependency install, locked uv sync, Django system check, migration drift check, and backend suite for pushes and pull requests. This first CI job uses an isolated SQLite test database; PostgreSQL and Odoo runtime jobs are separate remaining backlog items. Local checks can validate the commands, but the hosted GitHub Actions run must pass before its result is claimed.
