@@ -77,7 +77,7 @@ class OperationApiTests(APITestCase):
 
     @patch("core.views_operations.dispatch_single_command")
     @patch("core.views_operations.OdooClient")
-    def test_replay_outcome_unknown_invokes_dispatcher(self, mock_client_cls, mock_dispatch):
+    def test_replay_outcome_unknown_invokes_dispatcher(self, mock_odoo_client, mock_dispatch):
         self.cmd.status = OutboxCommand.Status.OUTCOME_UNKNOWN
         self.cmd.save()
 
@@ -96,3 +96,54 @@ class OperationApiTests(APITestCase):
         response = self.client.post(url)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_list_operations(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("operation-list")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsInstance(response.json(), list)
+        self.assertGreaterEqual(len(response.json()), 1)
+
+    @patch("core.views_operations.dispatch_single_command")
+    @patch("core.views_operations.OdooClient")
+    def test_submit_command(self, mock_odoo_client, mock_dispatch):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("command-submit")
+        payload = {
+            "command_name": "sales.create",
+            "aggregate_id": "SO-NEW-99",
+            "parameters": {
+                "client_order_ref": "PO-TEST",
+                "partner_id": 1,
+                "lines": [],
+            },
+        }
+        response = self.client.post(url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        data = response.json()
+        self.assertEqual(data["command_name"], "sales.create")
+        self.assertEqual(data["aggregate_id"], "SO-NEW-99")
+        self.assertTrue(data["operation_uuid"])
+        mock_dispatch.assert_called_once()
+
+    @patch("core.views_operations.OdooClient")
+    def test_odoo_workspace_endpoint(self, mock_client_cls):
+        mock_instance = mock_client_cls.return_value
+        mock_instance.read_workspace.return_value = {
+            "results": [{"id": 1, "name": "Test Sale"}],
+            "count": 1,
+            "company_id": 1,
+        }
+
+        self.client.force_authenticate(user=self.user)
+        url = reverse("odoo-workspace") + "?section=sales"
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["count"], 1)
+        self.assertEqual(data["results"][0]["name"], "Test Sale")
+

@@ -1,7 +1,7 @@
 import {
   Shirt, Ruler, FileText, Truck, Factory, Package, Eye,
   Users, DollarSign, Contact, Clock, Lock, BarChart,
-  Layers, Building2, ShoppingBag, BrainCircuit, FileCheck2
+  Layers, Building2, ShoppingBag, BrainCircuit, FileCheck2, Server
 } from "lucide-react"
 
 export interface NavPage {
@@ -322,6 +322,15 @@ export const categories: NavCategory[] = [
     pages: makePages([
       "Fixed asset management",
     ], "fixed-assets"),
+  },
+  {
+    title: "Odoo 20 Operations",
+    categorySlug: "operations",
+    group: "Platform & Reporting",
+    icon: Server,
+    pages: [
+      { title: "Command Hub & Explorer", slug: "", url: "/operations" },
+    ],
   },
 ]
 

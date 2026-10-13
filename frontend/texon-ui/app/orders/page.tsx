@@ -12,6 +12,7 @@ import {
 import { toast } from "sonner"
 import { getPurchaseOrders, getBuyerPortfolios } from "@/lib/data/order-actions"
 import type { PurchaseOrder, BuyerPortfolio } from "@/lib/data/orders"
+import { CreateQuotationModal } from "@/components/orders/CreateQuotationModal"
 
 const STAGES = [
   { label: "Production", color: "bg-blue-600" },
@@ -24,6 +25,7 @@ export default function OrderManagement() {
   const [orders, setOrders] = React.useState<PurchaseOrder[]>([])
   const [portfolios, setPortfolios] = React.useState<BuyerPortfolio[]>([])
   const [search, setSearch] = React.useState("")
+  const [isModalOpen, setIsModalOpen] = React.useState(false)
 
   React.useEffect(() => {
     getPurchaseOrders().then(setOrders).catch(() => {})
@@ -56,11 +58,19 @@ export default function OrderManagement() {
             <Button variant="outline" className="gap-2" onClick={() => toast.success("Orders exported to CSV")}>
               <Download className="h-4 w-4" /> Export
             </Button>
-            <Button className="gap-2 bg-slate-900 hover:bg-slate-800 text-white" onClick={() => toast.info("New order form coming soon")}>
-              <Plus className="h-4 w-4" /> New Order
+            <Button className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm" onClick={() => setIsModalOpen(true)}>
+              <Plus className="h-4 w-4" /> New Garment Quotation (Odoo)
             </Button>
           </div>
         </div>
+
+        <CreateQuotationModal
+          open={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          onSuccess={() => {
+            getPurchaseOrders().then(setOrders).catch(() => {})
+          }}
+        />
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>

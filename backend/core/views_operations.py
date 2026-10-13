@@ -91,6 +91,99 @@ class OperationReplayView(APIView):
             command.save(update_fields=["status", "lease_token", "updated_at"])
 
             client = OdooClient()
-            command = dispatch_single_command(command, worker_id=worker_id, client=client)
+            dispatch_single_command(command, worker_id=worker_id, client=client)
+            command.refresh_from_db()
 
         return Response(_serialize_operation(command), status=status.HTTP_200_OK)
+
+
+class OperationListView(APIView):
+    """List recent integration commands and receipts visible to the current user."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        queryset = OutboxCommand.objects.all().order_by("-id")
+        if not (request.user.is_superuser or request.user.is_staff):
+            user_ref = getattr(request.user, "email", str(request.user.pk))
+            queryset = queryset.filter(actor_id__in=[user_ref, str(request.user.pk)])
+
+        limit = min(int(request.query_params.get("limit", 30)), 100)
+        commands = queryset[:limit]
+        return Response([_serialize_operation(cmd) for cmd in commands], status=status.HTTP_200_OK)
+
+
+class CommandSubmissionView(APIView):
+    """Authorized endpoint for submitting business commands to the transactional outbox."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        command_name = data.get("command_name")
+        parameters = data.get("parameters")
+        aggregate_id = data.get("aggregate_id") or "AGG"
+
+        if not command_name or not isinstance(parameters, dict):
+            return Response(
+                {"detail": "command_name and parameters object are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        company_id = int(data.get("company_id") or getattr(request.user, "company_id", None) or 1)
+        actor_id = getattr(request.user, "email", str(request.user.pk))
+        tenant_id = data.get("tenant_id") or "texon-default"
+        expected_revision = data.get("expected_revision")
+
+        from .outbox import enqueue_command
+
+        try:
+            command = enqueue_command(
+                tenant_id=tenant_id,
+                company_id=company_id,
+                actor_id=actor_id,
+                command_name=command_name,
+                aggregate_id=aggregate_id,
+                parameters=parameters,
+                expected_revision=expected_revision,
+            )
+        except Exception as e:
+            return Response({"detail": f"Failed to enqueue command: {e}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Trigger immediate execution pass so caller gets rapid feedback if worker is idle
+        try:
+            worker_id = uuid4()
+            command.status = OutboxCommand.Status.CLAIMED
+            command.lease_token = worker_id
+            command.save(update_fields=["status", "lease_token", "updated_at"])
+            client = OdooClient()
+            dispatch_single_command(command, worker_id=worker_id, client=client)
+        except Exception:
+            # If immediate pass hits an error, the background worker handles retry
+            pass
+
+        command.refresh_from_db()
+        return Response(_serialize_operation(command), status=status.HTTP_202_ACCEPTED)
+
+
+class OdooWorkspaceView(APIView):
+    """Read authoritative data directly from Odoo for the current user's workspace."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        section = request.query_params.get("section", "sales")
+        company_id = int(request.query_params.get("company_id") or 1)
+        limit = min(int(request.query_params.get("limit", 20)), 100)
+        offset = max(int(request.query_params.get("offset", 0)), 0)
+
+        client = OdooClient()
+        try:
+            data = client.read_workspace(company_id=company_id, section=section, limit=limit, offset=offset)
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"detail": f"Odoo workspace unavailable: {e}"},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+

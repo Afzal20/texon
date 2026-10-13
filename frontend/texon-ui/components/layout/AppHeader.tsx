@@ -60,6 +60,15 @@ export function AppHeader() {
           </Button>
         </div>
 
+        {/* Odoo Bridge Indicator & Link */}
+        <Link
+          href="/operations"
+          className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/90 hover:bg-emerald-100 transition-all shadow-sm"
+        >
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Odoo 20 Hub</span>
+        </Link>
+
         {/* AI Command button */}
         <Button
           data-ai-trigger
