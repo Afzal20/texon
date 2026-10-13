@@ -10,7 +10,7 @@ IDs identify work, not a mandatory execution sequence. Respect milestone depende
 
 Completed entries link to local commit IDs as evidence. CI completion below means the workflow is authored and locally checked, not that a hosted run has passed. The root test command covers Django and frontend Vitest; real Odoo business integration tests remain separate work. PostgreSQL and SQLite backend suites now run in the CI matrix.
 
-Current implementation evidence: 19 completed parts; 143 remaining. Provider discovery is in progress; see the [runtime provider matrix](../odoo_research/03-module-provider-matrix.md). The tracker/documentation commit itself is not counted as one of the implementation parts.
+Current implementation evidence: 20 completed parts; 142 remaining. Provider discovery is in progress; see the [runtime provider matrix](../odoo_research/03-module-provider-matrix.md). The tracker/documentation commit itself is not counted as one of the implementation parts.
 
 ## M0 — Workflow and provider validation
 
@@ -56,7 +56,7 @@ Current implementation evidence: 19 completed parts; 143 remaining. Provider dis
 - [ ] **T031** Buyer-owned portal document and record authorization
 - [ ] **T032** Generic legacy write restrictions for migrated ERP domains
 - [ ] **T033** Typed pagination and bounded indexed filtering endpoints
-- [x] **T034** Operation-status and replay endpoint actor/company authorization
+- [x] **T034** Operation-status and replay endpoint actor/company authorization — commit `1cf671c`
 - [ ] **T035** Protected attachment access and safe download headers
 - [ ] **T036** Audited permission administration and cross-company regression coverage
 
@@ -70,7 +70,7 @@ Current implementation evidence: 19 completed parts; 143 remaining. Provider dis
 - [x] **T042** Odoo command allowlist and independent business authorization — commit `3d0680e`
 - [x] **T043** Atomic command receipts with concurrent original-result replay — commit `3d0680e`
 - [x] **T044** Expected revisions and competing business-transition locking — commit `3d0680e`
-- [x] **T045** Frontend command submission and truthful operation-status tracking
+- [x] **T045** Frontend command submission, operations hub, and truthful operation-status tracking — commits `041ede8`, `9b467e3`
 
 ## M2 — Events and reconciliation
 
@@ -100,7 +100,7 @@ Current implementation evidence: 19 completed parts; 143 remaining. Provider dis
 
 - [ ] **T064** Odoo quotation creation with buyer references and terms
 - [ ] **T065** Texon quotation/order list and authorized detail views
-- [ ] **T066** Size/color sales line matrix with precise quantities/prices
+- [x] **T066** Size/color sales line matrix with precise quantities/prices — commit `9b467e3`
 - [ ] **T067** Atomic sales order confirmation with current-state validation
 - [ ] **T068** Legacy duplicate order consolidation and reference preservation
 - [ ] **T069** Controlled order amendment with revision conflict handling
