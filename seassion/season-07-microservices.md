@@ -1,5 +1,7 @@
 # Season 7 — Microservices & Polyglot Expansion
 
+> Historical plan — superseded on 2026-10-13. Follow the [Odoo-powered product scope](../docs/GARMENT_ERP_13_MODULES_MASTER_PLAN.md) and [current milestone roadmap](../docs/integration_design/04-200-commit-implementation-roadmap.md). The instructions and estimates below are retained for context, not execution. Dedicated cutting/CAD, device integration, specialist optimization, and duplicate ERP engines are excluded.
+
 Extracting services into microservices architecture with polyglot support.
 
 - [ ] Extract LP + graph optimization module into a separate FastAPI service

@@ -1,197 +1,88 @@
-# Texon Apparel AI Copilot: Architecture & Integration Blueprint
+# Texon AI Assistant: Odoo Business Workflow Copilot
 
-> **Role:** Principal Enterprise Solutions & AI Systems Architect  
-> **Target Systems:** Texon Next.js Frontend (`AiCommandCenter.tsx`) + Django Channels + Odoo 20.0 ERP  
-> **Status:** Architecture Specification & Implementation Plan  
+> Updated: 2026-10-13
+> Status: Revised AI plan; supersedes the WebSocket/JWT and COMMIT-226–240 backlog.
+> Scope: Business assistance over verified ERP records, without factory hardware or specialist cutting tools.
 
----
+## Purpose
 
-## Executive Summary & Codebase Context
+Help users answer “Will this order ship on time?”, identify material shortages, understand manufacturing progress, find unpaid invoices, and draft follow-up work. The assistant complements Odoo workflows; it does not replace business validation or maintain its own balances.
 
-During our audit of the codebase and Git history (`commit 6173e0b`), we discovered that Texon previously had a full AI subsystem under `backend/ai` containing:
-- Multi-provider support (OpenAI, DeepSeek, LM Studio)
-- Domain skills (`ProductionSkill`, `InventorySkill`, `SalesSkill`, `QualitySkill`, `EmployeeSkill`)
-- WebSocket streaming via Django Channels (`AsyncWebsocketConsumer`)
-- Frontend UI components: the `Cmd+K` / `Ctrl+K` command center ([AiCommandCenter.tsx](file:///home/afzal/Desktop/texon/frontend/texon-ui/components/global/AiCommandCenter.tsx)) and the streaming WebSocket hook ([use-ai-chat.ts](file:///home/afzal/Desktop/texon/frontend/texon-ui/hooks/use-ai-chat.ts)).
+Start with read-only questions after order, inventory, manufacturing, accounting, and permissions are reliable. Enable actions separately. Odoo remains the authority; Django projections are explicitly dated caches. Unavailable modules have no registered tools or suggestion pills.
 
-### Why Legacy AI Was Removed
-In August 2026, the legacy AI module was removed (`chore: remove legacy AI module and supporting infrastructure`) because it suffered from a classic enterprise AI flaw: **it performed unconstrained reads and hallucinatory writes on top of mutable, unvalidated database records**. When `accounting_skill.py` queried draft journal entries or `inventory_skill.py` queried unverified raw balances, it produced misleading metrics.
+The existing frontend has AI components and a token-based WebSocket hook. Treat them as migration inputs, not proof of a working backend or a static mock. Inspect current code before changing it. Restore only the needed HTTP AI services; remove stale ASGI routing imports instead of reviving the old WebSocket design.
 
-In our primary ERP Adaptation Plan (Phases 1–10, Commits 001–225), we deliberately focused on **establishing the authoritative transactional ledger first** (Odoo 20.0 Community, reliable outbox messaging, inventory quants, and frozen BOMs). 
+## Transport and session
 
-Now that the authoritative transactional bedrock is specified, this document provides the **Modernized AI Copilot Architecture** and **Phase 11 Implementation Backlog (Commits 226–240)**.
+Browser → Next.js session-authenticated BFF POST → Django AI HTTP service → tool executor/provider. Stream SSE-formatted events in the POST response using a browser fetch reader. Forward server credentials only on the server. Apply CSRF/origin checks and conversation/user/company authorization before beginning the stream.
 
----
+Use `message_start`, `tool_status`, `source`, `chunk`, `action_proposal`, `message_end`, and `error` events with request/message IDs. Persist completed/interrupted status, support abort/cancellation, set proxy/provider timeouts, and bound concurrent requests. Retrying a failed stream must not dispatch a business action.
 
-## 1. The Core AI Principles in Enterprise ERP
+Do not expose access/refresh JWTs or Odoo keys to browser JavaScript, WebSocket query strings, prompts, or logs. WebSockets are outside this delivery scope. Switching to a local provider does not guarantee offline operation; validate network, hardware capacity, and model/tool compatibility before making that claim.
 
-In mission-critical apparel manufacturing, generic conversational chatbots are dangerous. Fabric allocation, cost sheets, and cutting orders cannot be left to probabilistic guesswork.
+## Permission-aware tool catalog
 
-1. **Zero Hallucinatory Writes:** The AI agent **NEVER** mutates database state directly. Any action proposed by the AI (e.g. *"Confirm Buyer PO #TX-901"*, *"Release Roll #104 from Quarantine"*) produces a structured **Action Confirmation Card** in the UI. A human operator must explicitly review and click to dispatch the command via the Transactional Outbox.
-2. **Deterministic Tool Execution (RAG + Function Calling):** The LLM does not write raw SQL queries. It calls strictly typed, read-only Python tools that query validated Django projections and Odoo JSON-2 endpoints.
-3. **Strict RBAC & Tenant Scoping:** The AI runs strictly inside the authenticated user's session context (`user.id`, `active_company_id`, `user.has_perm(...)`). A merchandiser chatting with the AI cannot access executive payroll or unassigned buyer margins.
-4. **Hybrid Cloud / On-Premise Support:** The architecture supports cloud models (OpenAI GPT-4o, DeepSeek V3/R1, Anthropic Claude 3.5) while allowing local LLM backends (Ollama / vLLM / LM Studio) for factories requiring offline data sovereignty.
+Calculate metrics with deterministic business tools and decimal-safe arithmetic. The LLM formats/explains their results. Queries must enforce tenant, active company, user action, record ownership, and field permissions independently of prompt instructions or whether a tool was shown to the model.
 
----
+| Tool group | Example read tools | Availability gate |
+|---|---|---|
+| Sales/delivery | `get_order_status`, `list_orders_at_risk`, `get_delivery_status` | M3–M4 |
+| Purchasing/inventory | `get_material_availability`, `get_purchase_eta`, `get_lot_status` | M3; distinguish on-hand, reserved, available, held, and pending |
+| Manufacturing | `get_mo_progress`, `get_material_shortages` | M4; standard manually recorded work-order progress, no telemetry/SMV/OEE inference |
+| Accounting | `get_outstanding_invoices`, `get_order_financial_summary` | M4 and finance field permissions; separate draft/posted/paid and currencies |
+| Collaboration | `list_overdue_tasks`, `get_ticket_status` | Relevant M5 module |
+| HR | `get_my_leave_balance`, `get_my_attendance_summary` | M6; self-service or explicitly authorized staff scope |
+| Documents | `search_authorized_sops` | Verified M5 document provider and access-filtered retrieval |
 
-## 2. System Architecture: Next.js to Django Channels
+Each result includes permitted source record references/links, company, currency/UOM/timezone where relevant, queried-at/source-updated timestamps, synchronization health, and explicit missing-data indicators. Do not call an order “on time” solely from an MO status. Define risk rules from due dates, outstanding approvals, procurement dates, shortages, and recorded progress; label these as rule-based indicators, not proven predictions.
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as Merchandiser / Factory Manager
-    participant UI as AiCommandCenter.tsx (Ctrl+K)
-    participant Hook as useAiChat (WebSocket)
-    participant ASGI as Django Channels (ASGI)
-    participant Consumer as ChatConsumer (/ws/ai/chat/)
-    participant Agent as Apparel Agent Orchestrator
-    participant Tools as Skill Tool Registry
-    participant ERP as Texon / Odoo 20 Projections
-    participant LLM as LLM Provider (OpenAI / DeepSeek / Ollama)
+## Confirmed actions
 
-    User->>UI: Press Ctrl+K -> Select "Production Summary"
-    UI->>Hook: send("Give me a summary of today's production...")
-    Hook->>ASGI: WebSocket message {content, conversation_id}
-    ASGI->>Consumer: Authenticate JWT token & resolve company_id
-    Consumer->>Agent: Process user message with history
-    Agent->>LLM: Prompt with available tool schemas
-    LLM-->>Agent: Function Call: query_production_telemetry(date="2026-10-13")
-    Agent->>Tools: Execute query_production_telemetry()
-    Tools->>ERP: Query Odoo MOs & Texon ProductionRecord
-    ERP-->>Tools: Structured Telemetry Data
-    Tools-->>Agent: JSON Result (Target: 12,000, Actual: 10,850, Defect: 1.8%)
-    Agent->>LLM: Tool Output + Generate User Response
-    LLM-->>Agent: Stream tokens...
-    Agent->>Consumer: Yield chunk
-    Consumer->>Hook: WebSocket event {type: "chunk", content: "..."}
-    Hook->>UI: Render live streaming response
-```
+Initial action allowlist: create a follow-up task or draft an order-linked ticket after M5. Add sales confirmation or quality release only after their business command and authorization tests pass. Financial posting, payroll, signature execution, and autonomous stock movements are outside the initial AI action scope.
 
----
+1. The model requests a typed draft action; server tools validate references/permissions and create a persisted proposal. The model cannot supply a dispatch URL or unrestricted command name.
+2. Bind the proposal to user, tenant/company, allowlisted action, exact parameters/hash, source record revisions, creation/expiry time, and status. Generate the operation UUID server-side.
+3. Render the exact proposed changes, target records, relevant amounts/units, and consequences. Only an explicit authenticated confirmation dispatches it.
+4. On confirmation, recheck ownership, current permissions, expiry, company, prerequisites, and expected revisions. Changed state requires a new review; a previously valid card is not sufficient.
+5. Atomically mark/dispatch the confirmed proposal with the stable command UUID. Repeated clicks return the same operation. Odoo revalidates the business action and records its receipt.
+6. Show queued versus completed/rejected/unknown status. Cancel/expire an unconfirmed proposal; do not imply cancel reverses an already committed business operation.
 
-## 3. Four Specialized Apparel Copilot Skills
+The proposal card contains a server proposal ID and display data. Frontend submits that ID to a fixed authorized confirmation endpoint; it never executes an LLM-selected endpoint.
 
-### Skill 1: Production & Bottleneck Intelligence (`production_copilot`)
-- **Triggers:** "Production Summary", "Line 4 bottleneck", "OEE report today".
-- **Deterministic Tools:**
-  - `get_daily_line_output(date, unit_id, line_id)`: Fetches hourly output against target SMV from `production.ProductionRecord`.
-  - `detect_bottleneck_risks()`: Identifies operations where WIP buffer exceeds 2.5 hours or defect rate spikes above 3%.
-  - `get_active_mo_progress(odoo_mo_id)`: Queries Odoo `mrp.production` status, reserved lots, and scrap percentages.
+## Conversation, data, and provider controls
 
-### Skill 2: Fabric Roll Inventory & Quarantine Analyst (`inventory_copilot`)
-- **Triggers:** "Inventory Status", "Fabric stock for Style TX-901", "Quarantine alerts".
-- **Deterministic Tools:**
-  - `check_fabric_stock(fabric_code, required_meters)`: Checks available unallocated rolls in `WH/Stock`.
-  - `get_quarantined_rolls()`: Lists rolls in `WH/Quarantine` awaiting 4-point inspection or shade grouping.
-  - `query_roll_traceability(roll_lot_number)`: Traces roll from supplier dye batch to cut panels and finished garments.
+- Store conversation owner, tenant/company, messages, tool/source references, model/provider version, token usage, and completion status. Scope list/read/export/delete/stream endpoints; knowledge of a conversation ID grants no access.
+- Revalidate source access when continuing a conversation after role/company changes; redact or exclude previously accessible private data. Isolate retrieval indexes and enforce access before ranking/results reach the model.
+- Treat user text, documents, emails, and tool outputs as untrusted content. Instructions embedded in a buyer attachment cannot alter tool permissions or authorize an action.
+- Minimize provider data, redact secrets/private fields, choose tenant-approved providers, and define conversation retention/deletion and audit retention separately.
+- Configure model/provider IDs rather than hardcoding old model names. Verify streaming and structured-tool support per provider; do not assume compatibility from an OpenAI-shaped API.
+- Set per-user/company token budgets, maximum context/tool rounds, result-size caps, timeouts, cancellation, rate limits, and concurrent-stream limits. Record operational metrics without logging raw private prompts by default.
+- Ground answers in source records, explain missing/conflicting/stale information, and keep provider failure distinct from “no records found.” Local-model deployment is optional, not a prerequisite for the ERP demo.
 
-### Skill 3: Commercial & Delivery Risk Analyzer (`merchandising_copilot`)
-- **Triggers:** "Risk Assessment", "Buyer PO delivery dates", "Critical path delays".
-- **Deterministic Tools:**
-  - `analyze_order_lead_time(buyer_po_id)`: Compares Odoo delivery dates with current fabric receipt and cutting status.
-  - `check_bom_material_readiness(style_id, order_qty)`: Evaluates whether all variant-specific fabrics and trims are on hand.
-  - `flag_overdue_tna_tasks()`: Scans Time & Action milestones for pending sample approvals or fabric lab dips.
+## Implementation work packages
 
-### Skill 4: Natural Language Command Drafter (Human-in-the-Loop)
-- **Triggers:** "Confirm Buyer PO #104", "Release roll #R-902 from quarantine".
-- **Behavior:**
-  1. Validates prerequisites (e.g. ensures inspection score is logged before allowing release).
-  2. Generates an RFC4122 `operation_uuid` and standard command payload.
-  3. Returns a structured JSON message:
-     ```json
-     {
-       "type": "action_proposal",
-       "action": "release_roll_to_stock",
-       "title": "Release Fabric Roll #R-902 to Available Stock",
-       "details": {
-         "lot": "R-902",
-         "shade": "Group A",
-         "meters": 120.5,
-         "score": "4-Point Score: 12 (PASS)"
-       },
-       "command_endpoint": "/api/v1/commands/inventory/release-roll",
-       "operation_uuid": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
-     }
-     ```
-  4. The frontend renders an interactive confirmation card with **[Confirm]** and **[Cancel]** buttons.
+| Package | Deliverable | Acceptance evidence |
+|---|---|---|
+| AI-1 | HTTP app/provider configuration; remove obsolete routing dependency | Backend boots; missing provider configuration yields explicit unavailable state |
+| AI-2 | Conversation/message ownership and retention; scoped APIs | Another user/company cannot list, stream, export, or delete history |
+| AI-3 | BFF POST streaming, event contract, cancellation/reconnect behavior | Browser session streams without readable credentials; interrupted request is recorded |
+| AI-4 | Bounded provider adapter and permission-aware typed tool registry | Malformed parameters, forbidden fields, arbitrary SQL/RPC, and excessive tool loops are rejected |
+| AI-5 | Sales, inventory, manufacturing, and finance tools | Fixture answers match exact records/totals, sources, timestamps, and scope |
+| AI-6 | Gated collaboration/HR/document tools | Suggestions match installed modules; private HR/documents remain inaccessible |
+| AI-7 | Server proposal lifecycle, confirmation UI, command dispatch | Expired/stale/foreign proposals rejected; double confirm has one effect |
+| AI-8 | Security/evidence evaluation, cost controls, operational runbook | Real-runtime workflow tests plus controlled provider-failure/adversarial tests pass |
 
----
+## Required acceptance suite
 
-## 4. Phase 11 Implementation Backlog: AI Copilot Integration (Commits 226–240)
+1. Answer order status and shortage questions from known fixtures; show authorized record links and freshness.
+2. Explain intermediate manufacturing progress without claiming finished inventory exists.
+3. Produce correct posted/draft invoice and currency distinctions; refuse unauthorized financial fields.
+4. Deny cross-user/company history, retrieval, tool execution, proposals, and operation receipts.
+5. Revoke a role during a conversation; subsequent tools/history reuse cannot expose the revoked data.
+6. Place malicious action instructions in a retrieved document; no extra tool authority or command is gained.
+7. Mark projections stale or stop Odoo; report uncertainty/unavailability rather than fabricated current figures.
+8. Confirm a task proposal twice; one business effect. Reject changed/expired parameters and proposals from another user/company.
+9. Cancel a stream, trigger rate/token/time limits, and simulate provider failure; terminate cleanly with truthful state and bounded cost.
+10. Exercise session/CSRF/origin handling and verify no long-lived credentials in URLs, browser storage, model inputs, or logs.
 
-To complement the core 225-commit ERP roadmap, this standalone phase restores and modernizes the AI assistant:
-
-### `COMMIT-226`: feat(ai): scaffold backend/ai application and register in settings
-- **Target Files:** `backend/ai/apps.py`, `backend/ai/__init__.py`, `backend/config/settings.py`
-- **Implementation Intent:** Re-register `ai` app in `INSTALLED_APPS` and define configuration settings (`AI_DEFAULT_PROVIDER`, `AI_MODEL_NAME`, `AI_API_KEY`).
-- **Acceptance & Paired Tests:** Django boots cleanly; `manage.py check` passes without warnings.
-
-### `COMMIT-227`: feat(ai): create conversation and message audit models
-- **Target Files:** `backend/ai/models.py`, `backend/ai/migrations/0001_initial.py`
-- **Implementation Intent:** Define `Conversation` (user, company, title, created_at) and `ChatMessage` (conversation, role, content, tool_calls, tokens_used).
-- **Acceptance & Paired Tests:** Migration applies cleanly; unique indices created.
-
-### `COMMIT-228`: feat(ai): implement ChatConsumer with JWT authentication and streaming
-- **Target Files:** `backend/ai/consumers.py`, `backend/ai/routing.py`, `backend/config/asgi.py`
-- **Implementation Intent:** Re-enable `ai.routing.websocket_urlpatterns` in `backend/config/asgi.py`. Implement `ChatConsumer` verifying JWT token from query string and managing WebSocket lifecycle.
-- **Acceptance & Paired Tests:** Automated Channels test connects to `/ws/ai/chat/?token=<valid_token>` and receives connect acknowledgment.
-
-### `COMMIT-229`: feat(ai): create LLM provider abstraction for OpenAI, DeepSeek and Ollama
-- **Target Files:** `backend/ai/providers/base.py`, `backend/ai/providers/openai_provider.py`, `backend/ai/providers/deepseek_provider.py`, `backend/ai/providers/ollama_provider.py`
-- **Implementation Intent:** Provider classes wrapping streaming client calls and converting OpenAI-compatible function calling schemas.
-- **Acceptance & Paired Tests:** Unit tests mock provider streams and verify token yielding.
-
-### `COMMIT-230`: feat(ai): implement SkillRegistry and deterministic tool execution engine
-- **Target Files:** `backend/ai/registry.py`, `backend/ai/tools/executor.py`
-- **Implementation Intent:** Registry allowing domain skills to register tool schemas and dispatch execution with user permission checks.
-- **Acceptance & Paired Tests:** Registered tools return valid JSON schemas; executor handles parameters correctly.
-
-### `COMMIT-231`: feat(ai): implement ProductionSkill for live MO and telemetry queries
-- **Target Files:** `backend/ai/skills/production_skill.py`
-- **Implementation Intent:** Tools querying Odoo `mrp.production` and Texon `production.ProductionRecord` (daily output, target vs actual, defect rates).
-- **Acceptance & Paired Tests:** Skill queries return structured output without altering database.
-
-### `COMMIT-232`: feat(ai): implement InventorySkill for fabric roll and lot tracking
-- **Target Files:** `backend/ai/skills/inventory_skill.py`
-- **Implementation Intent:** Tools querying Odoo `stock.quant` and `stock.lot` by shade, GSM, shrinkage, and quarantine status.
-- **Acceptance & Paired Tests:** Test verifies querying fabric stock returns available roll count and quarantined lots.
-
-### `COMMIT-233`: feat(ai): implement MerchandisingSkill for order critical-path risk analysis
-- **Target Files:** `backend/ai/skills/merchandising_skill.py`
-- **Implementation Intent:** Tools analyzing `merchandising.BuyerPurchaseOrder` lead times, BOM readiness, and delivery risks.
-- **Acceptance & Paired Tests:** Test identifies order with missing fabric booking.
-
-### `COMMIT-234`: feat(ai): implement CommandDraftingSkill for Human-in-the-Loop proposals
-- **Target Files:** `backend/ai/skills/command_skill.py`
-- **Implementation Intent:** Tool structuring action proposals with validated parameters and operation UUIDs for user confirmation.
-- **Acceptance & Paired Tests:** Returns valid `action_proposal` JSON payload.
-
-### `COMMIT-235`: security(ai): enforce RBAC and company isolation across all skill tools
-- **Target Files:** `backend/ai/tools/executor.py`
-- **Implementation Intent:** Validate `user.has_perm()` for every tool invocation; scope all ORM queries to `active_company_id`.
-- **Acceptance & Paired Tests:** Unprivileged user calling HR tool receives permission denied message from agent.
-
-### `COMMIT-236`: feat(frontend): implement Action Confirmation Card in AiCommandCenter.tsx
-- **Target Files:** `frontend/texon-ui/components/global/AiCommandCenter.tsx`
-- **Implementation Intent:** Render structured interactive cards for `action_proposal` messages with one-click dispatch to `/api/proxy/commands/*`.
-- **Acceptance & Paired Tests:** Vitest verifies clicking confirm triggers operation dispatch hook.
-
-### `COMMIT-237`: feat(frontend): connect useAiChat hook to live WebSocket with token rehydration
-- **Target Files:** `frontend/texon-ui/hooks/use-ai-chat.ts`
-- **Implementation Intent:** Replace static mock with authenticated WebSocket connection, handling `message_start`, `chunk`, and `message_end` events.
-- **Acceptance & Paired Tests:** Test verifies streaming message assembly from chunks.
-
-### `COMMIT-238`: feat(frontend): wire quick suggestions in AiCommandCenter to domain prompts
-- **Target Files:** `frontend/texon-ui/components/global/AiCommandCenter.tsx`
-- **Implementation Intent:** Wire Production Summary, Risk Assessment, Inventory Status, and HR Attendance suggestion pills to auto-send prompts.
-- **Acceptance & Paired Tests:** Clicking pill submits prompt to chat session.
-
-### `COMMIT-239`: test(ai): end-to-end integration test for AI chat streaming and tool execution
-- **Target Files:** `backend/ai/tests/test_e2e_ai.py`
-- **Implementation Intent:** Integration test simulating user WebSocket session asking for production summary and receiving streamed response.
-- **Acceptance & Paired Tests:** Test passes against Channels test client.
-
-### `COMMIT-240`: docs(ai): create operational runbook for AI providers and factory deployments
-- **Target Files:** `docs/ai/01-ai-copilot-runbook.md`
-- **Implementation Intent:** Document API key rotation, prompt tuning, token cost budgeting, and local Ollama GPU setup for garment factories.
-- **Acceptance & Paired Tests:** Runbook reviewed and approved.
+Use deterministic fixtures and mocked provider streams for repeatable evaluations, alongside real Odoo integration tests for business tools and actions. Record model/version and evaluation results before enabling a provider in the pilot.

@@ -1,275 +1,69 @@
-# Deep Technical Problem Solving: Texon & Odoo 20.0 ERP Adaptation
+# Texon–Odoo Technical Implementation Contracts
 
-> **Author:** Principal Enterprise Architect (10+ Years Apparel ERP & Integration Systems)  
-> **Status:** Implementation-Ready Architecture Specification  
-> **Target Release:** Odoo 20.0 Community Edition (Self-Hosted) & Texon (Django 5.x / Next.js 15)  
+> Updated: 2026-10-13
+> Status: Engineering requirements; validate exact APIs against the pinned runtime.
 
----
+## Authority and extension strategy
 
-## Executive Architectural Summary
+Odoo owns all ERP business state, including garment product metadata, approved specifications, stock, accounting, employees, and installed suite modules. Texon owns presentation, user preferences, AI history/proposals, commands, and disposable read caches. Retire duplicate Django business engines as each domain migrates.
 
-Integrating an existing domain-heavy apparel ERP (Texon) with an authoritative open-source ERP (Odoo 20.0 Community) is not a simple matter of synchronizing tables or wrapping REST APIs. It requires resolving fundamental **data ownership, transactional consistency, domain modeling, and security boundary conflicts**.
+| Domain | Odoo authority | Texon responsibility |
+|---|---|---|
+| Partners/catalog | `res.partner`, `product.template`, `product.product` | Authorized search, form drafts, color/size matrix UI |
+| Specifications | `mrp.bom` and explicit revision extension | Approved revision display and submission |
+| Stock/purchasing | `purchase.order`, `stock.move`, `stock.lot`, `stock.quant` | Receipts, manual quality decisions, availability views |
+| Sales/manufacturing | `sale.order`, `mrp.production`, `mrp.workorder` | Business commands, shortages, manual progress |
+| Finance | `account.move` and selected payment/reconciliation workflows | Selected forms and reconciled summaries |
+| Suite modules | Installed project/HR/helpdesk/sign/appraisal/marketing providers | Focused forms, portal, dashboards |
 
-In a production garment manufacturing ecosystem, duplicate records of truth lead to catastrophic operational failures: double-booked fabric inventory, corrupted cost sheets, desynchronized cutting orders, and phantom shipments. This document provides the concrete engineering specifications and mathematical/algorithmic safeguards to ensure seamless, zero-drift adaptation.
+Use native Odoo administration for configuration initially. Extend Odoo only for missing business rules or garment fields. Do not retain specialist cutting algorithms, floor telemetry, device connectors, or independent payroll/valuation algorithms.
 
----
+## Command envelope and authorization
 
-## 1. Architectural System Boundary & Authority Matrix
+Define typed schemas for each allowlisted action. Envelope fields: `operation_uuid`, trusted tenant/company, authenticated actor reference, command name, schema version, aggregate ID, expected revision, and parameters. Server code supplies identity and routing; the browser/LLM cannot nominate a tenant, actor, database, model, or arbitrary method.
 
-### 1.1 The Single Authority Mandate
-A core architectural anti-pattern is **bi-directional master synchronization**. When two systems believe they own inventory quantities, prices, or production states, network latency or concurrent updates inevitably cause split-brain divergence.
+Compute a canonical fingerprint covering tenant/company, command name, schema version, aggregate, expected revision, actor binding, and parameters. Use a specified JSON representation with stable decimal/date handling; reject NaN and unsupported types. A payload hash detects mismatched replay; it is not authentication or a signature.
 
-Texon will operate as the **Apparel Specialized Design, Tech-Pack, Merchandising, and Operational Portal**, while Odoo 20.0 Community acts as the **Authoritative Transactional Ledger (Stock, Orders, Accounting, and Core MRP)**.
+Odoo must validate company membership and action/record access before looking up or returning a receipt. Compare the full fingerprint and company/command on replay, not just parameters. Resolve related IDs under the authorized company and customer rules. Use trusted actor metadata for audit; never trust `payload.actor_id`.
 
-| Domain Entity | Authoritative System | Texon Role | Odoo 20.0 Role | Sync Pattern |
-|---|---|---|---|---|
-| **Partner (Buyer/Supplier)** | **Odoo** | Read Projection & Fast Search | Master Ledger (`res.partner`) | Outbox Command (Create/Update) → Odoo → Event back |
-| **Garment Style & Tech-Pack**| **Texon** | Master Author (`merchandising.Style`) | Catalog Template (`product.template`) | Texon outbox pushes approved style revision to Odoo |
-| **Size/Color Matrix (SKUs)** | **Odoo** | Design Matrix UI | Variant Records (`product.product`) | Generated deterministically from Texon approved matrix |
-| **Bill of Materials (BOM)**   | **Odoo** | Garment Consumption Spec | Authoritative BOM (`mrp.bom`, `mrp.bom.line`)| Texon creates revision-frozen BOM in Odoo |
-| **Physical Stock Balances**   | **Odoo** | Read-Only Cached Projections | Master Quantities (`stock.quant`, `stock.move`)| Event stream updates Texon read cache; writes forbidden |
-| **Fabric Roll & Lot Tracking**| **Odoo** | Inspection & Shade Allocation UI | Tracked Lots (`stock.lot`, `stock.lot.quant`)| Lots received & quarantined in Odoo; queried by Texon |
-| **Buyer Sales Orders**        | **Odoo** | Merchandising PO Matrix | Authoritative Order (`sale.order`, `sale.order.line`)| Texon command dispatches order; Odoo confirms & prices |
-| **Supplier Purchase Orders**   | **Odoo** | Material Requisition Demand | Authoritative PO (`purchase.order`, `line`) | Texon requisition triggers Odoo procurement flow |
-| **Manufacturing Orders (MO)** | **Odoo** | Floor Terminal Tracking | Production Orders (`mrp.production`, `workorder`)| Texon captures cutting/sewing; Odoo books moves & scrap |
-| **Double-Entry Financials**   | **Odoo** | Unrendered / Summary Dashboards | Authoritative Moves (`account.move`, `line`) | Completely retired in Django; pure Odoo domain |
+Use a static handler registry. Apply model-specific ACLs, record rules, `with_company`, allowed-company context, and relational company checks. Setting context or confirming that a company exists does not itself grant access. Never apply a universal `company_id=False` filter to private HR/financial data; shared-record policy is model-specific.
 
----
+Avoid blanket `sudo()`. Restrict integration keys and rotate them before expiry. Validate permission revocation and field-level access on each request; session role data is a UI hint, not final authority.
 
-## 2. Cross-System Consistency: Transactional Outbox & Inbox Engine
+## Receipt and concurrency contract
 
-Distributed transactions (2-Phase Commit / XA) are unsupported over HTTP/JSON-RPC and fragile across network boundaries. We employ a **guaranteed at-least-once delivery, idempotent exactly-once execution engine** using the Transactional Outbox pattern.
+Store the unique operation identity, company, command fingerprint, outcome, result IDs, actor, and audit timestamps in Odoo. Commit successful receipt, business effects, and outgoing event together. Duplicate concurrent operations must return the committed original result through a tested lock/reservation/retry protocol. A receipt insertion after mutation with a unique constraint alone does not define graceful concurrent replay.
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as Merchandiser / Operator
-    participant UI as Texon Next.js UI
-    participant Django as Texon Django API
-    participant DB as Texon PostgreSQL
-    participant Worker as Celery Outbox Worker
-    participant Bridge as Odoo texon_bridge Addon
-    participant OdooDB as Odoo PostgreSQL
+Expected revisions prevent a stale update from overwriting a newer approval, quantity, or status. Use Odoo-side locking/rechecks for competing consumption, quality release, and order amendments. Define compensation through native cancel, return, credit, or reversal workflows; do not promise distributed exactly-once delivery.
 
-    User->>UI: Submit Action (e.g. Confirm Buyer PO)
-    UI->>Django: POST /api/v1/commands/orders/confirm (with Operation UUID)
-    Note over Django,DB: Atomic Database Transaction
-    Django->>DB: 1. Validate business state & permissions
-    Django->>DB: 2. Update local state to PENDING_ERP
-    Django->>DB: 3. Insert into integration_outbox (UUID, payload, status=PENDING)
-    Django-->>UI: 202 Accepted (Operation UUID, status=PENDING)
-    
-    Worker->>DB: Poll PENDING outbox records (select_for_update skip locked)
-    Worker->>Bridge: JSON-2 RPC: POST /json/2/texon.bridge/execute_command
-    Note over Bridge,OdooDB: Atomic Odoo Transaction
-    Bridge->>OdooDB: 1. Check texon.command.receipt for UUID
-    alt UUID Already Processed
-        Bridge-->>Worker: Return cached response payload
-    else New Command
-        Bridge->>OdooDB: 2. Validate payload hash & tenant company
-        Bridge->>OdooDB: 3. Execute business transitions (e.g. confirm sale.order)
-        Bridge->>OdooDB: 4. Write texon.command.receipt (UUID, hash, response)
-        Bridge-->>Worker: 200 OK (ERP Document IDs, New Status)
-    end
-    
-    Worker->>DB: Update outbox status=COMMITTED, local read-model=CONFIRMED
-    UI->>Django: Poll /api/v1/operations/{uuid}/status
-    Django-->>UI: 200 OK (status=COMPLETED, odoo_sale_order_id=4521)
-```
+## Durable delivery
 
-### 2.1 The Django Outbox Schema (`integration_outbox`)
-```sql
-CREATE TABLE integration_outbox (
-    id BIGSERIAL PRIMARY KEY,
-    operation_uuid UUID UNIQUE NOT NULL,
-    tenant_id VARCHAR(64) NOT NULL,
-    company_id INTEGER NOT NULL,
-    aggregate_type VARCHAR(64) NOT NULL,
-    aggregate_id VARCHAR(64) NOT NULL,
-    command_name VARCHAR(128) NOT NULL,
-    payload_hash VARCHAR(64) NOT NULL,
-    payload JSONB NOT NULL,
-    status VARCHAR(32) NOT NULL DEFAULT 'PENDING', -- PENDING, IN_FLIGHT, COMMITTED, FAILED, DEAD_LETTER
-    retry_count INTEGER NOT NULL DEFAULT 0,
-    max_retries INTEGER NOT NULL DEFAULT 5,
-    next_retry_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    last_error TEXT,
-    response_payload JSONB,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-CREATE INDEX idx_outbox_poll ON integration_outbox (status, next_retry_at) WHERE status IN ('PENDING', 'FAILED');
-```
+Django outbox fields include operation identity/fingerprint, tenant/company, aggregate/revision, payload, status, attempt count, next attempt, lease owner/expiry, response, and safe error details. Claim in a short transaction and perform RPC outside it. Retry expired claims; separate `RETRY_WAIT`, `REJECTED`, `OUTCOME_UNKNOWN`, `SUCCEEDED`, and dead-letter/reconciliation states. Use `2 ** attempt` in Python, not bitwise XOR `2 ^ attempt`; add delay caps and jitter.
 
-### 2.2 Odoo Command Receipt (`texon.command.receipt`)
-Inside Odoo, the `texon_bridge` module ensures idempotency by recording every processed command:
-```python
-class TexonCommandReceipt(models.Model):
-    _name = "texon.command.receipt"
-    _description = "Idempotent Execution Receipt for Texon Commands"
+Implement an Odoo event model and publisher, not only a Django inbox. Cover permitted native Odoo writes as well as bridge commands. Each event has stable ID, tenant/company, aggregate revision, schema, and delivery acknowledgment. Authenticate delivery and validate source binding. Apply inbox and projection updates atomically; stale events trigger ignore/refetch rather than overwriting new state.
 
-    operation_uuid = fields.Char("Operation UUID", required=True, index=True, readonly=True)
-    company_id = fields.Many2one("res.company", "Company", required=True, index=True, readonly=True)
-    command_name = fields.Char("Command Name", required=True, readonly=True)
-    payload_hash = fields.Char("Payload Hash", required=True, readonly=True)
-    response_data = fields.Text("Serialized Response JSON", readonly=True)
-    status = fields.Selection([("success", "Success"), ("failed", "Business Failure")], required=True)
-    executed_by = fields.Char("External Actor Ref", readonly=True)
+Keep a retention/archive policy for receipts and audit evidence independent of short-lived queue cleanup. Alert on stuck leases, old unknown outcomes, publisher lag, repeated rejection, and reconciliation discrepancies. Protect operation-status and replay endpoints with the same company/action authorization as execution.
 
-    _sql_constraints = [
-        ("unique_operation_uuid", "unique(operation_uuid)", "Operation UUID must be globally unique!")
-    ]
-```
+## Manufacturing, stock, and finance
 
-### 2.3 Handling Network Timeouts ("Outcome Unknown")
-When a network timeout occurs between Django and Odoo:
-1. The Celery worker catches `requests.exceptions.Timeout`.
-2. The worker **MUST NOT** assume the command failed. Odoo may have committed the transaction right before the TCP socket broke.
-3. The worker flags `status='FAILED'` with backoff (`next_retry_at = now() + (2 ^ retry_count)`).
-4. On the subsequent retry, the worker delivers the exact same `operation_uuid` and `payload`.
-5. Odoo detects the existing `operation_uuid` in `texon.command.receipt`, skips re-execution, and returns the previously committed result.
-6. If the payload has changed for the same `operation_uuid`, Odoo raises an `IntegrityError` (Payload Tamper Violation).
+Pin variant IDs and approved BOM revisions; add immutable revision enforcement in Odoo, including component edits and native UI/API paths. Django `save()` overrides alone cannot protect Odoo records or bulk writes.
 
----
+Use verified stock reservation/completion extension points. The earlier `mrp.production.check_assign` instruction is superseded: the inspected Odoo 20 source has `action_assign`, delegating to stock moves. Guard automatic/manual reservations and final stock completion, not just one UI button. [Official MRP source](https://raw.githubusercontent.com/odoo/odoo/20.0/addons/mrp/models/mrp_production.py).
 
-## 3. Odoo 20.0 Community Transport & Custom Addon (`texon_bridge`)
+Manual work-order updates never turn cut panels or intermediate progress into finished goods. Define the final completion/quality boundary, partial/backorder behavior, actual consumption, reusable offcuts, and scrap. Agree whether native work-order progress suffices or intermediate products are needed for stock-valued WIP; validate that choice against costing.
 
-### 3.1 JSON-2 RPC Transport Specifications
-Odoo 20 removes the legacy `xmlrpc/2/db` service and deprecates `xmlrpc/2/common` and `xmlrpc/2/object`. Communication must use the modern **JSON-2 RPC API**:
-- **Endpoint:** `POST https://odoo.texon.internal/json/2/<model>/<method>`
-- **Authorization:** `Bearer <RPC_TOKEN>` (token scoped to `bearer_scope='rpc'`)
-- **Headers:** `Content-Type: application/json; charset=utf-8`
+Use one inventory UOM per product. Defer mixed weight-priced/length-stocked purchasing until a verified dual-unit addon or explicit measurement workflow passes reconciliation; a purchase UOM field alone does not implement this requirement.
 
-### 3.2 The Single-Transaction Addon Design
-Every JSON-2 HTTP call in Odoo executes inside an individual database transaction. Standard Odoo client flows that require 3–5 separate calls (`create`, `onchange`, `action_confirm`, `button_validate`) are inherently non-atomic over RPC. If call 3 drops, the database is left with dirty, orphaned draft documents.
+Configure localization, chart of accounts, costing/valuation, taxes, currency precision, journals, opening balances, approval thresholds, and period locks before operational activation. Draft invoices do not satisfy Accounting completion. Test bills, posted invoices, payments, reconciliation, credits, and stock/manufacturing value together.
 
-To solve this, all complex interactions are implemented inside our custom Odoo addon: `texon_bridge`.
-```python
-# odoo_addons/texon_bridge/models/bridge_service.py
-class TexonBridgeService(models.AbstractModel):
-    _name = "texon.bridge.service"
-    _description = "Atomic Facade for Texon Integration"
+## Session, API, and AI transport
 
-    @api.model
-    def execute_atomic_command(self, operation_uuid, company_id, command_name, payload):
-        """
-        Executes business commands atomically inside a single database transaction.
-        Checks idempotency, switches company context safely, applies business rules.
-        """
-        Receipt = self.env["texon.command.receipt"]
-        existing = Receipt.search([("operation_uuid", "=", operation_uuid)], limit=1)
-        if existing:
-            if existing.payload_hash != self._hash_payload(payload):
-                raise exceptions.UserError("Operation UUID reused with altered payload.")
-            return json.loads(existing.response_data)
+Use an opaque server session or deliberately selected encrypted session with HttpOnly, Secure, SameSite cookies. Keep Django/Odoo credentials server-side. Implement CSRF/origin protection, bounded pagination, single-flight refresh, expiry, logout, revocation, and company-change invalidation. Authorize every server operation independently of route navigation guards.
 
-        company = self.env["res.company"].browse(company_id)
-        if not company.exists():
-            raise exceptions.UserError(f"Target company {company_id} does not exist.")
+For AI, use session-authenticated POST streaming through the BFF, with SSE-formatted responses and cancellation. Do not rehydrate JWTs into browser code or query-string WebSocket URLs. WebSockets are outside the initial AI transport scope; adding them later requires a separate authenticated ticket/origin design.
 
-        # Switch company context securely
-        env = self.env(context=dict(self.env.context, allowed_company_ids=[company.id]))
-        with env.cr.savepoint():
-            handler = getattr(self, f"_handle_{command_name}", None)
-            if not handler:
-                raise exceptions.UserError(f"Unsupported command: {command_name}")
-            
-            result = handler(env, company, payload)
-            
-            # Save receipt in the same commit
-            Receipt.create({
-                "operation_uuid": operation_uuid,
-                "company_id": company.id,
-                "command_name": command_name,
-                "payload_hash": self._hash_payload(payload),
-                "response_data": json.dumps(result),
-                "status": "success",
-                "executed_by": payload.get("actor_id", "system"),
-            })
-            return result
-```
+## Migration and scope retirement
 
----
+Inventory real paths and migrations before editing: the current addon is under `odoo/addons/texon_bridge`, not the earlier proposed `odoo_addons` directory. Read current manifests instead of hardcoding old framework versions or migration numbers.
 
-## 4. Multi-Tenant & Multi-Company Boundary Isolation
-
-### 4.1 Tenant vs Company Architecture
-In garment manufacturing, software may serve a multi-factory group or a SaaS platform.
-- **Tenant Isolation:** Dedicated PostgreSQL database per client instance. Derive database routing from server-level authenticated tenant configuration, never from user-supplied request headers.
-- **Multi-Company Context:** Within a tenant database, `res.company` models legal entities or manufacturing facilities (e.g., *Texon Washing Ltd.* vs *Texon Knitwear Ltd.*).
-- **Rule:** Every outbox record and RPC bridge method explicitly supplies and validates `company_id`.
-- Every Odoo model query in `texon_bridge` enforces `['|', ('company_id', '=', False), ('company_id', '=', company.id)]`.
-
-### 4.2 Eliminating Django Security Vulnerabilities
-Our static audit uncovered critical security vulnerabilities in `backend/core/api.py`:
-1. **DRF `DjangoModelPermissions` GET leakage:** Stock `perms_map` leaves `GET`, `HEAD`, and `OPTIONS` unmapped, granting read access on all models to any authenticated user.
-   * **Fix:** Introduce `StrictModelPermissions` that maps `GET` to `%(app_label)s.view_%(model_name)s`.
-2. **Staff Bypasses in `core/mixins.py`:** Hardcoded `if request.user.is_staff: return queryset` allows staff to bypass company isolation.
-   * **Fix:** Replace with strict tenant filtering that cannot be bypassed by `is_staff`.
-3. **Generic Dynamic CRUD Routes:** `core/api.py` automatically registers 98 model routes exposing raw fields.
-   * **Fix:** Retire generic writable endpoints for migrated domains (Orders, Merchandising, Inventory, Production). Replace with typed, validated command endpoints.
-
----
-
-## 5. Apparel Domain Impedance Mismatch & Modeling Solutions
-
-### 5.1 Garment Style & Variant Matrix
-- **Style Mapping:** A Texon `merchandising.Style` (e.g. *Men's Polo Shirt, Style #TX-901*) maps to Odoo `product.template`.
-- **Attribute Mapping:** Attributes (*Color*, *Size*) map to `product.attribute`. Specific values (*Navy Blue*, *Crimson*, *S*, *M*, *L*, *XL*) map to `product.attribute.value`.
-- **SKU Variant Generation:** When Texon approves a style matrix, `texon_bridge` configures `product.template.attribute.line`. Odoo deterministically generates `product.product` variant records.
-- **Variant Freezing:** Once a sales order or production order is confirmed, the style's attribute matrix is locked. Changes to a style create a new *Revision* (`StyleRevision`), archiving or creating new variants without altering historical order records.
-
-### 5.2 Bill of Materials (BOM) & Component Applicability
-Garment BOMs vary by size and color (e.g., Navy Blue Polo requires Navy thread and 18mm Navy buttons; XL requires 1.45 meters of fabric while Small requires 1.20 meters).
-- In Odoo 20, use a consolidated `mrp.bom` linked to the `product.template`.
-- Configure `bom_product_template_attribute_value_ids` on each `mrp.bom.line`:
-  - Component lines without attribute restrictions (e.g. Main Brand Label) apply to **all variants**.
-  - Color-specific components (e.g. Navy Sewing Thread) apply only to **Navy variants**.
-  - Size-graded consumption uses individual variant BOM lines or standard consumption coefficients.
-- **BOM Revision Pinning:** When a production order (`mrp.production`) is created, the BOM specification is snapshotted to the order so subsequent engineering changes do not alter in-flight production.
-
-### 5.3 Fabric Roll Traceability & Shade Sorting
-In garment manufacturing, bulk fabric cannot be treated as a single homogenous commodity. A dye batch of 2,000 meters consists of twenty 100-meter rolls, each with minor variations in shade (Shade Lot A, B, C) and shrinkage rate (e.g., 3.5% warp, 2.0% weft). Mixing different shade rolls in a single garment panel causes shade variation defects.
-- **Roll Tracking:** Each physical roll is received as an individual `stock.lot` in Odoo.
-- **Roll Metadata:** Extended in Odoo `stock.lot`:
-  - `dye_lot_number`: Grouping supplier dye bath.
-  - `shade_group`: Shade bin (A, B, C, D).
-  - `measured_gsm`: Grams per square meter measured during fabric inspection.
-  - `shrinkage_warp_pct`, `shrinkage_weft_pct`: Dimensional stability percentages.
-  - `usable_width_inch`: Cuttable fabric width.
-  - `inspection_status`: `PENDING`, `APPROVED`, `REJECTED`, `QUARANTINED`.
-- **Quarantine Safeguard:** Only rolls with `inspection_status == 'APPROVED'` can be reserved for cutting (`mrp.production`).
-
-### 5.4 Unit of Measure (UOM) Precision & Elimination of Universal Conversion
-- **The Pitfall:** Software often attempts to convert fabric from Kilograms to Meters using a static multiplier. In reality, length per kg varies with moisture, yarn count, and fabric weight.
-- **The Architectural Rule:** 
-  1. Fabric stock is maintained strictly in **Meters** (or **Yards**) as its primary inventory UOM (`uom_id`).
-  2. Supplier purchases invoiced by weight are received using Odoo secondary units (`purchase_uom_id`) with a measured batch density scale, never a global static factor.
-  3. Odoo 20 UOM models utilize `relative_uom_id` and `relative_factor`. Code will not use obsolete Odoo 16/17 category APIs.
-
-### 5.5 Order Model Consolidation & Disambiguation
-Texon currently contains two conflicting order models:
-1. `orders.Order` (`buyer`, `style`, `quantity`, `unit_price`, `total_value`)
-2. `merchandising.PurchaseOrder` (`buyer`, `style`, `order_quantity`, `unit_price`, `total_value`)
-- **Resolution:**
-  - `merchandising.PurchaseOrder` represents a **Customer / Buyer Purchase Order**. In ERP terminology, this is a **Sales Order** (`sale.order`), NOT procurement.
-  - `orders.Order` is retired and consolidated into `merchandising.PurchaseOrder`.
-  - Raw material orders to mills and trim suppliers (`procurement.RawMaterialBooking`) map to Odoo **Purchase Orders** (`purchase.order`).
-
----
-
-## 6. Frontend Architecture & Session Security
-
-### 6.1 Unifying Next.js Authentication & Token Storage
-Our frontend audit revealed that `auth/actions/login.ts` stores JWT tokens in server cookies while `components/login-form.tsx` simultaneously stores them in `localStorage`. Furthermore, client API calls in `lib/api/client.ts` refresh tokens from `localStorage`, creating divergent authentication states across browser tabs.
-
-**Architectural Hardening:**
-1. **Purge `localStorage` Tokens:** Remove all access and refresh tokens from browser `localStorage`.
-2. **Server-Side Session Authority:** All tokens are stored in `HttpOnly`, `SameSite=Lax`, `Secure` cookies managed exclusively by Next.js Server Actions.
-3. **Session Facade:** The browser Next.js client interacts with internal route handlers (`/api/auth/*`), which act as a security facade proxying to Django and never exposing Odoo credentials.
-4. **Permission Hydration:** Login Server Actions populate the user's active roles and permissions into the encrypted server session JWT upon login.
-
-### 6.2 Converting Client-Side Queries to Server Projections
-- **Pagination Pitfall:** `lib/api/rest.ts` currently downloads up to 100 pages of 100 records in a client loop to perform local filtering.
-- **Replacement:** Implement server-side cursor and limit/offset pagination with indexed filtering in Django before proxying to Odoo read caches.
-- **Error States:** Replace silent error suppression (`return []`) with explicit error boundaries rendering `UNAUTHENTICATED`, `FORBIDDEN`, `CONNECTOR_STALE`, or `EMPTY_DATA`.
+Create a mapping/retirement sheet, deterministic IDs, resumable imports, reject reports, and reconciled opening/open-document balances. Preserve excluded cutting/optimization/device-related history read-only, hide unsupported navigation, and block obsolete write APIs. Freeze writes for cutover and test recovery of Django, Odoo, filestore, receipts, and event queues together.

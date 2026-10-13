@@ -1,341 +1,89 @@
-# Garment ERP Enterprise Blueprint: 13-Module Architecture & Rollout Plan
+# Texon: Odoo-Powered Garments ERP Workspace
 
-> **Author:** Principal Enterprise Architect (Apparel Manufacturing & Tier-1 ERP Systems)  
-> **Target Platform:** Texon (Next.js 15 + Django 5) & Odoo 20.0 Community Edition (Self-Hosted + OCA)  
-> **Scope:** Full-Suite Garment ERP (Sales, Website, Helpdesk, Services, Appraisals, Accounting, Sign, Supply Chain, Productivity, Marketing, Human Resources, Administration, Manufacturing)  
-> **Status:** Approved Architectural Blueprint & Implementation Specification  
+> Updated: 2026-10-13
+> Status: Revised product scope and implementation plan; capabilities remain planned until verified.
+> Authority: This document defines product scope. The integration roadmap defines delivery gates.
 
----
+## Product narrative and audience
 
-## Executive Architectural Strategy
+Texon is an Odoo-powered ERP workspace for garment businesses. It connects buyer orders, purchasing, inventory, production, and finance through a focused interface, with an AI assistant that helps people find answers and complete everyday work.
 
-A modern export garment manufacturing and buying house operates on narrow margins, aggressive Time & Action (T&A) deadlines, and rigorous international compliance standards. Disconnected software silos lead to order delays, air-freight penalties, and fabric wastage.
+The primary users are merchandisers, purchasing teams, storekeepers, production coordinators, finance staff, HR staff, and business owners. The portfolio demonstrates business analysis, Odoo configuration and extension, secure integration, usable interfaces, and evidence-based AI assistance.
 
-This master plan structures the **13 core enterprise modules** requested for the Texon Garment ERP platform. It establishes a unified hybrid architecture:
-- **Odoo 20.0 Community (+ OCA Extensions):** Acts as the **authoritative transactional core** for accounting, inventory quants, purchase orders, standard sales orders, basic HR, and core MRP.
-- **Texon Specialized Apparel Platform:** Acts as the **high-cadence garment domain engine** providing size-color matrix ordering, tech-packs, roll shade grouping, 4-point fabric inspection, floor bundle tracking, buyer portals, and T&A critical-path engines.
+Use this illustrative scenario in the demo: a buyer asks whether an order will ship on Friday. Texon shows the order, material availability, production status, quality approvals, delivery, and outstanding actions. Label demo records as synthetic. Publish measured results only after a real pilot; do not invent customer outcomes or personal experience.
 
----
+## Product boundary
 
-## Master Module Matrix: The 13 Pillars of Garments ERP
+Odoo owns business records, validation, calculations, stock movements, accounting, and manufacturing workflows. Texon owns the tailored interface, buyer portal, dashboards, AI conversations, and integration requests. Django provides a thin authorization/integration layer and disposable read projections; it must not become a second ERP engine.
 
-```
-                                  ┌─────────────────────────────────────────┐
-                                  │       TEXON GARMENTS ERP PLATFORM       │
-                                  └─────────────────────────────────────────┘
-                                                       │
-         ┌────────────────────────┬────────────────────┴───────────────────┬────────────────────────┐
-         ▼                        ▼                                        ▼                        ▼
-┌──────────────────┐    ┌──────────────────┐                     ┌──────────────────┐    ┌──────────────────┐
-│ 1. COMMERCIAL    │    │ 2. SUPPLY CHAIN  │                     │ 3. MANUFACTURING │    │ 4. ENTERPRISE    │
-│ & BUYER FACING   │    │ & LOGISTICS      │                     │ & QUALITY        │    │ MANAGEMENT       │
-├──────────────────┤    ├──────────────────┤                     ├──────────────────┤    ├──────────────────┤
-│ • Sales          │    │ • Supply Chain   │                     │ • Manufacturing  │    │ • Accounting     │
-│ • Website Portal │    │ • Warehouse/Lots │                     │ • Quality / QC   │    │ • HR & Payroll   │
-│ • Marketing      │    │ • Procurement    │                     │ • Services (IE)  │    │ • Appraisals     │
-│ • Helpdesk       │    │ • Subcontracting │                     │ • Sign (Audits)  │    │ • Productivity   │
-│                  │    │                  │                     │                  │    │ • Administration │
-└──────────────────┘    └──────────────────┘                     └──────────────────┘    └──────────────────┘
-```
+Use Odoo-native administration/configuration screens initially. Build Texon screens for the selected customer workflows rather than duplicating every Odoo screen. Business actions shown in Texon must execute against Odoo and display their actual outcome.
 
----
+### Included
 
-## Pillar 1: Sales (Merchandising & Buyer Order Management)
+- Sales, quotations, buyer references, style/color/size variants, and customer orders.
+- Supplier purchasing, receipts, inventory, lots, deliveries, returns, and manual quality approvals.
+- BOMs, manufacturing orders, standard work orders, manually entered progress, actual material consumption, scrap, and finished goods.
+- Accounting, projects/tasks, customer support, basic HR, reviews, document approvals, CRM, marketing, and a buyer portal, subject to the module delivery gates below.
+- Read-only AI assistance followed by explicitly confirmed, authorized business actions.
 
-### 1. Garment Industry Context
-In apparel manufacturing, "Sales" is managed by the Merchandising department. An order is rarely a single SKU; it is a complex **Style matrix** spanning multiple colorways (e.g., *Navy, Olive, Heather Grey*) and size ratios (*S:M:L:XL = 1:2:2:1*), governed by strict buyer delivery windows, incoterms (FOB, CIF), and garment specifications.
+### Excluded from this product plan
 
-### 2. Architecture & Ownership
-- **Texon Domain:** Style creation, buyer tech-pack specs, pre-costing/CM (Cost of Making) calculation, sample order approvals, and size/color matrix order grid.
-- **Odoo Domain:** Master Customer Ledger (`res.partner`), Confirmed Sales Orders (`sale.order`), Sales Order Lines (`sale.order.line`) linked to variant SKUs (`product.product`).
-- **Integration Engine:** When a buyer PO is approved in Texon, an outbox command creates and confirms an authoritative Odoo `sale.order`.
+- Dedicated cutting planning, marker optimization, pattern CAD, grading, and fabric nesting.
+- Cutting-machine control, IoT sensors, live machine telemetry, predictive maintenance, and biometric-device connections.
+- Bundle QR/station tracking, specialist IE/SMV optimization, automatic line balancing, and custom scheduling solvers.
+- A custom Django stock ledger, accounting engine, payroll calculation engine, or universal weight-to-length conversion.
+- 3D showrooms and standalone ML forecasting projects.
 
-### 3. Key Data Models & Workflows
-```
-Buyer Inquiry ──> Pre-Costing / CM ──> Sample Approval ──> Buyer PO Matrix ──> Odoo Sale Order
-```
-- `merchandising.BuyerPurchaseOrder`: Stores buyer ref, incoterms, payment terms, season, style reference.
-- `merchandising.BuyerOrderItem`: Matrix breakdown of size, color, quantity, unit price, and factory delivery date.
-- `costing.PreCosting`: Fabric consumption (yards/dz), trims, embellishments, wash cost, CM, and target margin.
+Ordinary ERP manufacturing remains included. A factory can report standard work-order progress manually without connecting physical equipment. Excluding specialist tooling does not require removing manufacturing, lots, scrap, or quality controls.
 
----
+Existing excluded routes and records require an inventory and retirement plan. Hide them from the supported navigation during implementation, disable obsolete writes, and preserve historical data read-only until a reviewed migration/retention decision. This documentation revision does not delete code or data.
 
-## Pillar 2: Website (B2B Buyer Portal & Digital Showroom)
+## Edition and addon decision gate
 
-### 2. Garment Industry Context
-International brands (e.g., H&M, Zara, PVH, Target) demand real-time visibility into order status, lab-dip approvals, shipping schedules, and sustainable fabric credentials. Additionally, factories need a digital B2B showroom to pitch upcoming seasonal collections to prospective international clients.
+Keep self-hosted Odoo Community as the provisional baseline. Select a tested release, image digest, dependencies, and addons before feature delivery. Use licensed Enterprise when a required capability justifies it, or a verified compatible community addon. Do not assume all 13 areas ship in Community or that an older OCA addon works on the target release.
 
-### 2. Architecture & Ownership
-- **Texon Next.js Frontend:** Provides a branded, high-performance **Buyer Self-Service Portal** and **Virtual 3D/Photo Showroom** (SSR/SSG with Next.js App Router).
-- **Odoo Domain:** Odoo `website` module and `portal` providing account invoices, payment receipts, and delivery documents.
+Record each capability's repository/package, exact version/commit, license, dependencies, installation evidence, permissions, maintenance owner, and cost. An unavailable addon blocks that module's completion; a menu placeholder does not satisfy delivery. Changing the Odoo release requires rerunning bridge and workflow compatibility tests.
 
-### 3. Key Features & Workflows
-- **Digital Showroom:** Seasonal collections classified by style, fabric composition, GSM, and lead times.
-- **Order Tracking Portal:** Buyers log in to track PO milestones (*Fabric Booked -> In Cutting -> Sewing 60% -> Final Inspection -> Vessel Departure*).
-- **Digital Swatch & Lab-Dip Approvals:** Buyer comments and approvals on strike-offs and shade bands directly within the portal.
+OCA `helpdesk_mgmt` has an AGPL-3 license in the inspected 19.0 manifest; SLA support is a separate addon. Verify the selected branch rather than repeating the earlier LGPL claim. Sources: [manifest](https://raw.githubusercontent.com/OCA/helpdesk/19.0/helpdesk_mgmt/__manifest__.py), [addon inventory](https://github.com/OCA/helpdesk).
 
----
+## The 13 business areas
 
-## Pillar 3: Helpdesk (Buyer Claims, QC Disputes & Factory Support)
+All authoritative records below live in Odoo or an installed Odoo addon. Named technical modules are candidates, not verified availability promises. M0 in the roadmap resolves their exact providers.
 
-### 3. Garment Industry Context
-Apparel manufacturing involves frequent commercial claims: short-shipments, shade variation rejections, measurement spec discrepancies, or shipment delays. Internally, sewing lines encounter mechanical machine breakdowns requiring rapid maintenance intervention.
+| Area | Business scope and Odoo provider candidates | Texon experience | Completion evidence |
+|---|---|---|---|
+| Sales | `sale`, `crm`, `res.partner`; quotations, orders, payment terms, buyer references, variants | Buyer/order search, quotation and size/color order entry | Quote → authorized confirmation → amendment/partial delivery/return retains correct quantities and totals |
+| Website | `portal`, `website`; customer access to orders, invoices, and documents | Branded buyer portal and public product introduction | Buyer can see only their permitted records and download an authorized document; no 3D showroom |
+| Helpdesk | Verified Helpdesk addon; separately verify SLA/email dependencies | Tickets linked to orders, claims, and assigned staff | Open → assign → respond → close; buyer/company isolation and actual email delivery tested |
+| Services | `project`, `hr_timesheet`; sample-development tasks, assignments, hours, and costs | Service/project overview and task detail | Sample request → assigned task → completion; authorized hours and costs match Odoo; no CAD engine |
+| Appraisals | Verified appraisal addon or licensed Enterprise capability | Review schedule and authorized review forms | Review cycle, restricted feedback, approval, and history demonstrated; no telemetry-derived scoring |
+| Accounting | `account` and verified localization/reporting capabilities | Financial summaries and selected invoice/payment workflows | Opening balances, customer/vendor invoices, payments, reconciliation, taxes, valuation, and period close verified by finance owner |
+| Sign | Verified signing addon/provider integrated with Odoo; internal approval is a separate capability | Document preview, signer request, status, and evidence | Signer identity, exact document version/hash, consent, completed evidence, and access controls tested; internal approval alone does not complete Sign |
+| Supply Chain | `purchase`, `stock`; suppliers, purchasing, receipts, lots, approvals, deliveries, and returns | Purchase/stock workspace and manual receiving/inspection | Partial receipt → hold/release → reservation → shipment/return reconciles by product, lot, and location |
+| Productivity | `project`, `calendar`, activities, and verified document/knowledge provider | Tasks, deadlines, notifications, SOP access | Assign and complete task; due-date alerts and document access work; no custom critical-path engine |
+| Marketing | `crm`, `mass_mailing` and verified dependencies | Lead pipeline and campaign overview | Lead → opportunity → quotation; opt-out, authorized audience, and delivery results tested |
+| Human Resources | `hr`, leave/attendance/contract capabilities verified for selected edition | Employee directory, leave requests, manual attendance | Authorized employee/leave/attendance workflow and private-field restrictions tested; payroll only via verified localized Odoo capability in a later gate |
+| Administration | Odoo companies, users, groups, record rules; Texon session and command permissions | Active-company selection, role-aware navigation, integration health | Cross-company/customer denial, revoked access, audit, backup, and restore demonstrated |
+| Manufacturing | `mrp`; BOMs, MOs, work orders, consumption, scrap; subcontracting only after a selected workflow passes | Production list, shortage visibility, progress/completion forms | Approved BOM → MO → manual progress → actual consumption/scrap → final approval → finished goods; intermediate work cannot be shipped |
 
-### 2. Architecture & Ownership
-- **Odoo Domain:** OCA `helpdesk_mgmt` module (Open Source LGPL-3) providing SLA tracking, ticket categorization, and email routing.
-- **Texon Domain:** Integrated Helpdesk UI inside the Buyer Portal and Factory Floor Maintenance App.
+Do not treat manufacturing progress as finished stock. Use Odoo work orders for the pilot; introduce intermediate products/BOMs only if the selected route requires stock-valued WIP. Agree valuation and final-release rules with the finance/production owners before go-live.
 
-### 3. Key Workflows & Ticket Types
-1. **Commercial Buyer Claims:** Chargeback requests, air-freight liability claims, defect percentage penalties.
-2. **Quality & Fit Rejections:** Buyer sample revisions with annotated fit photos and POM (Points of Measure) delta sheets.
-3. **Internal Line Maintenance Tickets:** Sewing machine breakdown logged by line supervisor with response time SLA tracking.
+## Demonstration lifecycle
 
----
+1. Qualify a lead and prepare a buyer quotation with style/color/size variants.
+2. Confirm the customer order and approved BOM revision.
+3. Identify a shortage, create a supplier PO, and receive a partial delivery.
+4. Record a manual quality decision and release eligible materials.
+5. Confirm an MO, report work-order progress, and show remaining work and shortages.
+6. Record actual consumption and scrap; finish and approve the completed goods.
+7. Deliver partially, invoice, register payment, and reconcile balances.
+8. Show buyer portal access and an order-linked support ticket.
+9. Ask AI which orders are at risk; inspect source records and confirm a proposed follow-up task.
 
-## Pillar 4: Services (Sample Room, Pattern CAD & Industrial Engineering)
+A second demo covers employee leave, a service task, an appraisal, a signing request, and a marketing campaign. These modules remain planned until their individual acceptance checks pass.
 
-### 4. Garment Industry Context
-Before bulk production, garment factories run extensive technical service workflows:
-- **Sample Room:** Prototypes, Fit samples, Size sets, Salesman samples (SMS), and Pre-Production (PP) samples.
-- **Pattern CAD:** Digitization, grading across sizes, marker making, and fabric utilization efficiency.
-- **Industrial Engineering (IE):** Method study, calculating SMV (Standard Minute Value), line layout, and target line balancing.
+## Delivery policy
 
-### 2. Architecture & Ownership
-- **Odoo Domain:** `project` and `hr_timesheet` tracking sample development projects, design hours, and CAD costs.
-- **Texon Domain:** Specialized `ie_planning` and `tna` modules for apparel SMV calculations and line planning.
+Use the [milestone roadmap](integration_design/04-200-commit-implementation-roadmap.md), [system architecture](integration_design/01-system-architecture-and-sync.md), and [AI plan](integration_design/05-ai-copilot-integration-plan.md).
 
-### 3. Key Data Models & Workflows
-- `ie_planning.StyleAnalysis`: Operation breakdown (e.g., *Collar Make = 1.25 min, Sleeve Attach = 0.85 min*) and total garment SMV.
-- `ie_planning.LinePlan`: Target pieces per hour calculated from SMV, planned operators, and target efficiency percentage.
-- `merchandising.SampleOrder`: Development tracking with buyer feedback history and dispatch courier tracking.
-
----
-
-## Pillar 5: Appraisals (Operator Efficiency & Staff Performance)
-
-### 5. Garment Industry Context
-In garment factories, productivity and quality depend directly on sewing operator skill. Performance must be tracked objectively via **Operator Efficiency %, DHU (Defects per Hundred Units), and Attendance**. For white-collar staff (merchandisers, pattern makers), performance is measured against revenue targets, on-time delivery rates, and sample approval success.
-
-### 2. Architecture & Ownership
-- **Texon Domain:** Live floor telemetry calculating operator and line efficiency from daily piece records.
-- **Odoo Domain:** OCA `hr_appraisal` / `hr_evaluation` managing 360-degree reviews, quarterly evaluations, and promotion tracks.
-
-### 3. Key Metrics & Appraisals
-- **Sewing Operator Scorecard:**
-  $$\text{Individual Efficiency \%} = \frac{\text{Produced Pieces} \times \text{Operation SMV}}{\text{Worked Minutes}} \times 100$$
-- **Quality Penalty Index:** Reduction based on end-line QC defect logs and rework rates.
-- **Merchandiser Appraisal:** On-Time In-Full (OTIF) delivery rate, buyer profit margin, and claim deductions.
-
----
-
-## Pillar 6: Accounting (Invoicing, General Ledger & Export Trade Finance)
-
-### 6. Garment Industry Context
-Garment exports involve specialized international trade finance: **Letters of Credit (L/C), Back-to-Back L/Cs for fabric imports, Export Development Fund (EDF), Bill of Exchange realization, customs duty drawbacks, and multi-currency exchange gains/losses**. Standard generic accounting software fails without export trade mechanics.
-
-### 2. Architecture & Ownership
-- **Odoo Domain (Authoritative):** Odoo `account` module owns chart of accounts, general ledger, accounts payable/receivable, bank statements, and tax rules.
-- **Texon Domain:** Specialized `commercial` app managing Master L/C contracts, Back-to-Back L/Cs, shipping documents, and trade realizations.
-
-### 3. Key Data Models & Workflows
-```
-Master L/C (Buyer) ──> Back-to-Back L/C (Mill) ──> Commercial Invoice ──> Bank Negotiation / Realization
-```
-- `commercial.LetterOfCredit`: Master L/C number, issuing bank, expiry date, shipment deadline, and credit value.
-- `commercial.Invoice`: Export invoice linked to bill of lading, container number, packing list, and HS codes.
-- `commercial.Realization`: Foreign currency inflow, bank charges, loan adjustment, and exchange variance posting into Odoo journal.
-
----
-
-## Pillar 7: Sign (E-Signature, Compliance & Quality Sign-Offs)
-
-### 7. Garment Industry Context
-Garment manufacturing requires formal sign-offs across multiple legal and compliance gates:
-- **Buyer PO Acceptance:** Binding contracts between factory and international brand.
-- **Pre-Production (PP) Meeting Sign-Off:** Technical sign-off between Factory Manager, Merchandiser, and Quality Head before cutting starts.
-- **Social Compliance Audits:** Worker union agreements, fire safety logs, and environmental compliance audits (WRAP, BSCI, OEKO-TEX).
-
-### 2. Architecture & Ownership
-- **Texon Frontend:** Integrated Next.js HTML5 canvas and cryptographic signing pad.
-- **Backend / Odoo:** Storing immutable PDF hashes, signer audit trails (timestamp, IP, authenticated user ID), and digital certificates.
-
-### 3. Key Signed Workflows
-1. **PP Meeting Golden Seal:** Digital sign-off locking the approved garment sample and BOM.
-2. **Fabric Inspection Release Certificate:** QC manager signs off on fabric roll release from quarantine.
-3. **Subcontract Agreement:** Legal terms signed before cut panels are dispatched to outsourced washing/embroidery mills.
-
----
-
-## Pillar 8: Supply Chain (Procurement, Warehousing & Roll Lot Logistics)
-
-### 8. Garment Industry Context
-Fabric represents 60–70% of the total garment cost. Supply chain failure (e.g. wrong shade fabric, missing sewing thread, delayed zipper delivery) halts production lines instantly. Fabric rolls must be tracked individually by **supplier dye batch, shade lot (A/B/C), GSM, and shrinkage rate**.
-
-### 2. Architecture & Ownership
-- **Odoo Domain (Authoritative):** `purchase` (Supplier POs), `stock` (Warehouses, picking, delivery, and stock moves), `stock.lot` (Fabric roll traceability).
-- **Texon Domain:** 4-point fabric inspection terminal, shade band sorting, and raw material booking requisitions.
-
-### 3. Key Models & Warehouse Topology
-```
-Supplier PO ──> Receipt at WH/Quarantine ──> 4-Point QC & Shade Test ──> Transfer to WH/Stock ──> Issue to Cutting
-```
-- **Locations in Odoo:**
-  - `WH/Quarantine`: Incoming uninspected fabric and trims.
-  - `WH/Stock`: Quality-approved bulk fabric available for allocation.
-  - `WH/Shade_A`, `WH/Shade_B`: Physical shelf bins sorted by visual color shade.
-  - `WH/RejectedStock`: Defective fabric isolated for supplier return.
-- **Odoo `stock.lot` Garment Attributes:** Dye lot, measured GSM, warp/weft shrinkage %, and usable width.
-
----
-
-## Pillar 9: Productivity (Time & Action, Tasks & SOP Knowledge Base)
-
-### 9. Garment Industry Context
-The **Time & Action (T&A) Calendar** is the beating heart of garment factory operations. Missing a single milestone (e.g., *Lab Dip Approval by Day 15* or *Yarn In-House by Day 30*) guarantees a delayed shipment. Factories also require standard operating procedures (SOPs) for fabric washing recipes, sewing machinery maintenance, and buyer packaging guidelines.
-
-### 2. Architecture & Ownership
-- **Texon Domain:** High-performance Gantt chart and critical-path T&A calendar ([tna](file:///home/afzal/Desktop/texon/backend/tna) app) with automated delay alarms.
-- **Odoo Domain:** `calendar`, `note`, and `knowledge` for enterprise document management and SOP wikis.
-
-### 3. Key Features & Workflows
-- **Dynamic T&A Engine:** Generates backward-scheduled milestone dates from target vessel shipment date.
-- **Alarm Notifications:** Alerts merchandisers when a supplier booking or sample approval is within 48 hours of critical-path breach.
-- **Factory Knowledge Base:** Buyer-specific packaging manuals, stitch quality standards, and chemical safety data sheets.
-
----
-
-## Pillar 10: Marketing (B2B Lead Generation & Brand Outreach)
-
-### 10. Garment Industry Context
-Garment exporters require proactive international business development. Sourcing managers at fashion brands change frequently, and seasonal buying cycles (Spring/Summer, Autumn/Winter) require timed outreach with new lookbooks, fabric innovations, and compliance certifications.
-
-### 2. Architecture & Ownership
-- **Odoo Domain:** `crm` (Lead pipeline, opportunity stages), `mass_mailing` (HTML email campaigns, open/click analytics).
-- **Texon Domain:** Linked buyer database and historical profitability analysis (`crm.BuyerProfitability`).
-
-### 3. Key Marketing Workflows
-1. **Trade Show Lead Capture:** Scanning business cards at international apparel fairs (e.g. Magic Las Vegas, Premiere Vision Paris) into Odoo CRM.
-2. **Seasonal Lookbook Campaigns:** Automated email marketing showcasing new sustainable organic cotton styles with click tracking.
-3. **Buyer Qualification Pipeline:** Stages: *Initial Contact -> Sample Request -> Factory Audit -> Vendor Code Issued -> First PO*.
-
----
-
-## Pillar 11: Human Resources (Workforce, Biometrics, Attendance & Payroll)
-
-### 11. Garment Industry Context
-Apparel factories employ thousands of floor workers across cutting, sewing, washing, and finishing. The HR system must handle:
-- **Biometric Attendance Integration:** Thousands of card/fingerprint swipes during shift changes.
-- **Complex Shift Rules:** Day/night shifts, general shifts, and Friday overtime.
-- **Payroll Compliance:** Minimum wage laws, overtime rate calculations (200% base rate), festival bonuses, and attendance allowances.
-- **Social & Labor Compliance:** Ensuring overtime hours do not violate international buyer audit limits (e.g. maximum 60 hours/week).
-
-### 2. Architecture & Ownership
-- **Texon Domain:** Specialized Bangladesh/international apparel payroll, overtime sheet calculations (`hr.Overtime`, `hr.SalarySheet`), and attendance logs.
-- **Odoo Domain:** Master Employee Directory (`hr.employee`), Departments (`hr.department`), Leave Management (`hr.leave`), and Contracts.
-
-### 3. Key Models & Workflows
-```
-Biometric Punch ──> Shift & Overtime Calculation ──> Compliance Check ──> Monthly Salary Sheet
-```
-- `hr.Employee`: Line assignment, designation, skill level (helper, junior operator, senior operator), basic salary, and bank details.
-- `hr.Attendance`: Clock-in, clock-out, late minutes, and authorized leave status.
-- `hr.Overtime`: Daily approved overtime minutes multiplied by compliance multiplier.
-
----
-
-## Pillar 12: Administration (Multi-Company, Security, RBAC & Audit Trails)
-
-### 12. Garment Industry Context
-Garment conglomerates typically comprise multiple legal entities: a knitting mill, a dyeing unit, a woven factory, and a buying house. Administration requires strict multi-company boundary protection, role-based access control (preventing merchandisers from seeing operator wages or storekeepers from seeing margins), and audit trails.
-
-### 2. Architecture & Ownership
-- **Odoo Domain:** Odoo `res.company` hierarchy, security groups (`res.groups`), and database manager.
-- **Texon Domain:** `rbac` module (roles, permissions, role-permissions), company scoping middleware, and immutable audit logs.
-
-### 3. Security Specifications
-- **Strict Tenant Separation:** Database-per-customer routing for SaaS deployments.
-- **Company Context Enforcement:** Every backend query and outbox message is filtered by `company_id`.
-- **RBAC Matrix:**
-  - *Merchandiser:* Full access to Sales, Styles, Costing; Read-only on Inventory; No access to HR/Payroll.
-  - *Storekeeper:* Full access to Fabric/Trim receipts, QC Quarantine, and Stock issues; No access to Pricing/Margins.
-  - *Production Manager:* Full access to MOs, Cutting, Sewing, Line planning; No access to Financial accounts.
-
----
-
-## Pillar 13: Manufacturing (Cutting, Sewing, Washing, Finishing & Subcontracting)
-
-### 13. Garment Industry Context
-Manufacturing is the core engine of apparel production. Garment MRP is unique because fabric is cut into bundles of parts (*front panel, back panel, sleeves, collar*), numbered to preserve dye lot consistency, sewn along production lines, washed in industrial laundries, and pressed/packed.
-
-### 2. Architecture & Ownership
-- **Odoo Domain (Authoritative):** `mrp` (Manufacturing Orders, Work Centers, Routing), `mrp_subcontracting` (Outsourced laundry, printing, and embroidery).
-- **Texon Domain:** Cut Order Planning (marker planning, ratio calculation), Bundle Ticket printing with QR codes, Floor terminal production logging, and Defect heatmap tracking.
-
-### 3. Key Models & Floor Flow
-```
-Marker Cut Plan ──> Roll Spreading & Cutting ──> Bundle QR Print ──> Sewing Line Tracking ──> Finishing & Packing
-```
-- `production.ProductionOrder`: Bound to Odoo `mrp.production` with target quantity per size/color.
-- `production.CuttingRecord`: Meters of fabric roll consumed, plies cut, cut pieces generated, and end-loss/scrap.
-- `production.DefectLog`: Hourly defect data mapped to specific line stations (e.g. *Station 14: Skipped Stitch*).
-- `subcontract.SubcontractOrder`: Dispatched cut panels to external embroidery/print mills with gate-pass tracking.
-
----
-
-## Cross-Module Integration Blueprint: The Apparel Order Lifecycle
-
-To understand how all 13 modules work as a single synchronized enterprise engine, follow a single garment order from customer acquisition to shipment:
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant MKT as 10. Marketing & CRM
-    participant SLS as 1. Sales / Merchandising
-    participant CAD as 4. Services (CAD & IE)
-    participant SGN as 7. Sign (PP Sign-Off)
-    participant PRD as 9. Productivity (T&A)
-    participant SCM as 8. Supply Chain & QC
-    participant MFG as 13. Manufacturing
-    participant HR as 11. Human Resources
-    participant ACT as 6. Accounting
-    participant WEB as 2. Website Portal
-
-    MKT->>SLS: Qualify brand lead -> Create Buyer Inquiry
-    SLS->>CAD: Request sample tech-pack, grading & SMV analysis
-    CAD-->>SLS: SMV = 18.5 mins, Marker fabric consumption = 1.32 yds/pc
-    SLS->>SLS: Calculate pre-costing & submit quotation
-    SLS->>PRD: Generate Time & Action (T&A) critical-path calendar
-    SLS->>SGN: Buyer signs digital sales contract
-    SLS->>SCM: Requisition bulk fabric rolls & trims
-    SCM->>SCM: Receive fabric at WH/Quarantine -> Execute 4-point QC
-    SCM-->>SGN: QC manager signs digital inspection certificate
-    SCM->>MFG: Transfer approved fabric to cutting floor
-    MFG->>HR: Assign trained sewing operators & calculate line capacity
-    MFG->>MFG: Cut fabric, track sewing line output & scrap
-    MFG->>WEB: Update real-time progress on Buyer Portal (85% completed)
-    MFG->>SCM: Move finished garments to WH/FinishedGoods
-    SCM->>ACT: Pack containers & issue shipping bill of lading
-    ACT->>ACT: Generate Commercial Export Invoice & Realize L/C
-```
-
----
-
-## 4-Phase Implementation & Rollout Roadmap
-
-Implementing all 13 modules requires a disciplined phased rollout to prevent organizational overload in the factory:
-
-### Phase 1: Core Commercial & Operational Foundation (Months 1–3)
-- **Modules:** `1. Sales`, `8. Supply Chain`, `13. Manufacturing`, `12. Administration`.
-- **Deliverables:** Style/variant matrices, Odoo 20 stock lot receiving, fabric quarantine, cutting/sewing MOs, and user RBAC.
-
-### Phase 2: Financial Integrity & Quality Gatekeeping (Months 4–6)
-- **Modules:** `6. Accounting`, `7. Sign`, `3. Helpdesk`, `9. Productivity`.
-- **Deliverables:** Odoo double-entry ledger, commercial export invoices, T&A critical-path engine, buyer claim ticketing, and digital PP approvals.
-
-### Phase 3: Workforce Intelligence & Technical Services (Months 7–9)
-- **Modules:** `11. Human Resources`, `5. Appraisals`, `4. Services (CAD/IE)`.
-- **Deliverables:** Biometric attendance, sewing operator efficiency scoring, sample room project tracking, and SMV method studies.
-
-### Phase 4: Buyer Digital Experience & Growth (Months 10–12)
-- **Modules:** `2. Website Portal`, `10. Marketing`, AI Copilot Extensions.
-- **Deliverables:** Buyer B2B tracking portal, seasonal lookbook showroom, CRM brand lead pipeline, and the natural-language AI Command Center.
+Deliver one company, warehouse, currency/localization, and production route first. Configure accounting and approval foundations before stock/manufacturing go-live. Establish the complete pilot before expanding the remaining business areas. Estimate dates after addon validation and workflow discovery; commit counts and a twelve-month calendar are not delivery evidence.

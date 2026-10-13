@@ -1,45 +1,28 @@
 # Texon Documentation Hub
 
-Welcome to the comprehensive documentation directory for **Texon** (Garment ERP & Manufacturing Platform).
+Texon is an Odoo-powered ERP workspace for garment businesses, with a tailored interface and AI assistance. Odoo owns ERP transactions; Texon makes selected workflows easier to use.
 
-## Core System Architecture & Odoo Integration
+## Current implementation plan
 
-- **👔 [Garment ERP 13-Module Master Plan (GARMENT_ERP_13_MODULES_MASTER_PLAN.md)](GARMENT_ERP_13_MODULES_MASTER_PLAN.md)**
-- **🚀 [Master Integration Blueprint (ODOO_INTEGRATION_MASTER_PLAN.md)](ODOO_INTEGRATION_MASTER_PLAN.md)**
-- **📋 [225-Commit Implementation & Testing Roadmap](integration_design/04-200-commit-implementation-roadmap.md)**
-- **⚙️ [Deep Technical Problem Solving](integration_design/03-technical-problem-solving.md)**
+- [Product narrative, scope, exclusions, and 13-module matrix](GARMENT_ERP_13_MODULES_MASTER_PLAN.md)
+- [Integration master plan and document precedence](ODOO_INTEGRATION_MASTER_PLAN.md)
+- [Milestone implementation roadmap](integration_design/04-200-commit-implementation-roadmap.md)
+- [System architecture, reliable commands/events, migration, and 18 acceptance scenarios](integration_design/01-system-architecture-and-sync.md)
+- [Technical implementation contracts](integration_design/03-technical-problem-solving.md)
+- [AI business copilot and acceptance suite](integration_design/05-ai-copilot-integration-plan.md)
+- [Odoo release, edition, API, and addon research](odoo_research/01-odoo-architecture-baseline.md)
 
+The roadmap filename retains its old name for link compatibility; the fixed 225/240-commit sequence is superseded. Dedicated cutting/CAD, machine telemetry, biometric integrations, bundle tracking, and custom ERP calculation engines are excluded. Standard manufacturing remains included.
 
-### Integration Sub-Modules
+## Historical audits and existing system references
 
-- **[Odoo Research (`/root/odoo_research`)](odoo_research.md)**
-  - [Odoo 20.0 Architecture Baseline & JSON-2 APIs](odoo_research/01-odoo-architecture-baseline.md)
-  - [Texon Backend Static Audit & 105 Model Inventory](odoo_research/02-backend-static-audit.md)
-  - [Odoo Research Overview](odoo_research/README.md)
+These describe earlier code/plans and must be checked against the current checkout. They do not override the current scope or establish completed features.
 
-- **[Integration Design (`/root/integration_design`)](integration_design.md)**
-  - [Odoo Integration Architecture, Outbox Engine & 15 Acceptance Scenarios](integration_design/01-system-architecture-and-sync.md)
-  - [Texon UI Frontend Static Audit & 210 Route Inventory](integration_design/02-frontend-static-audit.md)
-  - [Deep Technical Problem Solving](integration_design/03-technical-problem-solving.md)
-  - [225-Commit Implementation & Testing Roadmap](integration_design/04-200-commit-implementation-roadmap.md)
-  - [AI Copilot Architecture & Phase 11 Roadmap](integration_design/05-ai-copilot-integration-plan.md)
-  - [Integration Design Overview](integration_design/README.md)
-
-
-
-## Existing System Documentation
-
-- **Backend:**
-  - [REST API Design](backend/01-rest-api-design.md)
-- **Frontend:**
-  - [Frontend Guide & Overview](frontend/README.md)
-  - [01: Getting Started](frontend/01-getting-started.md)
-  - [02: Authentication](frontend/02-authentication.md)
-  - [03: GraphQL API](frontend/03-graphql-api.md)
-  - [04: Data Models](frontend/04-data-models.md)
-  - [05: Frontend Structure](frontend/05-frontend-structure.md)
-  - [06: Fetch & Render Plan](frontend/06-fetch-render-plan.md)
-  - [07: Design Errors Audit](frontend/07-design-errors-audit.md)
-- **Database & Schemas:**
-  - [Database Schema Specification](database-schema.md)
-  - [Schema Definition (YAML)](scema.yaml)
+- [Backend static audit](odoo_research/02-backend-static-audit.md)
+- [Frontend static audit](integration_design/02-frontend-static-audit.md)
+- [Odoo research index](odoo_research/README.md)
+- [Integration design index](integration_design/README.md)
+- [REST API reference](backend/01-rest-api-design.md)
+- [Frontend references](frontend/README.md)
+- [Database schema](database-schema.md) and [YAML schema](scema.yaml)
+- [Legacy TODO plans](../TODO/README.md) and [season roadmap](../seassion/SEASONS-ROADMAP.md)
