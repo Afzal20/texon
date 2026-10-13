@@ -19,3 +19,7 @@ Run targeted backend checks with `uv --directory backend run --frozen python man
 ## Continuous integration
 
 `.github/workflows/backend.yml` runs the root dependency install, locked uv sync, Django system check, migration drift check, and backend suite for pushes and pull requests. This first CI job uses an isolated SQLite test database; PostgreSQL and Odoo runtime jobs are separate remaining backlog items. Local checks can validate the commands, but the hosted GitHub Actions run must pass before its result is claimed.
+
+## Backend health probes
+
+`GET /health/live/` checks that the HTTP process can respond without touching the database. `GET /health/ready/` checks a database round trip and returns 503 on database failure. Both return minimal status JSON, disable caching, and accept GET/HEAD only. These are backend infrastructure probes; neither claims that Odoo is connected, modules are installed, migrations are current, or business data is synchronized. Monitor Odoo/integration health separately.

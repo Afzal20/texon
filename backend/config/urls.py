@@ -7,6 +7,7 @@ from buyers.admin import BuyerAdmin
 from buyers.models import Buyer
 from authentication.views import ThrottledTokenObtainPairView
 from core.sites import operations_site
+from core.health import liveness, readiness
 from orders.admin import OrderAdmin
 from orders.models import Order
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -16,6 +17,8 @@ operations_site.register(Buyer, BuyerAdmin)
 operations_site.register(Order, OrderAdmin)
 
 urlpatterns = [
+    path("health/live/", liveness, name="health-live"),
+    path("health/ready/", readiness, name="health-ready"),
     path("admin/", admin.site.urls),
     path("operations/", operations_site.urls),
     path("i18n/", include(i18n)),

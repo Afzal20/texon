@@ -1,8 +1,12 @@
 """Regression coverage for the generic ERP gateway's permission boundary."""
 
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.urls import reverse
+from django.db import OperationalError
+from django.test import SimpleTestCase, TestCase
 from rest_framework.permissions import DjangoModelPermissions
 from rest_framework.test import APITestCase
 
@@ -69,3 +73,40 @@ class ModelReadPermissionTests(APITestCase):
                                  ("PATCH", "change_buyer"), ("DELETE", "delete_buyer")):
             self.assertEqual(permission.get_required_permissions(method, Buyer), [f"buyers.{expected}"])
         self.assertEqual(DjangoModelPermissions.perms_map["GET"], [])
+
+
+class LivenessTests(SimpleTestCase):
+    def test_process_probe_does_not_require_database_or_authentication(self):
+        result = self.client.get(reverse("health-live"))
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json(), {"status": "ok"})
+        self.assertEqual(result["Cache-Control"], "no-store")
+
+    def test_process_probe_supports_head_and_rejects_writes(self):
+        self.assertEqual(self.client.head(reverse("health-live")).status_code, 200)
+        self.assertEqual(self.client.post(reverse("health-live")).status_code, 405)
+
+
+class ReadinessTests(TestCase):
+    def test_database_probe_succeeds_against_real_test_database(self):
+        result = self.client.get(reverse("health-ready"))
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json(), {"status": "ok"})
+        self.assertEqual(result["Cache-Control"], "no-store")
+
+    def test_database_outage_returns_uncached_failure_without_details(self):
+        with patch("core.health.connection.cursor", side_effect=OperationalError("private database address")):
+            result = self.client.get(reverse("health-ready"))
+        self.assertEqual(result.status_code, 503)
+        self.assertEqual(result.json(), {"status": "unavailable"})
+        self.assertNotIn("private", result.content.decode())
+        self.assertEqual(result["Cache-Control"], "no-store")
+
+    def test_unexpected_probe_result_is_not_ready(self):
+        with patch("core.health.connection.cursor") as cursor:
+            cursor.return_value.__enter__.return_value.fetchone.return_value = None
+            result = self.client.get(reverse("health-ready"))
+        self.assertEqual(result.status_code, 503)
+
+    def test_database_probe_rejects_writes(self):
+        self.assertEqual(self.client.post(reverse("health-ready")).status_code, 405)
