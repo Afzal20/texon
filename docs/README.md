@@ -4,9 +4,11 @@ Welcome to the comprehensive documentation directory for **Texon** (Garment ERP 
 
 ## Core System Architecture & Odoo Integration
 
+- **👔 [Garment ERP 13-Module Master Plan (GARMENT_ERP_13_MODULES_MASTER_PLAN.md)](GARMENT_ERP_13_MODULES_MASTER_PLAN.md)**
 - **🚀 [Master Integration Blueprint (ODOO_INTEGRATION_MASTER_PLAN.md)](ODOO_INTEGRATION_MASTER_PLAN.md)**
 - **📋 [225-Commit Implementation & Testing Roadmap](integration_design/04-200-commit-implementation-roadmap.md)**
 - **⚙️ [Deep Technical Problem Solving](integration_design/03-technical-problem-solving.md)**
+
 
 ### Integration Sub-Modules
 

@@ -23,7 +23,9 @@ The complete engineering and testing blueprint has been organized into modular, 
 
 | Document | Purpose & Key Contents |
 |---|---|
+| **[GARMENT_ERP_13_MODULES_MASTER_PLAN.md](GARMENT_ERP_13_MODULES_MASTER_PLAN.md)** | **Full 13-Module Garment ERP Blueprint:** Comprehensive domain architecture covering Sales, Website, Helpdesk, Services, Appraisals, Accounting, Sign, Supply Chain, Productivity, Marketing, HR, Administration, and Manufacturing. |
 | **[03-technical-problem-solving.md](integration_design/03-technical-problem-solving.md)** | **Deep Architectural Solutions:** Single authority matrix, outbox/inbox schema, Odoo JSON-2 RPC transport, atomic `texon_bridge` addon, multi-tenant company isolation, DRF security fixes, garment variant matrices, frozen BOM revisions, roll lot tracking, UOM traps, and Next.js cookie session unification. |
+
 | **[04-200-commit-implementation-roadmap.md](integration_design/04-200-commit-implementation-roadmap.md)** | **Complete 225-Commit Implementation Roadmap:** 225 sequentially numbered, reviewable atomic git commits spanning 10 sequential epics. Every commit specifies target files, implementation intent, and paired test acceptance criteria for engineers and QA testers. |
 | **[01-odoo-architecture-baseline.md](odoo_research/01-odoo-architecture-baseline.md)** | **Odoo 20.0 CE Research Baseline:** Edition trade-offs (CE vs Enterprise vs Odoo.sh), JSON-2 RPC protocol, removal of legacy `db` RPC service, LGPL-3 licensing, and technical validation gates. |
 | **[02-backend-static-audit.md](odoo_research/02-backend-static-audit.md)** | **Backend Audit & Model Inventory:** Audit of `backend/` at HEAD `539fdb37`, complete inventory of 105 Django models across 24 apps, DRF permission leak analysis, and retiring generic CRUD routes. |
