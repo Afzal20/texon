@@ -554,3 +554,11 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
     }
 }
+
+# Odoo Integration Configuration
+ODOO_URL = config("ODOO_URL", default="http://localhost:8069")
+ODOO_DB = config("ODOO_DB", default="odoo")
+ODOO_USER = config("ODOO_USER", default="admin")
+ODOO_PASSWORD = config("ODOO_PASSWORD", default="admin")
+ODOO_TIMEOUT_SECONDS = config("ODOO_TIMEOUT_SECONDS", default=10, cast=int)
+

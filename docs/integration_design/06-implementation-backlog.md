@@ -64,9 +64,9 @@ Current implementation evidence: 17 completed parts; 145 remaining. Provider dis
 
 - [x] **T037** Typed command envelope with trusted actor and tenant context — commit `f5ac3b4`
 - [x] **T038** Canonical fingerprints with decimal/date-safe validation — commit `f5ac3b4`
-- [x] **T039** Persisted command/outbox model and transactional enqueue service
-- [x] **T040** Worker batch claiming with leases and expired-claim recovery
-- [x] **T041** Retry classification, capped backoff, jitter, and unknown outcomes
+- [x] **T039** Persisted command/outbox model and transactional enqueue service — commit `2aafb3b`
+- [x] **T040** Worker batch claiming with leases and expired-claim recovery — commit `2aafb3b`
+- [x] **T041** Retry classification, capped backoff, jitter, and unknown outcomes — commit `2aafb3b`
 - [x] **T042** Odoo command allowlist and independent business authorization — commit `3d0680e`
 - [x] **T043** Atomic command receipts with concurrent original-result replay — commit `3d0680e`
 - [x] **T044** Expected revisions and competing business-transition locking — commit `3d0680e`
