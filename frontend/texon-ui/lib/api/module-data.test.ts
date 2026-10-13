@@ -13,7 +13,7 @@ function deferred() {
   return { promise, resolve }
 }
 
-beforeEach(() => list.mockReset())
+beforeEach(() => { list.mockReset() })
 
 describe("workspace data lifecycle", () => {
   it("keeps the loading state until every source has returned", async () => {
@@ -56,5 +56,54 @@ describe("workspace data lifecycle", () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     rerender()
     expect(list).toHaveBeenCalledTimes(1)
+  })
+})
+
+
+describe("workspace fetch failures", () => {
+  it.each([
+    [401, "unauthenticated", "Sign in again to load this data."],
+    [403, "forbidden", "You do not have permission to view this data."],
+    [503, "unavailable", "Data is unavailable. Please try again."],
+  ])("surfaces HTTP %s instead of a successful empty dataset", async (status, code, message) => {
+    list.mockRejectedValue({ response: { status }, message: "private server details" })
+    const { result } = renderHook(() => useModuleRows(buyers))
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+    expect(result.current.error).toBe(message)
+    expect(result.current.errorCode).toBe(code)
+    expect(result.current.data).toEqual({})
+    expect(result.current.error).not.toContain("private")
+  })
+
+  it("does not present partial data as a complete aggregate when one source fails", async () => {
+    list.mockResolvedValueOnce({ data: [{ id: 1 }] })
+    list.mockRejectedValueOnce(new Error("network failed"))
+    const { result } = renderHook(() => useModuleRows([
+      ...buyers, { key: "orders", app: "orders", model: "Order" },
+    ]))
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+    expect(result.current.data).toEqual({})
+    expect(result.current.errorCode).toBe("unavailable")
+  })
+
+  it("rejects a malformed response rather than passing it to metrics", async () => {
+    list.mockResolvedValue({ data: null } as unknown as RestListResult)
+    const { result } = renderHook(() => useModuleRows(buyers))
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+    expect(result.current.errorCode).toBe("unavailable")
+    expect(result.current.data).toEqual({})
+  })
+
+  it("recovers when the source changes after a failure", async () => {
+    list.mockRejectedValueOnce({ response: { status: 403 } })
+    list.mockResolvedValueOnce({ data: [{ id: 2 }] })
+    const { result, rerender } = renderHook(({ sources }) => useModuleRows(sources), {
+      initialProps: { sources: buyers },
+    })
+    await waitFor(() => expect(result.current.errorCode).toBe("forbidden"))
+    rerender({ sources: [{ key: "stock", app: "inventory", model: "Fabric" }] })
+    await waitFor(() => expect(result.current.data).toEqual({ stock: [{ id: 2 }] }))
+    expect(result.current.error).toBeNull()
+    expect(result.current.errorCode).toBeNull()
   })
 })

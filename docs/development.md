@@ -51,4 +51,4 @@ Validation on 2026-10-13: frozen install, TypeScript, and the 215-page productio
 
 ## Frontend tests
 
-Vitest uses jsdom, React Testing Library, and jest-dom matchers. Test files use `.test.ts`/`.test.tsx`; cleanup runs after each test. Start with `pnpm test:frontend` or use `pnpm --dir frontend/texon-ui test:watch`. Initial tests exercise the workspace data hook's loading, empty results, stale-request isolation, and stable request identity. They do not claim the existing network-error suppression is fixed.
+Vitest uses jsdom, React Testing Library, and jest-dom matchers. Test files use `.test.ts`/`.test.tsx`; cleanup runs after each test. Start with `pnpm test:frontend` or use `pnpm --dir frontend/texon-ui test:watch`. Initial tests exercise the workspace data hook's loading, empty results, stale-request isolation, and stable request identity. The hook now distinguishes sign-in, forbidden, and unavailable states. A failed or malformed source prevents partial datasets from being displayed as complete totals; error messages are sanitized. Other page-specific helpers may still suppress errors and require separate migration.

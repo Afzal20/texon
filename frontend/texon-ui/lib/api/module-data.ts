@@ -17,38 +17,51 @@ export interface ModuleSource {
   params?: RestParams
 }
 
+export type ModuleErrorCode = "unauthenticated" | "forbidden" | "unavailable"
+
 export interface ModuleDataState {
   data: Record<string, RestRow[]>
   isLoading: boolean
   error: string | null
+  errorCode: ModuleErrorCode | null
 }
 
 export function useModuleRows(sources: ModuleSource[]): ModuleDataState {
   const signature = useMemo(() => JSON.stringify(sources), [sources])
-  const [state, setState] = useState<ModuleDataState>({ data: {}, isLoading: true, error: null })
+  const [state, setState] = useState<ModuleDataState>({ data: {}, isLoading: true, error: null, errorCode: null })
 
   useEffect(() => {
     let cancelled = false
     const parsed: ModuleSource[] = JSON.parse(signature)
 
-    setState({ data: {}, isLoading: true, error: null })
+    setState({ data: {}, isLoading: true, error: null, errorCode: null })
 
     Promise.all(
       parsed.map(async (src) => {
-        try {
-          const res = await restList(src.app, src.model, src.params)
-          return [src.key, res.data as RestRow[]] as const
-        } catch {
-          // Endpoint may be forbidden/unavailable for this user's role —
-          // surface an empty dataset rather than fake rows.
-          return [src.key, []] as const
-        }
+        const res = await restList(src.app, src.model, src.params)
+        if (!Array.isArray(res.data)) throw new Error("Invalid workspace response")
+        return [src.key, res.data] as const
       }),
     ).then((entries) => {
       if (cancelled) return
       const data: Record<string, RestRow[]> = {}
-      for (const [key, rows] of entries) data[key] = rows as RestRow[]
-      setState({ data, isLoading: false, error: null })
+      for (const [key, rows] of entries) data[key] = rows
+      setState({ data, isLoading: false, error: null, errorCode: null })
+    }).catch((cause: unknown) => {
+      if (cancelled) return
+      const response = typeof cause === "object" && cause !== null && "response" in cause
+        ? cause.response : null
+      const status = typeof response === "object" && response !== null && "status" in response
+        ? response.status : null
+      const errorCode: ModuleErrorCode = status === 401 ? "unauthenticated"
+        : status === 403 ? "forbidden" : "unavailable"
+      const messages: Record<ModuleErrorCode, string> = {
+        unauthenticated: "Sign in again to load this data.",
+        forbidden: "You do not have permission to view this data.",
+        unavailable: "Data is unavailable. Please try again.",
+      }
+      // Never show partial totals or forward private server exception text.
+      setState({ data: {}, isLoading: false, error: messages[errorCode], errorCode })
     })
 
     return () => {
