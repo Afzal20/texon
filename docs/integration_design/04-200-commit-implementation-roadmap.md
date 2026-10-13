@@ -1,5 +1,7 @@
 # Texon Implementation Roadmap: Odoo ERP Workspace and AI
 
+Follow the [162-part implementation tracker](06-implementation-backlog.md) for individual parts and commit evidence.
+
 > Updated: 2026-10-13
 > Status: Revised milestone backlog; supersedes COMMIT-001–240 and the earlier fixed sequential commit plan.
 > Filename retained to preserve links. Commit counts and dates are not acceptance criteria.

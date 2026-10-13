@@ -1,5 +1,7 @@
 # Texon Documentation Hub
 
+Follow the [162-part implementation tracker](integration_design/06-implementation-backlog.md) for individual parts and commit evidence.
+
 Texon is an Odoo-powered ERP workspace for garment businesses, with a tailored interface and AI assistance. Odoo owns ERP transactions; Texon makes selected workflows easier to use.
 
 ## Current implementation plan

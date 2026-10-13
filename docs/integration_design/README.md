@@ -1,5 +1,7 @@
 # Texon Integration Design
 
+Follow the [162-part implementation tracker](06-implementation-backlog.md) for individual parts and commit evidence.
+
 > Revised: 2026-10-13. Odoo owns ERP business records; Texon provides the workspace, portal, and AI assistant.
 
 Read the [product scope](../GARMENT_ERP_13_MODULES_MASTER_PLAN.md) and [master plan](../ODOO_INTEGRATION_MASTER_PLAN.md) first.
