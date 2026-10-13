@@ -57,4 +57,25 @@ jobs:
       - name: Check migration drift
         run: pnpm check:migrations
       - name: Run backend regression suite
-        run: pnpm test
+        run: pnpm test:backend
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+          cache-dependency-path: frontend/texon-ui/pnpm-lock.yaml
+      - name: Install locked frontend dependencies
+        run: pnpm --dir frontend/texon-ui install --frozen-lockfile
+      - name: Run component and hook tests
+        run: pnpm test:frontend
+      - name: Typecheck
+        run: pnpm --dir frontend/texon-ui typecheck
+      - name: Production build
+        run: pnpm --dir frontend/texon-ui build

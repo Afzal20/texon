@@ -4,13 +4,14 @@ Use Node from the root `.node-version`, pnpm 10.28.2, and uv. The backend Python
 
 ```bash
 pnpm install --frozen-lockfile
+pnpm --dir frontend/texon-ui install --frozen-lockfile
 uv sync --directory backend --frozen
 pnpm test
 pnpm check:backend
 pnpm check:migrations
 ```
 
-The root `pnpm test` currently runs the Django backend suite. It changes to `backend` before discovery: invoking Django tests from the repository root can incorrectly discover zero tests. Frontend and real Odoo integration suites will be added to this entry point when their harnesses exist; this command does not yet verify them.
+The root `pnpm test` runs the Django backend suite followed by the frontend Vitest suite. Install the frontend dependencies with `pnpm --dir frontend/texon-ui install --frozen-lockfile` first. It changes to `backend` before discovery: invoking Django tests from the repository root can incorrectly discover zero tests. Real Odoo business integration tests remain separate backlog work; this command does not yet verify those workflows.
 
 The backend test runner creates a separate test database. Do not run migrations or seed commands against the checked-in development database to test a change. Local virtual environments and generated backend artifacts are ignored.
 
@@ -18,7 +19,7 @@ Run targeted backend checks with `uv --directory backend run --frozen python man
 
 ## Continuous integration
 
-`.github/workflows/backend.yml` runs the root dependency install, locked uv sync, Django system check, migration drift check, and backend suite for pushes and pull requests. The CI matrix runs against SQLite and an isolated PostgreSQL 16 service. Real Odoo runtime workflow tests remain separate backlog work. Local checks can validate the commands, but the hosted GitHub Actions run must pass before its result is claimed.
+`.github/workflows/backend.yml` runs the locked backend checks and a separate frontend test/typecheck/build job for pushes and pull requests. The CI matrix runs against SQLite and an isolated PostgreSQL 16 service. Real Odoo runtime workflow tests remain separate backlog work. Local checks can validate the commands, but the hosted GitHub Actions run must pass before its result is claimed.
 
 ## Backend health probes
 
@@ -47,3 +48,7 @@ pnpm --dir frontend/texon-ui build
 The frontend lint command uses native flat configuration. Existing lint findings are tracked separately from reproducible installation/typechecking; do not suppress them globally to claim a clean lint run.
 
 Validation on 2026-10-13: frozen install, TypeScript, and the 215-page production build pass. The build required a Suspense boundary around the legacy weekly planning view's current-time calculation. Full lint remains unresolved: 568 errors and 74 warnings were reported by the matched configuration, predominantly existing explicit `any` usage (548 errors). This is a known source cleanup backlog, not a passed check.
+
+## Frontend tests
+
+Vitest uses jsdom, React Testing Library, and jest-dom matchers. Test files use `.test.ts`/`.test.tsx`; cleanup runs after each test. Start with `pnpm test:frontend` or use `pnpm --dir frontend/texon-ui test:watch`. Initial tests exercise the workspace data hook's loading, empty results, stale-request isolation, and stable request identity. They do not claim the existing network-error suppression is fixed.
