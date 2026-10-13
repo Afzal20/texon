@@ -8,9 +8,9 @@ This backlog expands the [milestone roadmap](04-200-commit-implementation-roadma
 
 IDs identify work, not a mandatory execution sequence. Respect milestone dependencies and provider verification. Foundation repairs can proceed while addon discovery runs. Optional providers must be resolved before their tasks are implemented; no unverified module may be advertised as working.
 
-Completed entries link to local commit IDs as evidence. CI completion below means the workflow is authored and locally checked, not that a hosted run has passed. The initial test harness currently covers Django; frontend, PostgreSQL, and real Odoo suites are separate parts.
+Completed entries link to local commit IDs as evidence. CI completion below means the workflow is authored and locally checked, not that a hosted run has passed. The initial test harness currently covers Django; frontend and real Odoo suites are separate parts. PostgreSQL and SQLite backend suites now run in the CI matrix.
 
-Current implementation evidence: 6 completed parts; 156 remaining. Provider discovery is in progress; see the [runtime provider matrix](../odoo_research/03-module-provider-matrix.md). The tracker/documentation commit itself is not counted as one of the implementation parts.
+Current implementation evidence: 7 completed parts; 155 remaining. Provider discovery is in progress; see the [runtime provider matrix](../odoo_research/03-module-provider-matrix.md). The tracker/documentation commit itself is not counted as one of the implementation parts.
 
 ## M0 — Workflow and provider validation
 
@@ -31,7 +31,7 @@ Current implementation evidence: 6 completed parts; 156 remaining. Provider disc
 - [x] **T012** Existing model metadata migrations and clean migration drift check — commit `e4915fa`
 - [x] **T013** Backend CI for locked dependencies, tests, system and migration checks — commit `8fef947`
 - [x] **T014** Process liveness and database-readiness probes — commit `2ef8d61`
-- [ ] **T015** PostgreSQL backend configuration and real-database CI job
+- [x] **T015** PostgreSQL backend configuration and real-database CI job — implemented in this change; both database suites verified locally
 - [ ] **T016** Pinned frontend runtime, compatible framework dependencies, single lockfile
 - [ ] **T017** Frontend component test runner wired into root checks
 - [ ] **T018** Production environment validation and safe deployment configuration

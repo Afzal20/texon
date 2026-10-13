@@ -11,6 +11,30 @@ jobs:
   backend:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      matrix:
+        include:
+          - database: sqlite
+            database_url: ""
+          - database: postgres
+            database_url: postgresql://texon_test:test-only-password@127.0.0.1:5432/texon_test
+    name: Backend (${{ matrix.database }})
+    env:
+      DATABASE_URL: ${{ matrix.database_url }}
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: texon_test
+          POSTGRES_PASSWORD: test-only-password
+          POSTGRES_DB: texon_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U texon_test -d texon_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

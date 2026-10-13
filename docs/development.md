@@ -18,8 +18,18 @@ Run targeted backend checks with `uv --directory backend run --frozen python man
 
 ## Continuous integration
 
-`.github/workflows/backend.yml` runs the root dependency install, locked uv sync, Django system check, migration drift check, and backend suite for pushes and pull requests. This first CI job uses an isolated SQLite test database; PostgreSQL and Odoo runtime jobs are separate remaining backlog items. Local checks can validate the commands, but the hosted GitHub Actions run must pass before its result is claimed.
+`.github/workflows/backend.yml` runs the root dependency install, locked uv sync, Django system check, migration drift check, and backend suite for pushes and pull requests. The CI matrix runs against SQLite and an isolated PostgreSQL 16 service. Real Odoo runtime workflow tests remain separate backlog work. Local checks can validate the commands, but the hosted GitHub Actions run must pass before its result is claimed.
 
 ## Backend health probes
 
 `GET /health/live/` checks that the HTTP process can respond without touching the database. `GET /health/ready/` checks a database round trip and returns 503 on database failure. Both return minimal status JSON, disable caching, and accept GET/HEAD only. These are backend infrastructure probes; neither claims that Odoo is connected, modules are installed, migrations are current, or business data is synchronized. Monitor Odoo/integration health separately.
+
+## PostgreSQL
+
+Set `DATABASE_URL` to a PostgreSQL URL with an explicit database name. The accepted schemes are `postgres` and `postgresql`; URL-encode special characters in credentials. SSL options such as `?sslmode=require` are forwarded to psycopg. Use a dedicated database/user for Texon; never point Django at Odoo's database.
+
+When `DJANGO_DEBUG=False`, a PostgreSQL URL is mandatory. With debug enabled and no URL, the legacy local SQLite database remains available. This setting does not migrate or overwrite existing data; migration/cutover is a separate task.
+
+For backend tests, use an isolated PostgreSQL instance and a user allowed to create/drop test databases. Django creates `test_<database name>` and removes it after tests. Do not give a production connection URL to the test runner. Run the same `pnpm test`, `pnpm check:backend`, and `pnpm check:migrations` commands with this environment selected. Database URLs and credentials must remain outside committed environment files.
+
+ASGI connections use `CONN_MAX_AGE=0`, and PostgreSQL has a default five-second connection timeout. See [Django connection guidance](https://docs.djangoproject.com/en/6.0/ref/databases/) and [URL configuration](https://github.com/jazzband/dj-database-url).
