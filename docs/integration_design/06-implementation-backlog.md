@@ -10,7 +10,7 @@ IDs identify work, not a mandatory execution sequence. Respect milestone depende
 
 Completed entries link to local commit IDs as evidence. CI completion below means the workflow is authored and locally checked, not that a hosted run has passed. The root test command covers Django and frontend Vitest; real Odoo business integration tests remain separate work. PostgreSQL and SQLite backend suites now run in the CI matrix.
 
-Current implementation evidence: 9 completed parts; 153 remaining. Provider discovery is in progress; see the [runtime provider matrix](../odoo_research/03-module-provider-matrix.md). The tracker/documentation commit itself is not counted as one of the implementation parts.
+Current implementation evidence: 14 completed parts; 148 remaining. Provider discovery is in progress; see the [runtime provider matrix](../odoo_research/03-module-provider-matrix.md). The tracker/documentation commit itself is not counted as one of the implementation parts.
 
 ## M0 — Workflow and provider validation
 
@@ -62,14 +62,14 @@ Current implementation evidence: 9 completed parts; 153 remaining. Provider disc
 
 ## M2 — Commands and receipts
 
-- [ ] **T037** Typed command envelope with trusted actor and tenant context
-- [ ] **T038** Canonical fingerprints with decimal/date-safe validation
+- [x] **T037** Typed command envelope with trusted actor and tenant context — commit `f5ac3b4`
+- [x] **T038** Canonical fingerprints with decimal/date-safe validation — commit `f5ac3b4`
 - [ ] **T039** Persisted command/outbox model and transactional enqueue service
 - [ ] **T040** Worker batch claiming with leases and expired-claim recovery
 - [ ] **T041** Retry classification, capped backoff, jitter, and unknown outcomes
-- [ ] **T042** Odoo command allowlist and independent business authorization
-- [ ] **T043** Atomic command receipts with concurrent original-result replay
-- [ ] **T044** Expected revisions and competing business-transition locking
+- [x] **T042** Odoo command allowlist and independent business authorization
+- [x] **T043** Atomic command receipts with concurrent original-result replay
+- [x] **T044** Expected revisions and competing business-transition locking
 - [ ] **T045** Frontend command submission and truthful operation-status tracking
 
 ## M2 — Events and reconciliation

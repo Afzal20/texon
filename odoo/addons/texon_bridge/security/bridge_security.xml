@@ -1,0 +1,6 @@
+<odoo>
+  <record id="group_integration" model="res.groups">
+    <field name="name">Texon ERP Integration</field>
+  </record>
+</odoo>
+

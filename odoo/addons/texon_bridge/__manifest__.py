@@ -8,7 +8,8 @@
     "license": "LGPL-3",
     "depends": ["base", "sale", "mrp", "stock", "purchase"],
     "data": [
-        "security/ir.model.access.csv",
+        "security/bridge_security.xml",
+        "security/ir.access.csv",
     ],
     "installable": True,
     "application": False,

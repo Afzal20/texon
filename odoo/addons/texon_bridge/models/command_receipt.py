@@ -14,6 +14,6 @@ class TexonCommandReceipt(models.Model):
     status = fields.Selection([("success", "Success"), ("failed", "Business Failure")], required=True, default="success")
     executed_by = fields.Char("External Actor Ref", readonly=True)
 
-    _sql_constraints = [
-        ("unique_operation_uuid", "unique(operation_uuid)", "Operation UUID must be globally unique!")
-    ]
+    _operation_uuid_unique = models.Constraint(
+        "UNIQUE(operation_uuid)", "Operation UUID must be globally unique!",
+    )
