@@ -26,7 +26,7 @@ function startOfWeek(d: Date): Date {
   return copy
 }
 
-export default function ProductionPlanning() {
+function ProductionPlanningWorkspace() {
   const [plans, setPlans] = React.useState<PlanRow[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
 
@@ -159,5 +159,14 @@ export default function ProductionPlanning() {
         </div>
       </div>
     </AppLayout>
+  )
+}
+
+
+export default function ProductionPlanning() {
+  return (
+    <React.Suspense fallback={<div role="status" className="p-6">Loading weekly plan…</div>}>
+      <ProductionPlanningWorkspace />
+    </React.Suspense>
   )
 }

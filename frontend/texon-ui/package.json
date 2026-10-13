@@ -4,7 +4,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -23,12 +24,12 @@
     "input-otp": "^1.4.2",
     "jose": "^6.2.3",
     "lucide-react": "^0.511.0",
-    "next": "latest",
+    "next": "16.2.9",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.6.0",
-    "react": "^19.0.0",
+    "react": "19.2.7",
     "react-day-picker": "^10.0.1",
-    "react-dom": "^19.0.0",
+    "react-dom": "19.2.7",
     "react-hook-form": "^7.81.0",
     "react-resizable-panels": "^4.11.2",
     "recharts": "3.8.0",
@@ -40,16 +41,20 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.20",
     "eslint": "^9",
-    "eslint-config-next": "15.3.1",
+    "eslint-config-next": "16.2.9",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5"
+  },
+  "name": "@texon/ui",
+  "packageManager": "pnpm@10.28.2",
+  "engines": {
+    "node": ">=26.11.1 <27"
   }
 }

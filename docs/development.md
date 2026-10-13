@@ -33,3 +33,17 @@ When `DJANGO_DEBUG=False`, a PostgreSQL URL is mandatory. With debug enabled and
 For backend tests, use an isolated PostgreSQL instance and a user allowed to create/drop test databases. Django creates `test_<database name>` and removes it after tests. Do not give a production connection URL to the test runner. Run the same `pnpm test`, `pnpm check:backend`, and `pnpm check:migrations` commands with this environment selected. Database URLs and credentials must remain outside committed environment files.
 
 ASGI connections use `CONN_MAX_AGE=0`, and PostgreSQL has a default five-second connection timeout. See [Django connection guidance](https://docs.djangoproject.com/en/6.0/ref/databases/) and [URL configuration](https://github.com/jazzband/dj-database-url).
+
+## Frontend runtime
+
+Use the root Node version and pnpm version for the frontend as well. Next.js 16.2.9, React/React DOM 19.2.7, and the matching Next.js ESLint configuration are pinned; the frontend pnpm lockfile captures the remaining dependency graph. The root lockfile belongs to orchestration and the frontend lockfile belongs to the UI package. Do not regenerate an npm lockfile.
+
+```bash
+pnpm --dir frontend/texon-ui install --frozen-lockfile
+pnpm --dir frontend/texon-ui typecheck
+pnpm --dir frontend/texon-ui build
+```
+
+The frontend lint command uses native flat configuration. Existing lint findings are tracked separately from reproducible installation/typechecking; do not suppress them globally to claim a clean lint run.
+
+Validation on 2026-10-13: frozen install, TypeScript, and the 215-page production build pass. The build required a Suspense boundary around the legacy weekly planning view's current-time calculation. Full lint remains unresolved: 568 errors and 74 warnings were reported by the matched configuration, predominantly existing explicit `any` usage (548 errors). This is a known source cleanup backlog, not a passed check.
